@@ -1,0 +1,35 @@
+# Dati grezzi del cliente (trattati come dati personali)
+/data-raw/
+*.csv
+*.xlsx
+
+# Segreti e configurazioni locali
+.env
+.env.*
+!.env.example
+
+# Java / Spring Boot / Maven / Gradle
+target/
+build/
+.gradle/
+*.class
+*.jar
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Power BI (file temporanei e cache)
+*.pbix.bak
+.pbi/
+localSettings.json
+cache.abf
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
