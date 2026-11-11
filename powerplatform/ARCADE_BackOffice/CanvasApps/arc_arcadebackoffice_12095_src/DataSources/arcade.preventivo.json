@@ -1,0 +1,33 @@
+[
+  {
+    "ApiId": "/providers/microsoft.powerapps/apis/shared_postgresql",
+    "CdpRevision": {
+      "BaseUrl": "/",
+      "LastChangedTimeString": "2026-10-21T20:07:13.0100000Z",
+      "RevisionNumber": 1
+    },
+    "ConnectedDataSourceInfoNameMapping": {
+      "aliquota_iva": "aliquota_iva",
+      "approvato_da": "approvato_da",
+      "approvato_il": "approvato_il",
+      "codice_stand": "codice_stand",
+      "data_creazione": "data_creazione",
+      "id_edizione": "id_edizione",
+      "id_espositore": "id_espositore",
+      "id_preventivo": "id_preventivo",
+      "imponibile_eur": "imponibile_eur",
+      "imponibile_listino_eur": "imponibile_listino_eur",
+      "in_prelazione": "in_prelazione",
+      "inviato_il": "inviato_il",
+      "sconto_pct": "sconto_pct",
+      "stato": "stato",
+      "valido_fino": "valido_fino"
+    },
+    "DatasetName": "default",
+    "EncodeDataset": true,
+    "IsSampleData": false,
+    "IsWritable": true,
+    "Name": "arcade.preventivo",
+    "Type": "ConnectedDataSourceInfo"
+  }
+]

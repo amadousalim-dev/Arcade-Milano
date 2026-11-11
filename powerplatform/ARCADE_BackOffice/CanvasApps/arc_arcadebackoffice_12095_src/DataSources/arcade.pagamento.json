@@ -1,0 +1,26 @@
+[
+  {
+    "ApiId": "/providers/microsoft.powerapps/apis/shared_postgresql",
+    "CdpRevision": {
+      "BaseUrl": "/",
+      "LastChangedTimeString": "2026-10-21T20:07:13.0100000Z",
+      "RevisionNumber": 1
+    },
+    "ConnectedDataSourceInfoNameMapping": {
+      "annullato": "annullato",
+      "data_dedotta": "data_dedotta",
+      "id_contratto": "id_contratto",
+      "id_pagamento": "id_pagamento",
+      "importo": "importo",
+      "pagato_il": "pagato_il",
+      "scadenza": "scadenza",
+      "tipo": "tipo"
+    },
+    "DatasetName": "default",
+    "EncodeDataset": true,
+    "IsSampleData": false,
+    "IsWritable": true,
+    "Name": "arcade.pagamento",
+    "Type": "ConnectedDataSourceInfo"
+  }
+]

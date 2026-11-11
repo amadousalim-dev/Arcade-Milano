@@ -1,0 +1,28 @@
+[
+  {
+    "ApiId": "/providers/microsoft.powerapps/apis/shared_postgresql",
+    "CdpRevision": {
+      "BaseUrl": "/",
+      "LastChangedTimeString": "2026-10-21T20:07:13.0100000Z",
+      "RevisionNumber": 1
+    },
+    "ConnectedDataSourceInfoNameMapping": {
+      "codice_padiglione_vincolo": "codice_padiglione_vincolo",
+      "codice_voce": "codice_voce",
+      "descrizione": "descrizione",
+      "disponibilita": "disponibilita",
+      "id_edizione": "id_edizione",
+      "note": "note",
+      "prezzo_unitario": "prezzo_unitario",
+      "quantita_disponibile": "quantita_disponibile",
+      "tipo_voce": "tipo_voce",
+      "unita": "unita"
+    },
+    "DatasetName": "default",
+    "EncodeDataset": true,
+    "IsSampleData": false,
+    "IsWritable": true,
+    "Name": "arcade.listino",
+    "Type": "ConnectedDataSourceInfo"
+  }
+]

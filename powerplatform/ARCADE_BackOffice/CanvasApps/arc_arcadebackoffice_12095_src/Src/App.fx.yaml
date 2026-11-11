@@ -1,0 +1,25 @@
+App As appinfo:
+    BackEnabled: =true
+    Formulas: |-
+        =// Parametri di business: un solo punto da cambiare
+        SogliaApprovazione = 0.10;       // oltre serve il direttore commerciale
+        ScontoMassimo = 0.20;            // oltre non si scende
+        AliquotaIvaStd = 0.22;
+        GiorniValidita = 30;             // validità del preventivo dall'invio
+        GiorniAvvisoApprovazione = 3;    // regola proposta al cliente
+        GiorniMaxApprovazione = 7;
+        
+        // Edizione delle vendite e scadenze calcolate dalla data di apertura
+        EdizioneSel = LookUp('arcade.edizione', id_edizione = 2026);
+        ScadenzaSaldo = DateAdd(EdizioneSel.data_inizio, -30, TimeUnit.Days);
+        // TEMPORANEO finché non esiste la colonna edizione.chiusura_vendite
+        ChiusuraVendite = DateAdd(EdizioneSel.data_inizio, -15, TimeUnit.Days);
+    Theme: =PowerAppsTheme
+
+    Host As hostControl.DefaultHostControlVariant:
+        OnCancel: =false
+        OnEdit: =false
+        OnNew: =false
+        OnSave: =false
+        OnView: =false
+

@@ -1,0 +1,25 @@
+[
+  {
+    "ApiId": "/providers/microsoft.powerapps/apis/shared_postgresql",
+    "CdpRevision": {
+      "BaseUrl": "/",
+      "LastChangedTimeString": "2026-10-21T20:07:13.0100000Z",
+      "RevisionNumber": 1
+    },
+    "ConnectedDataSourceInfoNameMapping": {
+      "codice_voce": "codice_voce",
+      "descrizione": "descrizione",
+      "id_contratto": "id_contratto",
+      "importo_eur": "importo_eur",
+      "prezzo_unitario": "prezzo_unitario",
+      "quantita": "quantita",
+      "riga": "riga"
+    },
+    "DatasetName": "default",
+    "EncodeDataset": true,
+    "IsSampleData": false,
+    "IsWritable": true,
+    "Name": "arcade.riga_contratto",
+    "Type": "ConnectedDataSourceInfo"
+  }
+]
