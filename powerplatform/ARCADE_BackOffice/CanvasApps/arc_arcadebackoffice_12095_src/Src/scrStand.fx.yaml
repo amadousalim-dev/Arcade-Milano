@@ -1,0 +1,502 @@
+scrStand As screen:
+    CopilotContext: |-
+        ={ ScreenName: Self.Name }
+    CopilotPromptSuggestions: =[]
+    Fill: =Color.White
+    LoadingSpinnerColor: =App.Theme.Colors.Primary
+    OnVisible: =Select(btnCalcolaStati)
+
+    drpEdizione As modernDropdown:
+        Appearance: =Appearance.FilledDarker
+        Default: =EdizioneSel
+        ItemDisplayText: =ThisItem.nome
+        Items: =Sort('arcade.edizione', id_edizione, SortOrder.Descending)
+        OnChange: =Select(btnCalcolaStati)
+        ValidationState: =ValidationState.None
+        Width: =280
+        X: =30
+        Y: =33
+        ZIndex: =1
+
+    btnCalcolaStati As modernButton:
+        OnSelect: |-
+            =With({ ed: drpEdizione.Selected },
+              Refresh('arcade.contratto'); Refresh('arcade.preventivo');
+              // stand che esistono in quell'edizione (attivo_dal <= anno)
+              ClearCollect(colStandEd, Filter('arcade.stand', attivo_dal <= ed.id_edizione));
+              // contratti attivi dell'edizione: rendono lo stand "venduto"
+              ClearCollect(colContrattiAttivi,
+                Filter('arcade.contratto', id_edizione = ed.id_edizione && stato = "attivo"));
+              // preventivi che bloccano lo stand (la bozza non blocca)
+              ClearCollect(colPreventiviAperti,
+                Filter('arcade.preventivo', id_edizione = ed.id_edizione &&
+                  (stato = "in_approvazione" ||
+                   (stato = "inviato" && valido_fino >= Today()))));
+              // stand venduti l'anno prima: servono alla prelazione
+              ClearCollect(colVendutiPrec,
+                Filter('arcade.contratto', id_edizione = ed.id_edizione - 1 && stato = "attivo"));
+              ClearCollect(colListino, Filter('arcade.listino', id_edizione = ed.id_edizione))
+            );
+            ClearCollect(colStatoStand,
+              ForAll(colStandEd As s,
+                With({
+                  c:    LookUp(colContrattiAttivi,  codice_stand = s.codice_stand),
+                  p:    LookUp(colPreventiviAperti, codice_stand = s.codice_stand),
+                  prec: LookUp(colVendutiPrec,      codice_stand = s.codice_stand),
+                  ed:   drpEdizione.Selected,
+                  prezzoMq: LookUp(colListino, codice_voce = "SPAZIO-" & s.codice_padiglione).prezzo_unitario,
+                  pctMagg:  Coalesce(LookUp(colListino,
+                              codice_voce = "MAGG-" & Upper(s.posizione)).prezzo_unitario, 0)
+                },
+                {
+                  codice_stand: s.codice_stand,
+                  codice_padiglione: s.codice_padiglione,
+                  mq: s.mq,
+                  posizione: s.posizione,
+                  stato: If(
+                    !IsBlank(c), "venduto",
+                    !IsBlank(p), "opzionato",
+                    !IsBlank(prec) && !IsBlank(ed.scadenza_prelazione)
+                      && Today() <= ed.scadenza_prelazione, "in_prelazione",
+                    "libero"),
+                  id_espositore_rif: Coalesce(c.id_espositore, p.id_espositore, prec.id_espositore),
+                  id_contratto: c.id_contratto,
+                  id_preventivo: p.id_preventivo,
+                  prezzo_listino: If(IsBlank(prezzoMq), Blank(), Round(s.mq * prezzoMq * (1 + pctMagg), 2)),
+                  imponibile_contratto: c.imponibile_eur
+                })))
+        Text: ="Pulsante"
+        Visible: =false
+        X: =152
+        Y: =269
+        ZIndex: =2
+
+    lblLiberi As modernText:
+        Text: =CountIf(colStatoStand, stato = "libero")
+        X: =53
+        Y: =97
+        ZIndex: =3
+
+    lblOpzionati As modernText:
+        BorderStyle: =""
+        Font: =""
+        Text: =CountIf(colStatoStand, stato = "opzionato")
+        X: =224
+        Y: =97
+        ZIndex: =4
+
+    lblPrelaz As modernText:
+        BorderStyle: =""
+        Font: =""
+        Text: =CountIf(colStatoStand, stato = "in_prelazione")
+        X: =408
+        Y: =97
+        ZIndex: =5
+
+    lblVenduti As modernText:
+        BorderStyle: =""
+        Font: =""
+        Text: =CountIf(colStatoStand, stato = "venduto")
+        X: =666
+        Y: =97
+        ZIndex: =6
+
+    lblSatStand As modernText:
+        BorderStyle: =""
+        Font: =""
+        Text: =Text(CountIf(colStatoStand, stato = "venduto") / CountRows(colStatoStand) * 100, "[$-en-US]0.0", "it-IT") & "%"
+        X: =892
+        Y: =97
+        ZIndex: =7
+
+    lblSatMq As modernText:
+        BorderStyle: =""
+        Font: =""
+        Text: =Text(Sum(Filter(colStatoStand, stato = "venduto"), mq) / Sum(colStatoStand, mq) * 100, "[$-en-US]0.0", "it-IT") & "%"
+        X: =1120
+        Y: =97
+        ZIndex: =8
+
+    drpPadiglione As modernDropdown:
+        Appearance: =Appearance.FilledDarker
+        BorderStyle: =""
+        Font: =""
+        ItemDisplayText: =ThisItem.Value
+        Items: =["Tutti","P1","P2","P3"]
+        OnChange: =Select(btnCalcolaStati)
+        Required: =false
+        ValidationState: =ValidationState.None
+        Width: =280
+        X: =384
+        Y: =33
+        ZIndex: =9
+
+    drpStato As modernDropdown:
+        Appearance: =Appearance.FilledDarker
+        BorderStyle: =""
+        Font: =""
+        ItemDisplayText: =ThisItem.Value
+        Items: =["libero", "opzionato", "in_prelazione", "venduto"]
+        OnChange: =Select(btnCalcolaStati)
+        Required: =false
+        ValidationState: =ValidationState.None
+        Width: =280
+        X: =719
+        Y: =33
+        ZIndex: =10
+
+    drpPosizione As modernDropdown:
+        Appearance: =Appearance.FilledDarker
+        BorderStyle: =""
+        Font: =""
+        ItemDisplayText: =ThisItem.Value
+        Items: =["Tutte", "linea", "angolo", "penisola", "isola"]
+        OnChange: =Select(btnCalcolaStati)
+        Required: =false
+        ValidationState: =ValidationState.None
+        Width: =280
+        X: =1055
+        Y: =33
+        ZIndex: =11
+
+    txtCerca As modernTextInput:
+        Appearance: =Appearance.FilledDarker
+        Placeholder: ="Cerca"
+        TriggerOutput: =TriggerOutput.Keypress
+        ValidationState: =ValidationState.None
+        X: =40
+        Y: =151
+        ZIndex: =12
+
+    "galStand As gallery.'BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0'":
+        BorderColor: =App.Theme.Colors.Darker40
+        DelayItemLoading: =true
+        Items: |-
+            =SortByColumns(
+              Filter(colStatoStand,
+                (drpPadiglione.Selected.Value = "Tutti" || codice_padiglione = drpPadiglione.Selected.Value) &&
+                (drpStato.Selected.Value = "Tutti"      || stato = drpStato.Selected.Value) &&
+                (drpPosizione.Selected.Value = "Tutte"  || posizione = drpPosizione.Selected.Value) &&
+                (IsBlank(txtCerca.Text) || StartsWith(codice_stand, Upper(txtCerca.Text)))),
+              "codice_stand", SortOrder.Ascending)
+        Layout: =Layout.Vertical
+        LoadingSpinner: =LoadingSpinner.Data
+        OnSelect: =galStand.Selected
+        TemplateFill: =If(ThisItem.IsSelected, RGBA(0, 120, 212, 0.1), Color.Transparent)
+        TemplatePadding: =0
+        TemplateSize: =278
+        Width: =Parent.Width * 0.6 - 30
+        Y: =193
+        ZIndex: =13
+
+        Image1 As image:
+            BorderColor: =App.Theme.Colors.Darker40
+            DisabledBorderColor: =RGBA(166, 166, 166, 1)
+            DisabledFill: =RGBA(244, 244, 244, 1)
+            Height: =72
+            OnSelect: =Select(Parent)
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            Width: =72
+            X: =16
+            Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
+            ZIndex: =2
+
+        Subtitle1 As label:
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Fill: |-
+                =Switch(galStand.Selected.stato,
+                         "libero",        ColorValue("#2E7D32"),
+                         "opzionato",     ColorValue("#F9A825"),
+                         "in_prelazione", ColorValue("#0277BD"),
+                         "venduto",       ColorValue("#616161"))
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =12
+            Text: =ThisItem.stato
+            VerticalAlign: =VerticalAlign.Top
+            Width: =lblpadiglione.Width
+            X: =99
+            Y: =185
+            ZIndex: =3
+
+        NextArrow1 As icon.ChevronRight:
+            AccessibleLabel: =Self.Tooltip
+            Color: =RGBA(166, 166, 166, 1)
+            Height: =50
+            Icon: =Icon.ChevronRight
+            OnSelect: =Select(Parent)
+            PaddingBottom: =16
+            PaddingLeft: =16
+            PaddingRight: =16
+            PaddingTop: =16
+            Tooltip: ="Visualizza dettagli elementi"
+            Width: =50
+            X: =Parent.TemplateWidth - Self.Width - 12
+            Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
+            ZIndex: =4
+
+        Separator1 As rectangle:
+            BorderColor: =App.Theme.Colors.Darker40
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =8
+            OnSelect: =Select(Parent)
+            Width: =Parent.TemplateWidth
+            Y: =Parent.TemplateHeight - Self.Height
+            ZIndex: =5
+
+        Rectangle1 As rectangle:
+            BorderColor: =App.Theme.Colors.Darker40
+            Fill: =App.Theme.Colors.Darker30
+            Height: =Parent.TemplateHeight - Separator1.Height
+            OnSelect: =Select(Parent)
+            Visible: =ThisItem.IsSelected
+            Width: =4
+            ZIndex: =6
+
+        lblpadiglione As label:
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: =ThisItem.codice_padiglione
+            VerticalAlign: =VerticalAlign.Top
+            Width: =Parent.TemplateWidth - 173
+            X: =99
+            Y: =62
+            ZIndex: =8
+
+        lblcodicestand As label:
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: =ThisItem.codice_stand
+            VerticalAlign: =VerticalAlign.Top
+            Width: =Parent.TemplateWidth - 173
+            X: =99
+            Y: =29
+            ZIndex: =9
+
+        lblmq As label:
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =12
+            Text: =ThisItem.mq & " mq"
+            VerticalAlign: =VerticalAlign.Top
+            Width: =lblpadiglione.Width
+            X: =99
+            Y: =95
+            ZIndex: =10
+
+        lblprezzolistino As label:
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =12
+            Text: =ThisItem.prezzo_listino & " €"
+            VerticalAlign: =VerticalAlign.Top
+            Width: =lblpadiglione.Width
+            X: =99
+            Y: =123
+            ZIndex: =11
+
+        lblposizione As label:
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =12
+            Text: =ThisItem.posizione
+            VerticalAlign: =VerticalAlign.Top
+            Width: =lblpadiglione.Width
+            X: =99
+            Y: =156
+            ZIndex: =12
+
+    conDettaglio As groupContainer.verticalAutoLayoutContainer:
+        BorderThickness: =1
+        DropShadow: =DropShadow.Light
+        Fill: =Color.LightGray
+        Height: =galStand.Height
+        LayoutAlignItems: =LayoutAlignItems.Center
+        LayoutDirection: =LayoutDirection.Vertical
+        LayoutGap: =8
+        LayoutGridColumnMinWidth: =0
+        LayoutGridColumns: =6
+        LayoutGridRowMinHeight: =0
+        LayoutGridRows: =6
+        LayoutMode: =LayoutMode.Auto
+        PaddingBottom: =16
+        PaddingLeft: =16
+        PaddingRight: =16
+        PaddingTop: =16
+        RadiusBottomLeft: =4
+        RadiusBottomRight: =4
+        RadiusTopLeft: =4
+        RadiusTopRight: =4
+        Visible: =!IsBlank(galStand.Selected)
+        Width: =Parent.Width - Self.X - 20
+        X: =galStand.X + galStand.Width + 20
+        Y: =galStand.Y
+        ZIndex: =14
+
+        lblDetTitolo As label:
+            AutoHeight: =true
+            BorderColor: =App.Theme.Colors.Darker40
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            Size: =20
+            Text: ="Stand " & galStand.Selected.codice_stand
+            ZIndex: =1
+
+        lblDetStato As label:
+            AutoHeight: =true
+            BorderColor: =App.Theme.Colors.Darker40
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Fill: |-
+                =Switch(galStand.Selected.stato,
+                         "libero",        ColorValue("#2E7D32"),
+                         "opzionato",     ColorValue("#F9A825"),
+                         "in_prelazione", ColorValue("#0277BD"),
+                         "venduto",       ColorValue("#616161"))
+            Font: =App.Theme.Font
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            Size: =13
+            Text: =Upper(Substitute(galStand.Selected.stato, "_", " "))
+            ZIndex: =2
+
+        lblDetDati As label:
+            AutoHeight: =true
+            BorderColor: =App.Theme.Colors.Darker40
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            Size: =13
+            Text: |-
+                ="Padiglione: " & galStand.Selected.codice_padiglione & Char(10) &
+                "Superficie: " & galStand.Selected.mq & " m²" & Char(10) &
+                "Posizione: " & galStand.Selected.posizione & Char(10) &
+                "Prezzo di listino: " &
+                  If(IsBlank(galStand.Selected.prezzo_listino),
+                     "non disponibile",
+                     Text(galStand.Selected.prezzo_listino, "[$-en-US]#,##0.00", "it-IT") & " €") & If(!IsBlank(galStand.Selected.imponibile_contratto),
+                     Char(10) & "Imponibile del contratto: " &
+                     Text(galStand.Selected.imponibile_contratto, "[$-en-US]#,##0.00", "it-IT") & " €",
+                     "")
+            ZIndex: =3
+
+        lblDetEspositore As label:
+            AutoHeight: =true
+            BorderColor: =App.Theme.Colors.Darker40
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            Size: =13
+            Text: |-
+                =If(IsBlank(galStand.Selected.id_espositore_rif),
+                   "Nessun espositore collegato",
+                   Switch(galStand.Selected.stato,
+                     "venduto",       "Venduto a: ",
+                     "opzionato",     "Opzionato da: ",
+                     "in_prelazione", "Riservato a: ") &
+                   LookUp('arcade.espositore',
+                     id_espositore = galStand.Selected.id_espositore_rif).ragione_sociale)
+            ZIndex: =4
+
+        lblDetRiferimento As label:
+            AutoHeight: =true
+            BorderColor: =App.Theme.Colors.Darker40
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            Size: =13
+            Text: |-
+                =If(!IsBlank(galStand.Selected.id_contratto), "Contratto " & galStand.Selected.id_contratto,
+                   !IsBlank(galStand.Selected.id_preventivo), "Preventivo n. " & galStand.Selected.id_preventivo,
+                   "")
+            ZIndex: =5
+
+        btnNuovoPreventivo As modernButton:
+            DisplayMode: |-
+                =If(
+                  drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione &&
+                  Today() <= ChiusuraVendite &&
+                  galStand.Selected.stato in ["libero", "in_prelazione"],
+                  DisplayMode.Edit, DisplayMode.Disabled)
+            Height: =40
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            OnSelect: |-
+                =Set(gblStand, galStand.Selected);
+                           Set(gblIdPreventivo, Blank());   // nuovo preventivo
+                           Set(gblIdPreventivo, If(false, 0));
+                           Navigate(scrPreventivo)
+            Text: ="Nuovo Preventivo"
+            ZIndex: =6
+

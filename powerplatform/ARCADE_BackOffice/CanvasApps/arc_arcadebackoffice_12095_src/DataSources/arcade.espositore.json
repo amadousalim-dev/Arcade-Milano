@@ -1,0 +1,25 @@
+[
+  {
+    "ApiId": "/providers/microsoft.powerapps/apis/shared_postgresql",
+    "CdpRevision": {
+      "BaseUrl": "/",
+      "LastChangedTimeString": "2026-10-21T20:07:13.0100000Z",
+      "RevisionNumber": 1
+    },
+    "ConnectedDataSourceInfoNameMapping": {
+      "citta": "citta",
+      "email_referente": "email_referente",
+      "id_espositore": "id_espositore",
+      "partita_iva": "partita_iva",
+      "ragione_sociale": "ragione_sociale",
+      "referente": "referente",
+      "settore": "settore"
+    },
+    "DatasetName": "default",
+    "EncodeDataset": true,
+    "IsSampleData": false,
+    "IsWritable": true,
+    "Name": "arcade.espositore",
+    "Type": "ConnectedDataSourceInfo"
+  }
+]

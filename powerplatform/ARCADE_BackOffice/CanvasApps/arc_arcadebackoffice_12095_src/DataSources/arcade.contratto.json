@@ -1,0 +1,34 @@
+[
+  {
+    "ApiId": "/providers/microsoft.powerapps/apis/shared_postgresql",
+    "CdpRevision": {
+      "BaseUrl": "/",
+      "LastChangedTimeString": "2026-10-21T20:07:13.0100000Z",
+      "RevisionNumber": 1
+    },
+    "ConnectedDataSourceInfoNameMapping": {
+      "aliquota_iva": "aliquota_iva",
+      "codice_stand": "codice_stand",
+      "data_firma": "data_firma",
+      "deroga_allestimento_da": "deroga_allestimento_da",
+      "deroga_allestimento_il": "deroga_allestimento_il",
+      "disdetto_il": "disdetto_il",
+      "id_contratto": "id_contratto",
+      "id_edizione": "id_edizione",
+      "id_espositore": "id_espositore",
+      "id_preventivo": "id_preventivo",
+      "imponibile_eur": "imponibile_eur",
+      "imponibile_listino_eur": "imponibile_listino_eur",
+      "metodo_abbinamento": "metodo_abbinamento",
+      "rinnovo": "rinnovo",
+      "sconto_pct": "sconto_pct",
+      "stato": "stato"
+    },
+    "DatasetName": "default",
+    "EncodeDataset": true,
+    "IsSampleData": false,
+    "IsWritable": true,
+    "Name": "arcade.contratto",
+    "Type": "ConnectedDataSourceInfo"
+  }
+]

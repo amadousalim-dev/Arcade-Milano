@@ -1,0 +1,23 @@
+[
+  {
+    "ApiId": "/providers/microsoft.powerapps/apis/shared_postgresql",
+    "CdpRevision": {
+      "BaseUrl": "/",
+      "LastChangedTimeString": "2026-10-21T20:07:13.0100000Z",
+      "RevisionNumber": 1
+    },
+    "ConnectedDataSourceInfoNameMapping": {
+      "data_fine": "data_fine",
+      "data_inizio": "data_inizio",
+      "id_edizione": "id_edizione",
+      "nome": "nome",
+      "scadenza_prelazione": "scadenza_prelazione"
+    },
+    "DatasetName": "default",
+    "EncodeDataset": true,
+    "IsSampleData": false,
+    "IsWritable": true,
+    "Name": "arcade.edizione",
+    "Type": "ConnectedDataSourceInfo"
+  }
+]

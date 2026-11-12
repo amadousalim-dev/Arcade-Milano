@@ -1,0 +1,7 @@
+scrPreventivo As screen:
+    CopilotContext: |-
+        ={ ScreenName: Self.Name }
+    CopilotPromptSuggestions: =[]
+    Fill: =Color.White
+    LoadingSpinnerColor: =App.Theme.Colors.Primary
+

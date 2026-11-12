@@ -33,3 +33,11 @@ cache.abf
 # Sistema operativo
 .DS_Store
 Thumbs.db
+
+# Power Platform: si versionano i sorgenti, non i binari
+powerplatform/**/*.msapp
+powerplatform/**/Connections/
+
+# Power Platform: si versionano i sorgenti, non i binari
+powerplatform/**/*.msapp
+powerplatform/**/Connections/
