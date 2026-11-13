@@ -22,4 +22,8 @@ App:
       ScadenzaSaldo = DateAdd(EdizioneSel.data_inizio, -30, TimeUnit.Days);
       // TEMPORANEO finché non esiste la colonna edizione.chiusura_vendite
       ChiusuraVendite = DateAdd(EdizioneSel.data_inizio, -15, TimeUnit.Days);
+    OnStart: |-
+      =ClearCollect(colEspositori, Sort('arcade.espositore', ragione_sociale));
+      ClearCollect(colEdizioni, Sort('arcade.edizione', id_edizione, SortOrder.Descending))
+    StartScreen: =scrStand
     Theme: =PowerAppsTheme
