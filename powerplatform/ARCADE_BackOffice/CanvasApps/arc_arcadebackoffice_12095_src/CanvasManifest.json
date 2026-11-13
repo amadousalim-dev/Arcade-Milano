@@ -116,7 +116,7 @@
     "FileID": "94264325-6c0f-46c4-aa1e-1e067b650c0d",
     "Id": "94264325-6c0f-46c4-aa1e-1e067b650c0d",
     "LocalDatabaseReferences": "",
-    "ManualOfflineProfileId": null,
+    "ManualOfflineProfileId": "",
     "Name": "ARCADE Back-office",
     "OriginatingVersion": "1.349",
     "ParserErrorCount": 1,
@@ -136,6 +136,8 @@
   "ScreenOrder": [
     "scrHome",
     "scrStand",
-    "scrPreventivo"
+    "scrPreventivo",
+    "scrContratto",
+    "scrPreventivi"
   ]
 }

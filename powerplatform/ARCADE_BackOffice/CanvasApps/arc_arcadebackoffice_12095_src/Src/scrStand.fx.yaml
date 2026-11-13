@@ -4,23 +4,32 @@ scrStand As screen:
     CopilotPromptSuggestions: =[]
     Fill: =Color.White
     LoadingSpinnerColor: =App.Theme.Colors.Primary
-    OnVisible: =Select(btnCalcolaStati)
+    OnVisible: |-
+        =If(IsEmpty(colEdizioni),
+           ClearCollect(colEdizioni, Sort('arcade.edizione', id_edizione, SortOrder.Descending)));
+        Select(btnCalcolaStati)
 
     drpEdizione As modernDropdown:
+        AccessibleLabel: ="1"
         Appearance: =Appearance.FilledDarker
-        Default: =EdizioneSel
+        Default: =LookUp(colEdizioni, id_edizione = EdizioneSel.id_edizione)
         ItemDisplayText: =ThisItem.nome
-        Items: =Sort('arcade.edizione', id_edizione, SortOrder.Descending)
+        Items: =colEdizioni
         OnChange: =Select(btnCalcolaStati)
         ValidationState: =ValidationState.None
         Width: =280
-        X: =30
-        Y: =33
+        X: =64
+        Y: =12
         ZIndex: =1
 
     btnCalcolaStati As modernButton:
+        AccessibleLabel: ="1"
         OnSelect: |-
-            =With({ ed: drpEdizione.Selected },
+            =// edizione da usare: quella del menu, o il 2026 se il menu non è ancora pronto
+            Set(gblEdVista, If(IsBlank(drpEdizione.Selected),
+                               LookUp(colEdizioni, id_edizione = EdizioneSel.id_edizione),
+                               drpEdizione.Selected));
+            With({ ed: gblEdVista },
               Refresh('arcade.contratto'); Refresh('arcade.preventivo');
               // stand che esistono in quell'edizione (attivo_dal <= anno)
               ClearCollect(colStandEd, Filter('arcade.stand', attivo_dal <= ed.id_edizione));
@@ -43,7 +52,7 @@ scrStand As screen:
                   c:    LookUp(colContrattiAttivi,  codice_stand = s.codice_stand),
                   p:    LookUp(colPreventiviAperti, codice_stand = s.codice_stand),
                   prec: LookUp(colVendutiPrec,      codice_stand = s.codice_stand),
-                  ed:   drpEdizione.Selected,
+                  ed:   gblEdVista,
                   prezzoMq: LookUp(colListino, codice_voce = "SPAZIO-" & s.codice_padiglione).prezzo_unitario,
                   pctMagg:  Coalesce(LookUp(colListino,
                               codice_voce = "MAGG-" & Upper(s.posizione)).prezzo_unitario, 0)
@@ -72,54 +81,69 @@ scrStand As screen:
         ZIndex: =2
 
     lblLiberi As modernText:
+        AccessibleLabel: ="1"
         Text: =CountIf(colStatoStand, stato = "libero")
-        X: =53
-        Y: =97
+        X: =64
+        Y: =75
         ZIndex: =3
 
     lblOpzionati As modernText:
+        AccessibleLabel: ="1"
         BorderStyle: =""
         Font: =""
         Text: =CountIf(colStatoStand, stato = "opzionato")
-        X: =224
-        Y: =97
+        X: =235
+        Y: =75
         ZIndex: =4
 
     lblPrelaz As modernText:
+        AccessibleLabel: ="1"
         BorderStyle: =""
         Font: =""
         Text: =CountIf(colStatoStand, stato = "in_prelazione")
-        X: =408
-        Y: =97
+        X: =419
+        Y: =75
         ZIndex: =5
 
     lblVenduti As modernText:
+        AccessibleLabel: ="1"
         BorderStyle: =""
         Font: =""
         Text: =CountIf(colStatoStand, stato = "venduto")
-        X: =666
-        Y: =97
+        X: =677
+        Y: =75
         ZIndex: =6
 
     lblSatStand As modernText:
+        AccessibleLabel: ="1"
         BorderStyle: =""
         Font: =""
-        Text: =Text(CountIf(colStatoStand, stato = "venduto") / CountRows(colStatoStand) * 100, "[$-en-US]0.0", "it-IT") & "%"
-        X: =892
-        Y: =97
+        Text: |-
+            =If(IsEmpty(colStatoStand), "—",
+                 Text(CountIf(colStatoStand, stato = "venduto") / CountRows(colStatoStand) * 100,
+                      "[$-en-US]0.0", "it-IT") & "%")
+        X: =903
+        Y: =75
         ZIndex: =7
 
     lblSatMq As modernText:
+        AccessibleLabel: ="1"
         BorderStyle: =""
         Font: =""
-        Text: =Text(Sum(Filter(colStatoStand, stato = "venduto"), mq) / Sum(colStatoStand, mq) * 100, "[$-en-US]0.0", "it-IT") & "%"
-        X: =1120
-        Y: =97
+        Text: |-
+            =If(IsEmpty(colStatoStand), "—",
+                 Text(Sum(Filter(colStatoStand, stato = "venduto"), mq) / Sum(colStatoStand, mq) * 100,
+                      "[$-en-US]0.0", "it-IT") & "%")
+        X: =1131
+        Y: =75
         ZIndex: =8
 
     drpPadiglione As modernDropdown:
+        AccessibleLabel: ="1"
         Appearance: =Appearance.FilledDarker
         BorderStyle: =""
+        Default: |-
+            ={Value: "Tutti"}
         Font: =""
         ItemDisplayText: =ThisItem.Value
         Items: =["Tutti","P1","P2","P3"]
@@ -127,13 +151,16 @@ scrStand As screen:
         Required: =false
         ValidationState: =ValidationState.None
         Width: =280
-        X: =384
-        Y: =33
+        X: =382
+        Y: =12
         ZIndex: =9
 
     drpStato As modernDropdown:
+        AccessibleLabel: ="1"
         Appearance: =Appearance.FilledDarker
         BorderStyle: =""
+        Default: |-
+            ={Value: "libero"}
         Font: =""
         ItemDisplayText: =ThisItem.Value
         Items: =["libero", "opzionato", "in_prelazione", "venduto"]
@@ -141,13 +168,16 @@ scrStand As screen:
         Required: =false
         ValidationState: =ValidationState.None
         Width: =280
-        X: =719
-        Y: =33
+        X: =717
+        Y: =12
         ZIndex: =10
 
     drpPosizione As modernDropdown:
+        AccessibleLabel: ="1"
         Appearance: =Appearance.FilledDarker
         BorderStyle: =""
+        Default: |-
+            ={Value: "Tutte"}
         Font: =""
         ItemDisplayText: =ThisItem.Value
         Items: =["Tutte", "linea", "angolo", "penisola", "isola"]
@@ -155,20 +185,22 @@ scrStand As screen:
         Required: =false
         ValidationState: =ValidationState.None
         Width: =280
-        X: =1055
-        Y: =33
+        X: =1053
+        Y: =12
         ZIndex: =11
 
     txtCerca As modernTextInput:
+        AccessibleLabel: ="1"
         Appearance: =Appearance.FilledDarker
         Placeholder: ="Cerca"
         TriggerOutput: =TriggerOutput.Keypress
         ValidationState: =ValidationState.None
-        X: =40
-        Y: =151
+        X: =53
+        Y: =134
         ZIndex: =12
 
     "galStand As gallery.'BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0'":
+        AccessibleLabel: ="1"
         BorderColor: =App.Theme.Colors.Darker40
         DelayItemLoading: =true
         Items: |-
@@ -182,6 +214,7 @@ scrStand As screen:
         Layout: =Layout.Vertical
         LoadingSpinner: =LoadingSpinner.Data
         OnSelect: =galStand.Selected
+        TabIndex: =1
         TemplateFill: =If(ThisItem.IsSelected, RGBA(0, 120, 212, 0.1), Color.Transparent)
         TemplatePadding: =0
         TemplateSize: =278
@@ -459,8 +492,7 @@ scrStand As screen:
                      "venduto",       "Venduto a: ",
                      "opzionato",     "Opzionato da: ",
                      "in_prelazione", "Riservato a: ") &
-                   LookUp('arcade.espositore',
-                     id_espositore = galStand.Selected.id_espositore_rif).ragione_sociale)
+                   LookUp(colEspositori, id_espositore = galStand.Selected.id_espositore_rif).ragione_sociale)
             ZIndex: =4
 
         lblDetRiferimento As label:
@@ -481,6 +513,7 @@ scrStand As screen:
             ZIndex: =5
 
         btnNuovoPreventivo As modernButton:
+            AccessibleLabel: ="1"
             DisplayMode: |-
                 =If(
                   drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione &&
@@ -499,4 +532,53 @@ scrStand As screen:
                            Navigate(scrPreventivo)
             Text: ="Nuovo Preventivo"
             ZIndex: =6
+
+        btnNuovoPreventivo_1 As modernButton:
+            AccessibleLabel: ="1"
+            BorderStyle: =""
+            Font: =""
+            Height: =40
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            OnSelect: |-
+                =If(!IsBlank(galStand.Selected.id_contratto),
+                     // stand venduto: si apre il contratto
+                     Set(gblIdContratto, galStand.Selected.id_contratto);
+                     Navigate(scrContratto),
+                     // stand opzionato: si apre il preventivo che lo blocca
+                     Set(gblStand, galStand.Selected);
+                     Set(gblIdPreventivo, galStand.Selected.id_preventivo);
+                     Navigate(scrPreventivo))
+            Size: =0
+            Text: =If(!IsBlank(galStand.Selected.id_contratto), "Apri contratto", "Apri preventivo")
+            Visible: =!IsBlank(galStand.Selected.id_contratto) || !IsBlank(galStand.Selected.id_preventivo)
+            ZIndex: =7
+
+    btnPreventivi As modernButton:
+        AccessibleLabel: ="1"
+        Height: =43
+        OnSelect: =Navigate(scrPreventivi)
+        Text: ="Preventivi"
+        Visible: =drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
+        Width: =145
+        X: =543
+        Y: =138
+        ZIndex: =15
+
+    btnIndietroContr_2 As icon:
+        AccessibleLabel: ="1"
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =App.Theme.Colors.Darker30
+        DisabledBorderColor: =RGBA(166, 166, 166, 1)
+        DisabledColor: =RGBA(244, 244, 244, 1)
+        Height: =40
+        Icon: =Icon.BackArrow
+        OnSelect: =Navigate(scrStand)
+        TabIndex: =1
+        Width: =40
+        X: =13
+        Y: =4
+        ZIndex: =16
 
