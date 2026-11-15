@@ -4,4 +4,821 @@ scrPreventivo As screen:
     CopilotPromptSuggestions: =[]
     Fill: =Color.White
     LoadingSpinnerColor: =App.Theme.Colors.Primary
+    OnVisible: |-
+        =ClearCollect(colListinoVend, Filter('arcade.listino', id_edizione = EdizioneSel.id_edizione));
+        If(IsBlank(gblIdPreventivo),
+          // NUOVO: righe automatiche dal listino
+          With({
+            area: LookUp(colListinoVend, codice_voce = "SPAZIO-" & gblStand.codice_padiglione),
+            magg: LookUp(colListinoVend, codice_voce = "MAGG-" & Upper(gblStand.posizione))
+          },
+            ClearCollect(colRighe, {
+              riga: 1, codice_voce: area.codice_voce,
+              descrizione: "Area espositiva " & gblStand.codice_stand,
+              quantita: gblStand.mq,                       // quantità = m² dello stand
+              prezzo_unitario: area.prezzo_unitario,
+              importo_eur: Round(gblStand.mq * area.prezzo_unitario, 2),
+              automatica: true });
+            // stand in linea: nessuna maggiorazione
+            If(!IsBlank(magg),
+              With({ imp: Round(First(colRighe).importo_eur * magg.prezzo_unitario, 2) },
+                Collect(colRighe, {
+                  riga: 2, codice_voce: magg.codice_voce, descrizione: magg.descrizione,
+                  quantita: 1, prezzo_unitario: imp,       // importo calcolato, non la %
+                  importo_eur: imp, automatica: true })))
+          );
+          Reset(txtSconto); Reset(cmbEspositore);
+          Set(gblStato, "bozza"),
+          // ESISTENTE: righe e testata dal database
+          With({ p: LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo) },
+            Set(gblStato, p.stato);
+            ClearCollect(colRighe,
+              AddColumns(Filter('arcade.riga_preventivo', id_preventivo = gblIdPreventivo),
+                automatica, StartsWith(codice_voce, "SPAZIO") || StartsWith(codice_voce, "MAGG"))))
+        ); Set(gblFedelta,
+          Today() <= EdizioneSel.scadenza_prelazione &&
+          !IsBlank(LookUp('arcade.contratto', id_edizione = EdizioneSel.id_edizione - 1 &&
+             id_espositore = cmbEspositore.Selected.id_espositore && stato = "attivo")));
+        Select(btnRicalcola)
+
+    btnRicalcola As modernButton:
+        AccessibleLabel: ="1"
+        OnSelect: |-
+            =With({ sc: Value(txtSconto.Text) / 100, listino: Sum(colRighe, importo_eur) },
+              With({ imp: Round(listino * (1 - sc), 2) },
+                Set(gblTot, {
+                  listino: listino,
+                  sconto: sc,
+                  imponibile: imp,
+                  iva: Round(imp * AliquotaIvaStd, 2),        // l'IVA si mostra, non si salva
+                  totale: imp + Round(imp * AliquotaIvaStd, 2),
+                  valido: sc >= 0 && sc <= ScontoMassimo,
+                  serveApprovazione: sc > SogliaApprovazione })))
+        Text: ="Pulsante"
+        Visible: =false
+        X: =476
+        Y: =496
+        ZIndex: =1
+
+    btnIndietro As icon.Undo:
+        AccessibleLabel: ="1"
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =App.Theme.Colors.Darker30
+        DisabledBorderColor: =RGBA(166, 166, 166, 1)
+        DisabledColor: =RGBA(244, 244, 244, 1)
+        Height: =61
+        Icon: =Icon.BackArrow
+        OnSelect: =Back()
+        TabIndex: =1
+        Width: =53
+        X: =34
+        Y: =3
+        ZIndex: =2
+
+    lblTitoloPrev As label:
+        AutoHeight: =true
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =42
+        Size: =21
+        Text: |-
+            =If(IsBlank(gblIdPreventivo), "Nuovo preventivo", "Preventivo n. " & gblIdPreventivo) &
+            " – stand " & gblStand.codice_stand
+        Width: =650
+        X: =381
+        Y: =3
+        ZIndex: =3
+
+    lblStatoPrev As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Size: =13
+        Text: =Upper(Substitute(gblStato, "_", " "))
+        X: =1055
+        Y: =5
+        ZIndex: =4
+
+    conTestata As groupContainer.verticalAutoLayoutContainer:
+        DropShadow: =DropShadow.Light
+        Height: =632
+        LayoutAlignItems: =LayoutAlignItems.Center
+        LayoutDirection: =LayoutDirection.Vertical
+        LayoutGap: =10
+        LayoutGridColumnMinWidth: =0
+        LayoutGridColumns: =6
+        LayoutGridRowMinHeight: =0
+        LayoutGridRows: =6
+        LayoutMode: =LayoutMode.Auto
+        PaddingBottom: =8
+        PaddingLeft: =8
+        PaddingRight: =8
+        PaddingTop: =8
+        RadiusBottomLeft: =4
+        RadiusBottomRight: =4
+        RadiusTopLeft: =4
+        RadiusTopRight: =4
+        Width: =476
+        Y: =75
+        ZIndex: =6
+
+        cmbEspositore As combobox:
+            AccessibleLabel: ="1"
+            BorderColor: =App.Theme.Colors.Darker40
+            ChevronBackground: =App.Theme.Colors.Primary
+            ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
+            ChevronDisabledFill: =RGBA(244, 244, 244, 1)
+            ChevronFill: =App.Theme.Colors.PrimaryForeground
+            ChevronHoverBackground: =App.Theme.Colors.Darker10
+            ChevronHoverFill: =App.Theme.Colors.PrimaryForeground
+            DefaultSelectedItems: |-
+                =If(gblStand.stato = "in_prelazione",
+                     // stand in prelazione: solo l'espositore dell'anno prima
+                     Filter('arcade.espositore', id_espositore = gblStand.id_espositore_rif),
+                     !IsBlank(gblIdPreventivo),
+                     // preventivo esistente: l'espositore salvato
+                     Filter('arcade.espositore', id_espositore =
+                       LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).id_espositore))
+            DisabledBorderColor: =RGBA(166, 166, 166, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            DisabledFill: =RGBA(244, 244, 244, 1)
+            DisplayFields: =["ragione_sociale"]
+            DisplayMode: |-
+                =If(gblStato = "bozza" && gblStand.stato <> "in_prelazione",
+                                 DisplayMode.Edit, DisplayMode.View)
+            Font: =App.Theme.Font
+            HoverColor: =RGBA(0, 0, 0, 1)
+            HoverFill: =App.Theme.Colors.Lighter70
+            InputTextPlaceholder: ="Seleziona espositore"
+            Items: =colEspositori
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            OnChange: =Select(btnRicalcola)
+            PressedColor: =App.Theme.Colors.PrimaryForeground
+            PressedFill: =App.Theme.Colors.Darker30
+            SearchFields: =["ragione_sociale"]
+            SearchItems: =Search(Sort('arcade.espositore',ragione_sociale),cmbEspositore.SearchText,ragione_sociale)
+            SelectionColor: =App.Theme.Colors.PrimaryForeground
+            SelectionFill: =App.Theme.Colors.Primary
+            SelectMultiple: =false
+            Size: =13
+            ZIndex: =2
+
+        lblStandInfo As label:
+            BorderColor: =App.Theme.Colors.Darker40
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            Size: =13
+            Text: |-
+                ="Stand " & gblStand.codice_stand & " · " & gblStand.codice_padiglione & Char(10) &
+                gblStand.mq & " m² · " & gblStand.posizione
+            Width: =300
+            ZIndex: =3
+
+        txtSconto As modernTextInput:
+            AccessibleLabel: ="1"
+            Appearance: =Appearance.FilledDarker
+            Default: |-
+                =If(IsBlank(gblIdPreventivo), "0",
+                              Text(LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).sconto_pct * 100))
+            DisplayMode: =If(gblStato = "bozza", DisplayMode.Edit, DisplayMode.View)
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            OnChange: =Select(btnRicalcola)
+            Placeholder: ="Sconto in %"
+            TriggerOutput: =TriggerOutput.Keypress
+            ValidationState: =ValidationState.None
+            ZIndex: =4
+
+        lblAvvisoSconto As label:
+            BorderColor: =App.Theme.Colors.Darker40
+            Color: =If(!gblTot.valido, Color.Red, Color.DarkOrange)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            Size: =13
+            Text: |-
+                =If(!gblTot.valido, "Oltre il 20% non è possibile",
+                           gblTot.serveApprovazione, "Oltre il 10%: il preventivo andrà al direttore commerciale",
+                           "")
+            Width: =300
+            ZIndex: =5
+
+        lblFedelta As label:
+            AutoHeight: =true
+            BorderColor: =App.Theme.Colors.Darker40
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            Size: =13
+            Text: |-
+                ="Rinnovo entro la prelazione: spetta lo sconto fedeltà del 5%"
+            Visible: |
+                =gblFedelta
+            Width: =200
+            ZIndex: =6
+
+    conRighe As groupContainer.horizontalAutoLayoutContainer:
+        DropShadow: =DropShadow.Light
+        Height: =609
+        LayoutAlignItems: =LayoutAlignItems.Center
+        LayoutDirection: =LayoutDirection.Vertical
+        LayoutGridColumnMinWidth: =0
+        LayoutGridColumns: =6
+        LayoutGridRowMinHeight: =0
+        LayoutGridRows: =6
+        LayoutMode: =LayoutMode.Auto
+        PaddingBottom: =8
+        PaddingLeft: =8
+        PaddingRight: =8
+        PaddingTop: =8
+        RadiusBottomLeft: =4
+        RadiusBottomRight: =4
+        RadiusTopLeft: =4
+        RadiusTopRight: =4
+        Width: =890
+        X: =476
+        Y: =98
+        ZIndex: =7
+
+        "Gallery1 As gallery.'BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0'":
+            AccessibleLabel: ="1"
+            BorderColor: =App.Theme.Colors.Darker40
+            DelayItemLoading: =true
+            Items: =Sort(colRighe, riga)
+            Layout: =Layout.Vertical
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            LoadingSpinner: =LoadingSpinner.Data
+            TabIndex: =1
+            TemplatePadding: =0
+            TemplateSize: =120
+            ZIndex: =1
+
+            lblRigaDescr As label:
+                Color: =RGBA(50, 49, 48, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                Height: =Self.Size * 1.8
+                OnSelect: =Select(Parent)
+                PaddingBottom: =0
+                PaddingLeft: =0
+                PaddingRight: =0
+                PaddingTop: =0
+                Text: =ThisItem.descrizione
+                VerticalAlign: =VerticalAlign.Top
+                Width: =89
+                ZIndex: =2
+
+            NextArrow2 As icon.ChevronRight:
+                AccessibleLabel: =Self.Tooltip
+                Color: =RGBA(166, 166, 166, 1)
+                Height: =50
+                Icon: =Icon.ChevronRight
+                OnSelect: =Select(Parent)
+                PaddingBottom: =16
+                PaddingLeft: =16
+                PaddingRight: =16
+                PaddingTop: =16
+                Tooltip: ="Visualizza dettagli elementi"
+                Width: =50
+                X: =Parent.TemplateWidth - Self.Width - 12
+                Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
+                ZIndex: =4
+
+            lblRigaQta As label:
+                Align: =Align.Center
+                Color: =RGBA(50, 49, 48, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                Height: =Self.Size * 1.8
+                OnSelect: =Select(Parent)
+                PaddingBottom: =0
+                PaddingLeft: =0
+                PaddingRight: =0
+                PaddingTop: =0
+                Text: =ThisItem.quantita
+                VerticalAlign: =VerticalAlign.Top
+                Width: =48
+                X: =89
+                ZIndex: =5
+
+            lblRigaPrezzo As label:
+                Align: =Align.Center
+                Color: =RGBA(50, 49, 48, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                Height: =Self.Size * 1.8
+                OnSelect: =Select(Parent)
+                PaddingBottom: =0
+                PaddingLeft: =0
+                PaddingRight: =0
+                PaddingTop: =0
+                Text: |-
+                    =Text(ThisItem.prezzo_unitario, "[$-en-US]#,##0.00", "it-IT")
+                VerticalAlign: =VerticalAlign.Top
+                Width: =129
+                X: =137
+                ZIndex: =6
+
+            Separator2 As rectangle:
+                BorderColor: =App.Theme.Colors.Darker40
+                Fill: =RGBA(255, 255, 255, 1)
+                Height: =8
+                OnSelect: =Select(Parent)
+                Width: =Parent.TemplateWidth
+                Y: =Parent.TemplateHeight - Self.Height
+                ZIndex: =7
+
+            lblRigaPrezzo_1 As label:
+                Align: =Align.Right
+                Color: =RGBA(50, 49, 48, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                Height: =Self.Size * 1.8
+                OnSelect: =Select(Parent)
+                PaddingBottom: =0
+                PaddingLeft: =0
+                PaddingRight: =0
+                PaddingTop: =0
+                Text: |-
+                    =Text(ThisItem.importo_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
+                VerticalAlign: =VerticalAlign.Top
+                Width: =129
+                X: =266
+                ZIndex: =8
+
+            icoElimina As icon.Trash:
+                AccessibleLabel: ="1"
+                BorderColor: =App.Theme.Colors.Darker40
+                Color: =App.Theme.Colors.Darker30
+                DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                DisabledColor: =RGBA(244, 244, 244, 1)
+                Height: =20
+                Icon: =Icon.Trash
+                OnSelect: =Remove(colRighe, ThisItem); Select(btnRicalcola)
+                TabIndex: =1
+                Visible: =!ThisItem.automatica && gblStato = "bozza"
+                Width: =20
+                X: =774
+                Y: =10
+                ZIndex: =9
+
+        Container5 As groupContainer.horizontalAutoLayoutContainer:
+            DropShadow: =DropShadow.Light
+            Height: =150
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutGap: =20
+            LayoutGridColumnMinWidth: =0
+            LayoutGridColumns: =6
+            LayoutGridRowMinHeight: =0
+            LayoutGridRows: =6
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            LayoutMode: =LayoutMode.Auto
+            PaddingBottom: =8
+            PaddingLeft: =8
+            PaddingRight: =8
+            PaddingTop: =8
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            ZIndex: =2
+
+            cmbVoce As combobox:
+                AccessibleLabel: ="1"
+                BorderColor: =App.Theme.Colors.Darker40
+                ChevronBackground: =App.Theme.Colors.Primary
+                ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
+                ChevronDisabledFill: =RGBA(244, 244, 244, 1)
+                ChevronFill: =App.Theme.Colors.PrimaryForeground
+                ChevronHoverBackground: =App.Theme.Colors.Darker10
+                ChevronHoverFill: =App.Theme.Colors.PrimaryForeground
+                DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                DisabledFill: =RGBA(244, 244, 244, 1)
+                DisplayFields: =["descrizione"]
+                Font: =App.Theme.Font
+                HoverColor: =RGBA(0, 0, 0, 1)
+                HoverFill: =App.Theme.Colors.Lighter70
+                Items: =Filter(colListinoVend, tipo_voce in ["extra", "sponsorizzazione"])
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =16
+                LayoutMinWidth: =16
+                PressedColor: =App.Theme.Colors.PrimaryForeground
+                PressedFill: =App.Theme.Colors.Darker30
+                SearchFields: =["descrizione"]
+                SearchItems: =Search(Filter(colListinoVend,tipo_voce in ["extra","sponsorizzazione"]),cmbVoce.SearchText,descrizione)
+                SelectionColor: =App.Theme.Colors.PrimaryForeground
+                SelectionFill: =App.Theme.Colors.Primary
+                SelectMultiple: =false
+                Size: =13
+                ZIndex: =1
+
+            txtQuantita As modernTextInput:
+                AccessibleLabel: ="1"
+                Appearance: =Appearance.FilledDarker
+                Default: =If(cmbVoce.Selected.unita = "m²", gblStand.mq, 1)
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =16
+                LayoutMinWidth: =16
+                Placeholder: ="Immetti un testo"
+                TriggerOutput: =TriggerOutput.Keypress
+                ValidationState: =ValidationState.None
+                ZIndex: =2
+
+            btnAggiungiRiga As modernButton:
+                AccessibleLabel: ="1"
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =16
+                LayoutMinWidth: =16
+                OnSelect: |-
+                    =With({
+                      v: cmbVoce.Selected,
+                      q: Value(txtQuantita.Text),
+                      // pacchetti già venduti nei contratti attivi 2026
+                      venduti: Sum(Filter('arcade.riga_contratto',
+                                 codice_voce = cmbVoce.Selected.codice_voce &&
+                                 id_contratto in Filter('arcade.contratto',
+                                   id_edizione = EdizioneSel.id_edizione && stato = "attivo").id_contratto),
+                               quantita)
+                    },
+                      If(
+                        IsBlank(v) || q <= 0,
+                          Notify("Scegli una voce e una quantità maggiore di zero", NotificationType.Error),
+                        !IsBlank(v.codice_padiglione_vincolo) && v.codice_padiglione_vincolo <> gblStand.codice_padiglione,
+                          Notify(v.descrizione & " è riservata al padiglione " & v.codice_padiglione_vincolo, NotificationType.Error),
+                        v.tipo_voce = "sponsorizzazione" && v.quantita_disponibile - venduti < q,
+                          Notify("Sponsorizzazione esaurita", NotificationType.Error),
+                        Collect(colRighe, {
+                          riga: Max(colRighe, riga) + 1, codice_voce: v.codice_voce, descrizione: v.descrizione,
+                          quantita: q, prezzo_unitario: v.prezzo_unitario,
+                          importo_eur: Round(q * v.prezzo_unitario, 2), automatica: false });
+                        Select(btnRicalcola)
+                      )
+                    )
+                Text: ="Aggiungi Riga"
+                Width: =150
+                ZIndex: =3
+
+        Container6 As groupContainer.verticalAutoLayoutContainer:
+            DropShadow: =DropShadow.Light
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGridColumnMinWidth: =0
+            LayoutGridColumns: =6
+            LayoutGridRowMinHeight: =0
+            LayoutGridRows: =6
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            LayoutMode: =LayoutMode.Auto
+            PaddingBottom: =8
+            PaddingLeft: =8
+            PaddingRight: =8
+            PaddingTop: =8
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            ZIndex: =3
+
+            lblImpListino As label:
+                BorderColor: =App.Theme.Colors.Darker40
+                Color: =RGBA(0, 0, 0, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =16
+                LayoutMinWidth: =16
+                Size: =13
+                Text: |-
+                    =Text(gblTot.listino, "[$-en-US]#,##0.00", "it-IT") & " €"
+                X: =148
+                Y: =16
+                ZIndex: =1
+
+            lblScontoEur As label:
+                BorderColor: =App.Theme.Colors.Darker40
+                Color: =RGBA(0, 0, 0, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =16
+                LayoutMinWidth: =16
+                Size: =13
+                Text: |-
+                    ="-" & Text(gblTot.listino - gblTot.imponibile, "[$-en-US]#,##0.00", "it-IT") & " €"
+                ZIndex: =2
+
+            lblImponibile As label:
+                BorderColor: =App.Theme.Colors.Darker40
+                Color: =RGBA(0, 0, 0, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =16
+                LayoutMinWidth: =16
+                Size: =13
+                Text: |-
+                    =Text(gblTot.imponibile, "[$-en-US]#,##0.00", "it-IT") & " €"
+                ZIndex: =3
+
+            lblIva As label:
+                BorderColor: =App.Theme.Colors.Darker40
+                Color: =RGBA(0, 0, 0, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =16
+                LayoutMinWidth: =16
+                Size: =13
+                Text: |-
+                    =Text(gblTot.iva, "[$-en-US]#,##0.00", "it-IT") & " €"
+                ZIndex: =4
+
+            lblTotale As label:
+                BorderColor: =App.Theme.Colors.Darker40
+                Color: =RGBA(0, 0, 0, 1)
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =16
+                LayoutMinWidth: =16
+                Size: =13
+                Text: |-
+                    =Text(gblTot.totale, "[$-en-US]#,##0.00", "it-IT") & " €"
+                ZIndex: =5
+
+    conAzioni As groupContainer.horizontalAutoLayoutContainer:
+        DropShadow: =DropShadow.Light
+        Height: =58
+        LayoutAlignItems: =LayoutAlignItems.Center
+        LayoutGap: =60
+        LayoutGridColumnMinWidth: =0
+        LayoutGridColumns: =6
+        LayoutGridRowMinHeight: =0
+        LayoutGridRows: =6
+        LayoutJustifyContent: =LayoutJustifyContent.Center
+        LayoutMode: =LayoutMode.Auto
+        PaddingBottom: =8
+        PaddingLeft: =8
+        PaddingRight: =8
+        PaddingTop: =8
+        RadiusBottomLeft: =4
+        RadiusBottomRight: =4
+        RadiusTopLeft: =4
+        RadiusTopRight: =4
+        Width: =1366
+        Y: =707
+        ZIndex: =8
+
+        btnSalvaBozza As modernButton:
+            AccessibleLabel: ="1"
+            DisplayMode: |-
+                =If(gblStato = "bozza" && gblTot.valido && !IsBlank(cmbEspositore.Selected),
+                     DisplayMode.Edit, DisplayMode.Disabled)
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            OnSelect: |-
+                =With({
+                  nuovo: IsBlank(gblIdPreventivo),
+                     idP: Coalesce(gblIdPreventivo, Coalesce(Max('arcade.preventivo', id_preventivo), 0) + 1)
+                },
+                  IfError(
+                    // 1. testata
+                    Patch('arcade.preventivo',
+                      If(nuovo, Defaults('arcade.preventivo'), LookUp('arcade.preventivo', id_preventivo = idP)),
+                      { id_preventivo: idP,
+                        id_edizione: EdizioneSel.id_edizione,
+                        id_espositore: cmbEspositore.Selected.id_espositore,
+                        codice_stand: gblStand.codice_stand,
+                        data_creazione: Today(),
+                        imponibile_listino_eur: gblTot.listino,
+                        sconto_pct: gblTot.sconto,
+                        imponibile_eur: gblTot.imponibile,
+                        stato: "bozza",
+                        in_prelazione: gblFedelta,
+                        aliquota_iva: AliquotaIvaStd });
+                    // 2. righe: si cancellano e si riscrivono, numerate da 1
+                    RemoveIf('arcade.riga_preventivo', id_preventivo = idP);
+                    ForAll(Sequence(CountRows(colRighe)) As i,
+                      With({ r: Index(colRighe, i.Value) },
+                        Patch('arcade.riga_preventivo', Defaults('arcade.riga_preventivo'), {
+                          id_preventivo: idP, riga: i.Value, codice_voce: r.codice_voce,
+                          descrizione: r.descrizione, quantita: r.quantita,
+                          prezzo_unitario: r.prezzo_unitario, importo_eur: r.importo_eur })));
+                    Set(gblIdPreventivo, idP);
+                    Notify("Bozza salvata", NotificationType.Success),
+                
+                    // in caso di errore: prima si rimette a posto, poi si avvisa
+                    If(nuovo,
+                      RemoveIf('arcade.riga_preventivo', id_preventivo = idP);
+                      RemoveIf('arcade.preventivo', id_preventivo = idP));
+                    Notify("Salvataggio non riuscito: " & FirstError.Message, NotificationType.Error)
+                  )
+                )
+            Text: ="Salva Bozza"
+            ZIndex: =1
+
+        btnInvia As modernButton:
+            AccessibleLabel: ="1"
+            DisplayMode: |
+                =If(gblStato = "bozza" && !IsBlank(gblIdPreventivo),
+                     DisplayMode.Edit, DisplayMode.Disabled)
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            OnSelect: |-
+                =Refresh('arcade.preventivo'); Refresh('arcade.contratto');
+                With({ p: LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo) },
+                  If(
+                    // lo stand nel frattempo è stato opzionato o venduto?
+                    !IsBlank(LookUp('arcade.contratto', id_edizione = p.id_edizione &&
+                               codice_stand = p.codice_stand && stato = "attivo")) ||
+                    !IsBlank(LookUp('arcade.preventivo', id_edizione = p.id_edizione &&
+                               codice_stand = p.codice_stand && id_preventivo <> p.id_preventivo &&
+                               (stato = "in_approvazione" || (stato = "inviato" && valido_fino >= Today())))),
+                      Notify("Lo stand non è più disponibile", NotificationType.Error),
+                
+                    IfError(
+                      If(p.sconto_pct > SogliaApprovazione,
+                        // sconto oltre il 10%: va al direttore commerciale
+                        // (aggiungere in_approvazione_dal: Now() quando la colonna esiste)
+                        Patch('arcade.preventivo', p, { stato: "in_approvazione" }),
+                        // sconto fino al 10%: inviato e valido 30 giorni
+                        Patch('arcade.preventivo', p, { stato: "inviato", inviato_il: Now(),
+                          valido_fino: DateAdd(Today(), GiorniValidita, TimeUnit.Days) }));
+                      Set(gblStato, LookUp('arcade.preventivo', id_preventivo = p.id_preventivo).stato);
+                      Notify("Preventivo " & Substitute(gblStato, "_", " "), NotificationType.Success),
+                
+                      // errore: di solito l'indice univoco del database ha rifiutato
+                      Notify("Lo stand è già opzionato da un altro preventivo", NotificationType.Error)
+                    )
+                  )
+                )
+            Text: ="Invia"
+            ZIndex: =2
+
+        btnPerso As modernButton:
+            AccessibleLabel: ="1"
+            DisplayMode: =If(gblStato = "inviato", DisplayMode.Edit, DisplayMode.Disabled)
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            OnSelect: |-
+                =IfError(
+                    Patch('arcade.preventivo',
+                          LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo),
+                          { stato: "perso" });
+                    Set(gblStato, "perso");
+                    Notify("Preventivo segnato come perso: lo stand " & gblStand.codice_stand &
+                           " torna libero", NotificationType.Information),
+                
+                    Notify("Operazione non riuscita: " & FirstError.Message, NotificationType.Error)
+                )
+            Text: ="Perso"
+            ZIndex: =3
+
+        btnFirma As modernButton:
+            AccessibleLabel: ="1"
+            DisplayMode: |-
+                =If(gblStato = "inviato" && Today() <= ChiusuraVendite &&
+                     LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).valido_fino >= Today(),
+                     DisplayMode.Edit, DisplayMode.Disabled)
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            OnSelect: |-
+                =// aggiorna la copia locale dei dati prima di calcolare numeri e controlli
+                Refresh('arcade.contratto'); Refresh('arcade.riga_contratto'); Refresh('arcade.pagamento');
+                With({
+                    p: LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo),
+                    idC: "C" & EdizioneSel.id_edizione & "-" & Text(
+                           Coalesce(Max(Filter('arcade.contratto', id_edizione = EdizioneSel.id_edizione),
+                                        Value(Right(id_contratto, 4))), 0) + 1, "0000")
+                },
+                With({
+                    acconto: Round(p.imponibile_eur * 0.3, 2),
+                    tardi:   DateAdd(Today(), 15, TimeUnit.Days) > ScadenzaSaldo,
+                    idPag:   Coalesce(Max('arcade.pagamento', id_pagamento), 0) + 1
+                },
+                  IfError(
+                    // ===================== RAMO "TUTTO BENE" =====================
+                    // A - testata del contratto
+                    Patch('arcade.contratto', Defaults('arcade.contratto'), {
+                        id_contratto: idC, id_edizione: p.id_edizione, id_espositore: p.id_espositore,
+                        id_preventivo: p.id_preventivo, codice_stand: p.codice_stand,
+                        data_firma: Today(),
+                        imponibile_listino_eur: p.imponibile_listino_eur,
+                        sconto_pct: p.sconto_pct, imponibile_eur: p.imponibile_eur,
+                        rinnovo: !IsBlank(LookUp('arcade.contratto', id_edizione = p.id_edizione - 1 &&
+                                   id_espositore = p.id_espositore && stato = "attivo")),
+                        metodo_abbinamento: "id da sistema sorgente",
+                        aliquota_iva: p.aliquota_iva, stato: "attivo" });
+                    // B - righe copiate dal preventivo
+                    ForAll(Filter('arcade.riga_preventivo', id_preventivo = p.id_preventivo) As r,
+                      Patch('arcade.riga_contratto', Defaults('arcade.riga_contratto'), {
+                        id_contratto: idC, riga: r.riga, codice_voce: r.codice_voce,
+                        descrizione: r.descrizione, quantita: r.quantita,
+                        prezzo_unitario: r.prezzo_unitario, importo_eur: r.importo_eur }));
+                    // C - preventivo accettato
+                    Patch('arcade.preventivo', p, { stato: "accettato" });
+                    // D - PIANO B: pagamenti (da sostituire con il flusso di Matteo)
+                    Patch('arcade.pagamento', Defaults('arcade.pagamento'), {
+                        id_pagamento: idPag, id_contratto: idC, tipo: "acconto",
+                        scadenza: If(tardi, DateAdd(EdizioneSel.data_inizio, -15, TimeUnit.Days),
+                                            DateAdd(Today(), 15, TimeUnit.Days)),
+                        importo: acconto,
+                        data_dedotta: false, annullato: false });
+                    Patch('arcade.pagamento', Defaults('arcade.pagamento'), {
+                        id_pagamento: idPag + 1, id_contratto: idC, tipo: "saldo",
+                        scadenza: If(tardi, DateAdd(EdizioneSel.data_inizio, -15, TimeUnit.Days),
+                                            ScadenzaSaldo),
+                        importo: p.imponibile_eur - acconto,
+                        data_dedotta: false, annullato: false });
+                    Set(gblIdContratto, idC);
+                    Notify("Contratto " & idC & " firmato", NotificationType.Success);
+                    Navigate(scrContratto),
+                    // ===================== RAMO "ERRORE" =====================
+                    RemoveIf('arcade.pagamento', id_contratto = idC);
+                    RemoveIf('arcade.contratto', id_contratto = idC);
+                    Patch('arcade.preventivo', LookUp('arcade.preventivo', id_preventivo = p.id_preventivo),
+                          { stato: "inviato" });
+                    Notify("Firma non riuscita: " & FirstError.Message, NotificationType.Error)
+                  )
+                ))
+            Text: ="Firma"
+            ZIndex: =4
+
+    Label7 As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Size: =13
+        Text: ="Descrizione | Q.tà | Prezzo unitario | Importo"
+        Width: =890
+        X: =476
+        Y: =58
+        ZIndex: =9
+
+    Label2 As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =117
+        Size: =13
+        Text: |-
+            ="stato: " & gblStato &
+            " | entro chiusura: " & (Today() <= ChiusuraVendite) &
+            " | valido fino: " & Text(LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).valido_fino, "dd/mm/yyyy") &
+            " | non scaduto: " & (LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).valido_fino >= Today())
+        Width: =311
+        X: =45
+        Y: =323
+        ZIndex: =10
 

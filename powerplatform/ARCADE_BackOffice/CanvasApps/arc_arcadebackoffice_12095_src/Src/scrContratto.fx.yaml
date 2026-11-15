@@ -1,0 +1,407 @@
+scrContratto As screen:
+    CopilotContext: |-
+        ={ ScreenName: Self.Name }
+    CopilotPromptSuggestions: =[]
+    Fill: =Color.White
+    LoadingSpinnerColor: =App.Theme.Colors.Primary
+    OnVisible: |-
+        =Refresh('arcade.contratto'); Refresh('arcade.riga_contratto'); Refresh('arcade.pagamento');
+        Set(gblContratto, LookUp('arcade.contratto', id_contratto = gblIdContratto)); ClearCollect(colPagamenti,
+          ShowColumns(Filter('arcade.pagamento', id_contratto = gblIdContratto),
+            id_pagamento, tipo, importo, scadenza, pagato_il, data_dedotta, annullato))
+
+    btnIndietroContr As icon:
+        AccessibleLabel: ="1"
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =App.Theme.Colors.Darker30
+        DisabledBorderColor: =RGBA(166, 166, 166, 1)
+        DisabledColor: =RGBA(244, 244, 244, 1)
+        Height: =61
+        Icon: =Icon.BackArrow
+        OnSelect: =Navigate(scrStand)
+        TabIndex: =1
+        Width: =53
+        X: =34
+        Y: =3
+        ZIndex: =1
+
+    lblTitoloContr As label:
+        AutoHeight: =true
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        FocusedBorderThickness: =1
+        Font: =App.Theme.Font
+        Height: =42
+        Size: =21
+        TabIndex: =1
+        Text: ="Contratto " & gblContratto.id_contratto & " – stand " & gblContratto.codice_stand
+        Width: =650
+        X: =260
+        Y: =11
+        ZIndex: =2
+
+    lblTitoloContr_1 As label:
+        AutoHeight: =true
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        FocusedBorderThickness: =1
+        Font: =App.Theme.Font
+        Height: =42
+        Size: =21
+        TabIndex: =1
+        Text: =Upper(gblContratto.stato)
+        Width: =305
+        X: =1022
+        Y: =11
+        ZIndex: =3
+
+    lblContrDati As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =319
+        Size: =21
+        Text: |-
+            ="Espositore: " & LookUp(colEspositori, id_espositore = gblContratto.id_espositore).ragione_sociale & Char(10) &
+            "Edizione: " & gblContratto.id_edizione & Char(10) &
+            "Data firma: " & Text(gblContratto.data_firma, "dd/mm/yyyy") & Char(10) &
+            "Rinnovo: " & If(gblContratto.rinnovo, "Sì", "No") & Char(10) &
+            If(IsBlank(gblContratto.id_preventivo),
+               "Contratto storico (senza preventivo)",
+               "Da preventivo n. " & gblContratto.id_preventivo)
+        Width: =352
+        X: =63
+        Y: =81
+        ZIndex: =4
+
+    "galRigheContr As gallery.'BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0'":
+        AccessibleLabel: ="1"
+        BorderColor: =App.Theme.Colors.Darker40
+        DelayItemLoading: =true
+        Height: =304
+        Items: =Sort(Filter('arcade.riga_contratto', id_contratto = gblIdContratto), riga)
+        Layout: =Layout.Vertical
+        LoadingSpinner: =LoadingSpinner.Data
+        TabIndex: =1
+        TemplatePadding: =0
+        TemplateSize: =100
+        Width: =712
+        X: =630
+        Y: =88
+        ZIndex: =5
+
+        Title1 As label:
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: =ThisItem.descrizione
+            VerticalAlign: =VerticalAlign.Top
+            Width: =Parent.TemplateWidth - 173
+            X: =103
+            ZIndex: =2
+
+        Subtitle2 As label:
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =12
+            Text: |-
+                ="Quantità: " & ThisItem.quantita
+            VerticalAlign: =VerticalAlign.Top
+            Width: =Title1.Width
+            X: =103
+            Y: =25
+            ZIndex: =3
+
+        Separator3 As rectangle:
+            BorderColor: =App.Theme.Colors.Darker40
+            Fill: =RGBA(255, 255, 255, 3)
+            Height: =8
+            OnSelect: =Select(Parent)
+            Width: =Parent.TemplateWidth
+            Y: =Parent.TemplateHeight - Self.Height
+            ZIndex: =5
+
+        Rectangle2 As rectangle:
+            BorderColor: =App.Theme.Colors.Darker40
+            Fill: =App.Theme.Colors.Darker30
+            Height: =Parent.TemplateHeight - Separator3.Height
+            OnSelect: =Select(Parent)
+            Visible: =ThisItem.IsSelected
+            Width: =4
+            ZIndex: =6
+
+        Subtitle2_1 As label:
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =12
+            Text: |-
+                ="Prezzo unitario: " & ThisItem.prezzo_unitario & " €"
+            VerticalAlign: =VerticalAlign.Top
+            Width: =Title1.Width
+            X: =103
+            Y: =52
+            ZIndex: =7
+
+        Subtitle2_2 As label:
+            Color: =RGBA(0, 0, 0, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =12
+            Text: |-
+                ="Importo: " & ThisItem.importo_eur & " €"
+            VerticalAlign: =VerticalAlign.Top
+            Width: =Title1.Width
+            X: =103
+            Y: =71
+            ZIndex: =8
+
+    lblContrListino As label:
+        AutoHeight: =true
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Size: =11
+        Text: |-
+            ="Imponibile: " & Text(gblContratto.imponibile_listino_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
+        Width: =321
+        X: =63
+        Y: =459
+        ZIndex: =6
+
+    lblContrSconto As label:
+        AutoHeight: =true
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        FocusedBorderThickness: =1
+        Font: =App.Theme.Font
+        Size: =11
+        TabIndex: =1
+        Text: |-
+            ="Sconto: " & Text(gblContratto.sconto_pct * 100, "[$-en-US]0.0", "it-IT") & "%"
+        Width: =321
+        X: =63
+        Y: =499
+        ZIndex: =7
+
+    lblContrImponibile As label:
+        AutoHeight: =true
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        FocusedBorderThickness: =1
+        Font: =App.Theme.Font
+        Size: =11
+        TabIndex: =1
+        Text: |-
+            ="Imponibile: " & Text(gblContratto.imponibile_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
+        Width: =321
+        X: =63
+        Y: =539
+        ZIndex: =8
+
+    lblContrIva As label:
+        AutoHeight: =true
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        FocusedBorderThickness: =1
+        Font: =App.Theme.Font
+        Size: =11
+        TabIndex: =1
+        Text: |-
+            ="IVA: " & If(IsBlank(gblContratto.aliquota_iva),
+                 "non registrata (contratto storico)",
+                 Text(Round(gblContratto.imponibile_eur * gblContratto.aliquota_iva, 2),
+                      "[$-en-US]#,##0.00", "it-IT") & " €")
+        Width: =321
+        X: =63
+        Y: =579
+        ZIndex: =9
+
+    ContrTotale As label:
+        AutoHeight: =true
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 0, 0, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        FocusedBorderThickness: =1
+        Font: =App.Theme.Font
+        Size: =11
+        TabIndex: =1
+        Text: |-
+            ="Totale: " & If(IsBlank(gblContratto.aliquota_iva), "—",
+                 Text(gblContratto.imponibile_eur + Round(gblContratto.imponibile_eur * gblContratto.aliquota_iva, 2),
+                      "[$-en-US]#,##0.00", "it-IT") & " €")
+        Width: =321
+        X: =63
+        Y: =619
+        ZIndex: =10
+
+    "galPagamenti As gallery.'BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0'":
+        AccessibleLabel: ="1"
+        BorderColor: =App.Theme.Colors.Darker40
+        DelayItemLoading: =true
+        Height: =388
+        Items: =Sort(Filter('arcade.pagamento', id_contratto = gblIdContratto), tipo)
+        Layout: =Layout.Vertical
+        LoadingSpinner: =LoadingSpinner.Data
+        TabIndex: =1
+        TemplatePadding: =0
+        TemplateSize: =197
+        Width: =709
+        X: =633
+        Y: =364
+        ZIndex: =11
+
+        lblPagTipo As label:
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: |-
+                ="Tipo: " & ThisItem.tipo
+            VerticalAlign: =VerticalAlign.Top
+            Width: =130
+            X: =92
+            Y: =38
+            ZIndex: =2
+
+        Separator4 As rectangle:
+            BorderColor: =App.Theme.Colors.Darker40
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =8
+            OnSelect: =Select(Parent)
+            Width: =Parent.TemplateWidth
+            Y: =Parent.TemplateHeight - Self.Height
+            ZIndex: =5
+
+        lblPagImporto As label:
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: |-
+                ="Importo: " & Text(ThisItem.importo, "[$-en-US]#,##0.00", "it-IT") & " €"
+            VerticalAlign: =VerticalAlign.Top
+            Width: =193
+            X: =92
+            Y: =63
+            ZIndex: =7
+
+        lblPagScadenza As label:
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: |-
+                ="Scadenza: " & Text(ThisItem.scadenza, "dd/mm/yyyy")
+            VerticalAlign: =VerticalAlign.Top
+            Width: =193
+            X: =92
+            Y: =88
+            ZIndex: =8
+
+        lblPagIncasso As label:
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: |-
+                ="Stato Pagamento: " & If(IsBlank(ThisItem.pagato_il), "Non incassato",
+                                         "Incassato il " & Text(ThisItem.pagato_il, "dd/mm/yyyy") &
+                                         If(ThisItem.data_dedotta, " (data dedotta)", ""))
+            VerticalAlign: =VerticalAlign.Top
+            Width: =292
+            X: =92
+            Y: =113
+            ZIndex: =9
+
+        lblPagStato As label:
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Fill: |-
+                =Switch(true,
+                  ThisItem.annullato, ColorValue("#9E9E9E"),
+                  IsBlank(ThisItem.pagato_il) && ThisItem.scadenza < Today(), ColorValue("#C62828"),
+                  IsBlank(ThisItem.pagato_il), ColorValue("#9E9E9E"),
+                  ThisItem.pagato_il > ThisItem.scadenza, ColorValue("#EF6C00"),
+                  ColorValue("#2E7D32"))
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: |-
+                =Upper(Substitute(
+                  If(ThisItem.annullato, "annullato",
+                     IsBlank(ThisItem.pagato_il) && ThisItem.scadenza < Today(), "scaduto",
+                     IsBlank(ThisItem.pagato_il), "da_pagare",
+                     ThisItem.pagato_il > ThisItem.scadenza, "pagato_in_ritardo",
+                     "pagato_nei_termini"), "_", " "))
+            VerticalAlign: =VerticalAlign.Top
+            Width: =130
+            X: =92
+            Y: =138
+            ZIndex: =10
+
