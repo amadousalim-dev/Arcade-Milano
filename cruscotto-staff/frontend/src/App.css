@@ -1,0 +1,90 @@
+:root {
+  --sfondo: #10202e;
+  --superficie: #182d40;
+  --testo: #f4f7fa;
+  --testo-secondario: #b7c6d4;
+  --linea: #3a5369;
+  --accento: #ffb703;
+  --avviso-sfondo: #fff3cd;
+  --avviso-testo: #3d2c00;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { min-height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--sfondo);
+  color: var(--testo);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.schermo {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: clamp(1rem, 2.5vw, 2.5rem);
+}
+
+.testata {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 2rem;
+}
+.testata h1 { margin: 0; font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 700; }
+.aggiornamento { margin: 0; font-size: clamp(1.1rem, 2vw, 1.75rem); color: var(--testo-secondario); }
+
+.avviso {
+  margin: 0;
+  padding: 0.9rem 1.1rem;
+  border-radius: 0.5rem;
+  background: var(--avviso-sfondo);
+  color: var(--avviso-testo);
+  font-size: clamp(1rem, 1.8vw, 1.5rem);
+  font-weight: 600;
+}
+
+.stato { font-size: 1.5rem; color: var(--testo-secondario); }
+
+.righe { display: flex; flex-direction: column; gap: 1rem; flex: 1; }
+
+.riga {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, 12rem) minmax(0, 1fr) minmax(14rem, 22rem);
+  align-items: center;
+  gap: 1rem clamp(1rem, 3vw, 3rem);
+  padding: clamp(1rem, 2vw, 2rem);
+  background: var(--superficie);
+  border-left: 0.6rem solid var(--accento);
+  border-radius: 0.25rem 0.75rem 0.75rem 0.25rem;
+}
+
+.codice { margin: 0; font-size: clamp(3rem, 9vw, 8rem); line-height: 1; font-weight: 800; }
+
+.etichetta { margin: 0; font-size: clamp(1rem, 1.8vw, 1.5rem); color: var(--testo-secondario); }
+.valore { margin: 0; font-size: clamp(3.5rem, 11vw, 10rem); line-height: 1; font-weight: 800; }
+.valore-assente { color: var(--testo-secondario); }
+.nota { margin: 0.5rem 0 0; font-size: 1.1rem; color: var(--testo-secondario); }
+
+.confronto { margin-top: 0.75rem; }
+.barra { height: 1rem; background: var(--sfondo); border: 2px solid var(--linea); border-radius: 999px; overflow: hidden; }
+.barra-piena { height: 100%; background: var(--accento); }
+.percentuale { margin: 0.4rem 0 0; font-size: clamp(1rem, 1.6vw, 1.35rem); color: var(--testo-secondario); }
+
+.dettagli { margin: 0; display: grid; gap: 1rem; }
+.dettagli dt { font-size: clamp(0.95rem, 1.5vw, 1.25rem); color: var(--testo-secondario); }
+.dettagli dd { margin: 0.1rem 0 0; font-size: clamp(1.5rem, 3vw, 2.75rem); font-weight: 700; }
+.alle { font-size: 0.6em; font-weight: 500; color: var(--testo-secondario); }
+
+.piede { font-size: 1.05rem; line-height: 1.5; color: var(--testo-secondario); max-width: 75ch; }
+
+@media (max-width: 900px) {
+  .riga { grid-template-columns: 1fr; }
+  .codice { font-size: 3rem; }
+}
