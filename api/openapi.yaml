@@ -1,0 +1,2750 @@
+openapi: 3.0.3
+info:
+  title: ARCADE Milano – API della piattaforma
+  version: 0.2.0-bozza
+  description: |-
+    Bozza preparata dal team BAD per il SAL 1 (data da definire), **da validare con il BID**, che realizza l’API. Include le risposte del cliente del 22 ottobre 2026 e segue lo schema dati (stessi nomi di tabelle e campi, in minuscolo con trattini bassi).
+
+    **Convenzioni.** Percorsi sotto `/v1`. Identificativi di testo come nei dati (ESP001, C2024-0001, P1-A01); numeri generati per le entità nuove. Date `YYYY-MM-DD`. Orari in formato ISO 8601 con fuso orario, restituiti in ora italiana (Europe/Rome). Importi in euro. Sconti e aliquote come frazione tra 0 e 1. Elenchi con `pagina` e `per_pagina` (massimo 200). Errori con corpo `{codice, messaggio, dettagli}`.
+
+    **Ruoli.** direzione, commerciale, direttore_commerciale, amministrazione, staff, espositore, amministratore, più la credenziale di servizio dei varchi. Direzione e staff vedono solo numeri complessivi. Il commerciale vede espositori e contratti, l’amministrazione contratti e pagamenti. I contatti dei visitatori li vede solo l’espositore a cui sono stati lasciati, più l’amministratore per le cancellazioni.
+
+    **Sicurezza e privacy.** Ogni espositore vede solo i propri dati: lo verifica il server a partire dal token, non solo l’interfaccia. Dei minori non si conserva nessun dato riconoscibile: compaiono solo nei numeri complessivi e non si accettano contatti da minorenni. Il consenso si raccoglie solo allo stand, per quell’espositore, con prova di quando e con quale informativa. I contatti si cancellano dopo due anni dalla fiera.
+
+    **Importi.** Gli importi sono imponibili. L’IVA si mostra a parte su preventivi e contratti (`aliquota_iva`, `iva_eur`, `totale_eur`). Fatturazione e regole fiscali non sono comprese.
+
+    **Cosa è ancora aperto.** Le operazioni con `x-stato` «da confermare», «parziale» o «proposta» dipendono da risposte del cliente. `x-domande` indica il numero della domanda nella sezione 11 dell’Addendum 1 all’analisi funzionale. Per reggere il congelamento, i campi che dipendono da queste risposte sono facoltativi: le aggiunte future non rompono il contratto. Non sono comprese: fatturazione e regole fiscali, pagamenti online, vendita online dei biglietti, app per i visitatori, lista d’attesa.
+servers:
+- url: https://api.example.org/v1
+  description: 'Indirizzo segnaposto: da definire con il BID.'
+tags:
+- name: Gestione commerciale
+  description: Edizioni, padiglioni, stand, listino, preventivi, contratti, pagamenti, solleciti, rinnovi e anomalie
+    dei dati.
+- name: Cruscotto staff
+  description: 'Cruscotto dello staff: ingressi per padiglione.'
+- name: Pagina espositore
+  description: 'Pagina dell’espositore: solo i propri dati, e cancellazione dei contatti su richiesta.'
+- name: Scansione allo stand
+  description: App di scansione allo stand, per il personale degli espositori.
+- name: Dati dai varchi
+  description: Ricezione delle letture dai tornelli.
+security:
+- bearerAuth: []
+paths:
+  /edizioni:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: elencaEdizioni
+      summary: Elenca le edizioni
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      - amministrazione
+      - direzione
+      - staff
+      - espositore
+      - amministratore
+      responses:
+        '200':
+          description: Elenco delle edizioni (2024, 2025, 2026).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Edizione'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+  /edizioni/{id_edizione}:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: leggiEdizione
+      summary: Legge un’edizione
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      - amministrazione
+      - direzione
+      - staff
+      - espositore
+      - amministratore
+      parameters:
+      - $ref: '#/components/parameters/IdEdizione'
+      responses:
+        '200':
+          description: L’edizione, con le scadenze calcolate dalla data di apertura.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Edizione'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /padiglioni:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: elencaPadiglioni
+      summary: Elenca i padiglioni
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      - amministrazione
+      - direzione
+      - staff
+      - espositore
+      - amministratore
+      responses:
+        '200':
+          description: I tre padiglioni P1, P2 e P3.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Padiglione'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+  /edizioni/{id_edizione}/stand:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: elencaStand
+      summary: Elenca gli stand di un’edizione con il loro stato
+      description: 'Lo stato non è salvato: è calcolato, con questa priorità. «venduto» se esiste un contratto attivo
+        per lo stand nell’edizione. «opzionato» se esiste un preventivo «in_approvazione» o «inviato» non scaduto.
+        «in_prelazione» se la prelazione non è scaduta e lo stand era venduto nell’edizione precedente. Altrimenti
+        «libero». Gli stand sono 130 (45 in P1, 40 in P2, 45 in P3). Nel 2026 la prelazione è già scaduta (31 marzo).'
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      - amministrazione
+      - direzione
+      parameters:
+      - $ref: '#/components/parameters/IdEdizione'
+      - name: stato
+        in: query
+        schema:
+          $ref: '#/components/schemas/StatoStand'
+      - name: codice_padiglione
+        in: query
+        schema:
+          type: string
+          enum:
+          - P1
+          - P2
+          - P3
+      - $ref: '#/components/parameters/Pagina'
+      - $ref: '#/components/parameters/PerPagina'
+      responses:
+        '200':
+          description: Gli stand dell’edizione, con lo stato calcolato.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Pagina'
+                - type: object
+                  properties:
+                    dati:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Stand'
+                  required:
+                  - dati
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /edizioni/{id_edizione}/listino:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: leggiListino
+      summary: Legge il listino di un’edizione
+      description: 'Per il 2024 e il 2025 non esistono file di listino: i prezzi si ricavano dalle righe dei contratti.
+        Il listino completo esiste solo per il 2026.'
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      - amministrazione
+      - direzione
+      parameters:
+      - $ref: '#/components/parameters/IdEdizione'
+      - name: tipo_voce
+        in: query
+        schema:
+          $ref: '#/components/schemas/TipoVoce'
+      responses:
+        '200':
+          description: Le voci del listino.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VoceListino'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /edizioni/{id_edizione}/rinnovi:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: elencaRinnovi
+      summary: Elenca gli espositori dell’edizione precedente e il loro stato di rinnovo
+      description: Serve a individuare chi ha partecipato e chi non è tornato, e a proporre il rinnovo. Un rinnovo
+        è la presenza all’edizione precedente, anche su uno stand diverso (confermato dal cliente).
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      x-stato: proposta
+      x-domande:
+      - 11
+      parameters:
+      - $ref: '#/components/parameters/IdEdizione'
+      - name: stato
+        in: query
+        schema:
+          $ref: '#/components/schemas/StatoRinnovo'
+      - $ref: '#/components/parameters/Pagina'
+      - $ref: '#/components/parameters/PerPagina'
+      responses:
+        '200':
+          description: Gli espositori dell’edizione precedente con lo stato di rinnovo.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Pagina'
+                - type: object
+                  properties:
+                    dati:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Rinnovo'
+                  required:
+                  - dati
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /espositori:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: elencaEspositori
+      summary: Elenca gli espositori
+      description: 'I campi referente ed email_referente sono dati personali: li vedono solo commerciale e amministrazione.'
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      - amministrazione
+      parameters:
+      - name: q
+        in: query
+        description: Ricerca nella ragione sociale.
+        schema:
+          type: string
+          minLength: 2
+      - $ref: '#/components/parameters/Pagina'
+      - $ref: '#/components/parameters/PerPagina'
+      responses:
+        '200':
+          description: Gli espositori.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Pagina'
+                - type: object
+                  properties:
+                    dati:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Espositore'
+                  required:
+                  - dati
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+    post:
+      tags:
+      - Gestione commerciale
+      operationId: creaEspositore
+      summary: Crea un espositore
+      description: Risponde 409 se la partita IVA esiste già (nei 135 espositori attuali non ci sono duplicati).
+      x-ruoli:
+      - commerciale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuovoEspositore'
+      responses:
+        '201':
+          description: Espositore creato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Espositore'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '409':
+          $ref: '#/components/responses/Conflitto'
+  /espositori/{id_espositore}:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: leggiEspositore
+      summary: Legge un espositore
+      description: Un utente con ruolo espositore può leggere solo il proprio.
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      - amministrazione
+      - espositore
+      parameters:
+      - $ref: '#/components/parameters/IdEspositore'
+      responses:
+        '200':
+          description: L’espositore.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Espositore'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /preventivi:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: elencaPreventivi
+      summary: Elenca i preventivi
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      parameters:
+      - name: id_edizione
+        in: query
+        schema:
+          type: integer
+          format: int32
+      - name: id_espositore
+        in: query
+        schema:
+          type: string
+      - name: stato
+        in: query
+        schema:
+          $ref: '#/components/schemas/StatoPreventivo'
+      - $ref: '#/components/parameters/Pagina'
+      - $ref: '#/components/parameters/PerPagina'
+      responses:
+        '200':
+          description: I preventivi.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Pagina'
+                - type: object
+                  properties:
+                    dati:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Preventivo'
+                  required:
+                  - dati
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+    post:
+      tags:
+      - Gestione commerciale
+      operationId: creaPreventivo
+      summary: Crea un preventivo in bozza
+      description: 'Lo stand deve essere libero, oppure in prelazione se l’espositore è quello dell’edizione precedente
+        (con in_prelazione=true): altrimenti 409 STAND_NON_DISPONIBILE o STAND_IN_PRELAZIONE. Il server aggiunge
+        da solo la riga di area (SPAZIO) e la maggiorazione (angolo 10%, penisola 15%, isola 25%); nel corpo si
+        indicano solo extra e sponsorizzazioni. Le sponsorizzazioni valgono solo insieme a uno stand; se sono esaurite
+        si risponde 409 SPONSORIZZAZIONE_ESAURITA, se la voce è riservata a un altro padiglione 422 SPONSORIZZAZIONE_RISERVATA.
+        Uno sconto oltre 0,20 dà 422 SCONTO_OLTRE_SOGLIA. Il preventivo vale 30 giorni dall’invio. L’IVA è mostrata
+        a parte (aliquota 22% salvo diversa decisione dell’amministrazione).'
+      x-ruoli:
+      - commerciale
+      x-stato: da confermare
+      x-domande:
+      - 2
+      - 7
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuovoPreventivo'
+      responses:
+        '201':
+          description: Preventivo creato in stato «bozza».
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preventivo'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+        '409':
+          $ref: '#/components/responses/Conflitto'
+        '422':
+          $ref: '#/components/responses/NonElaborabile'
+  /preventivi/{id_preventivo}:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: leggiPreventivo
+      summary: Legge un preventivo con le sue righe
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      parameters:
+      - $ref: '#/components/parameters/IdPreventivo'
+      responses:
+        '200':
+          description: Il preventivo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preventivo'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /preventivi/{id_preventivo}/invio:
+    post:
+      tags:
+      - Gestione commerciale
+      operationId: richiediInvioPreventivo
+      summary: Invia il preventivo, o lo manda in approvazione
+      description: 'Fino al 10% di sconto il preventivo passa da «bozza» a «inviato», con data di invio. Oltre il
+        10% passa a «in_approvazione» e attende il direttore commerciale. L’e-mail all’espositore è inviata dal
+        flusso Power Automate «Invia preventivo»: l’API registra l’invio e il flusso la chiama. Da confermare chi
+        invia l’e-mail e come.'
+      x-ruoli:
+      - commerciale
+      x-stato: da confermare
+      x-domande:
+      - 2
+      parameters:
+      - $ref: '#/components/parameters/IdPreventivo'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvioPreventivo'
+      responses:
+        '200':
+          description: Preventivo inviato. Lo stand risulta opzionato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preventivo'
+        '202':
+          description: 'Lo sconto supera il 10%: il preventivo è «in_approvazione» e non è stato inviato.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preventivo'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+        '409':
+          $ref: '#/components/responses/Conflitto'
+  /preventivi/{id_preventivo}/approvazione:
+    post:
+      tags:
+      - Gestione commerciale
+      operationId: decidiApprovazionePreventivo
+      summary: Approva o respinge uno sconto oltre il 10%
+      description: 'Per gli sconti dal 10% al 20% decide il direttore commerciale. Se approva, il preventivo viene
+        inviato (stato «inviato», con approvato_da e approvato_il). Se respinge torna in bozza: da confermare. Oltre
+        il 20% non è possibile.'
+      x-ruoli:
+      - direttore_commerciale
+      x-stato: da confermare
+      x-domande:
+      - 3
+      parameters:
+      - $ref: '#/components/parameters/IdPreventivo'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisioneApprovazione'
+      responses:
+        '200':
+          description: 'Preventivo aggiornato: «inviato» se approvato, «bozza» se respinto.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preventivo'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+        '409':
+          $ref: '#/components/responses/Conflitto'
+  /preventivi/{id_preventivo}/perdita:
+    post:
+      tags:
+      - Gestione commerciale
+      operationId: segnaPreventivoPerso
+      summary: Segna il preventivo come perso
+      description: 'Vale quando l’espositore non accetta. Un preventivo scaduto passa a «scaduto» da solo, alla
+        fine dei 30 giorni. Un preventivo «accettato» non si può perdere: si usa la disdetta del contratto.'
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      parameters:
+      - $ref: '#/components/parameters/IdPreventivo'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                motivo:
+                  type: string
+                  maxLength: 500
+      responses:
+        '200':
+          description: Preventivo in stato «perso». Lo stand torna libero.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preventivo'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+        '409':
+          $ref: '#/components/responses/Conflitto'
+  /preventivi/{id_preventivo}/contratto:
+    post:
+      tags:
+      - Gestione commerciale
+      operationId: trasformaInContratto
+      summary: Trasforma il preventivo accettato in contratto
+      description: 'In un’unica operazione: il preventivo passa ad «accettato», nasce il contratto con le righe
+        copiate dal preventivo e l’aliquota IVA, e si creano i due pagamenti. Acconto: 30% dell’imponibile, scadenza
+        15 giorni dopo la firma. Saldo: 70% dell’imponibile, scadenza 30 giorni prima dell’apertura (18 novembre
+        2026).'
+      x-ruoli:
+      - commerciale
+      parameters:
+      - $ref: '#/components/parameters/IdPreventivo'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FirmaContratto'
+      responses:
+        '201':
+          description: Contratto creato, con le sue righe e i due pagamenti.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contratto'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+        '409':
+          $ref: '#/components/responses/Conflitto'
+  /contratti:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: elencaContratti
+      summary: Elenca i contratti
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      - amministrazione
+      parameters:
+      - name: id_edizione
+        in: query
+        schema:
+          type: integer
+          format: int32
+      - name: id_espositore
+        in: query
+        schema:
+          type: string
+      - name: stato
+        in: query
+        schema:
+          type: string
+          enum:
+          - attivo
+          - disdetto
+      - $ref: '#/components/parameters/Pagina'
+      - $ref: '#/components/parameters/PerPagina'
+      responses:
+        '200':
+          description: I contratti.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Pagina'
+                - type: object
+                  properties:
+                    dati:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Contratto'
+                  required:
+                  - dati
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+  /contratti/{id_contratto}:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: leggiContratto
+      summary: Legge un contratto con righe, pagamenti e variazioni
+      description: Un utente con ruolo espositore può leggere solo i propri contratti.
+      x-ruoli:
+      - commerciale
+      - direttore_commerciale
+      - amministrazione
+      - espositore
+      parameters:
+      - $ref: '#/components/parameters/IdContratto'
+      responses:
+        '200':
+          description: Il contratto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contratto'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /contratti/{id_contratto}/cambio-stand:
+    post:
+      tags:
+      - Gestione commerciale
+      operationId: cambiaStandContratto
+      summary: Cambia lo stand di un contratto
+      description: 'Possibile fino a 60 giorni dall’apertura (per il 2026 fino al 19 ottobre: scadenza già passata).
+        Oltre il termine 422 FUORI_TERMINE. Se il nuovo stand non è libero 409 STAND_NON_DISPONIBILE. Le righe del
+        contratto sono ricalcolate; il conguaglio si paga o si recupera. Come si somma il conguaglio al saldo è
+        da chiarire.'
+      x-ruoli:
+      - commerciale
+      - amministrazione
+      x-stato: da confermare
+      x-domande:
+      - 4
+      parameters:
+      - $ref: '#/components/parameters/IdContratto'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CambioStand'
+      responses:
+        '200':
+          description: Contratto con il nuovo stand e la variazione registrata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contratto'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+        '409':
+          $ref: '#/components/responses/Conflitto'
+        '422':
+          $ref: '#/components/responses/NonElaborabile'
+  /contratti/{id_contratto}/disdetta:
+    post:
+      tags:
+      - Gestione commerciale
+      operationId: disdiciContratto
+      summary: Registra la disdetta di un contratto
+      description: 'Fino a 90 giorni dall’apertura (per il 2026 fino al 19 settembre: scadenza già passata) si trattiene
+        l’acconto e il saldo risulta annullato. Dopo l’espositore deve l’intero importo. Lo stand torna libero.
+        Cosa vale per chi firma dopo le scadenze 2026 è da chiarire.'
+      x-ruoli:
+      - commerciale
+      - amministrazione
+      x-stato: da confermare
+      x-domande:
+      - 4
+      parameters:
+      - $ref: '#/components/parameters/IdContratto'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Disdetta'
+      responses:
+        '200':
+          description: Contratto disdetto, con l’importo dovuto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EsitoDisdetta'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+        '409':
+          $ref: '#/components/responses/Conflitto'
+  /contratti/{id_contratto}/deroga-allestimento:
+    post:
+      tags:
+      - Gestione commerciale
+      operationId: concediDerogaAllestimento
+      summary: Concede la deroga alla consegna dello stand senza saldo
+      description: Senza il saldo lo stand non si consegna per l’allestimento, salvo deroga dell’amministrazione.
+        409 se il saldo è già pagato o se la deroga esiste già.
+      x-ruoli:
+      - amministrazione
+      parameters:
+      - $ref: '#/components/parameters/IdContratto'
+      responses:
+        '200':
+          description: Contratto con la deroga registrata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contratto'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+        '409':
+          $ref: '#/components/responses/Conflitto'
+  /pagamenti:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: elencaPagamenti
+      summary: Elenca i pagamenti
+      description: Con azione_dovuta il flusso programmato ottiene i pagamenti per cui oggi è dovuto un promemoria
+        (7 giorni prima della scadenza), un sollecito (il giorno dopo) o il passaggio all’amministrazione (16 giorni
+        dopo la scadenza) e non ancora registrato. Con stato=scaduto, senza filtro sull’edizione, si ottengono i
+        crediti aperti di tutte le edizioni. Il commerciale vede i pagamenti solo se il cliente lo conferma.
+      x-ruoli:
+      - amministrazione
+      - commerciale
+      x-stato: da confermare
+      x-domande:
+      - 3
+      parameters:
+      - name: id_edizione
+        in: query
+        schema:
+          type: integer
+          format: int32
+      - name: stato
+        in: query
+        schema:
+          $ref: '#/components/schemas/StatoPagamento'
+      - name: azione_dovuta
+        in: query
+        schema:
+          $ref: '#/components/schemas/TipoSollecito'
+      - name: id_contratto
+        in: query
+        schema:
+          type: string
+      - $ref: '#/components/parameters/Pagina'
+      - $ref: '#/components/parameters/PerPagina'
+      responses:
+        '200':
+          description: I pagamenti.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Pagina'
+                - type: object
+                  properties:
+                    dati:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Pagamento'
+                  required:
+                  - dati
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+  /pagamenti/{id_pagamento}:
+    patch:
+      tags:
+      - Gestione commerciale
+      operationId: registraPagamento
+      summary: Registra la data in cui un pagamento è arrivato
+      description: 'L’importo non si inserisce: è calcolato (acconto 30% dell’imponibile, saldo il resto). I pagamenti
+        si registrano a mano: i pagamenti online e la fatturazione non sono compresi.'
+      x-ruoli:
+      - amministrazione
+      x-domande:
+      - 5
+      parameters:
+      - $ref: '#/components/parameters/IdPagamento'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistraPagamento'
+      responses:
+        '200':
+          description: Il pagamento aggiornato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pagamento'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+        '422':
+          $ref: '#/components/responses/NonElaborabile'
+  /pagamenti/{id_pagamento}/solleciti:
+    post:
+      tags:
+      - Gestione commerciale
+      operationId: registraSollecito
+      summary: Registra un promemoria, un sollecito o il passaggio all’amministrazione
+      description: 'Chiamato dal flusso programmato dopo l’invio dell’e-mail. Il server verifica il calendario:
+        409 AZIONE_NON_DOVUTA se non è il momento. 422 se il pagamento appartiene a un’edizione conclusa: i crediti
+        aperti di quelle edizioni si mostrano all’amministrazione, senza solleciti automatici (da confermare). Nessuna
+        penale né interessi di mora.'
+      x-ruoli:
+      - amministrazione
+      - commerciale
+      x-stato: da confermare
+      x-domande:
+      - 3
+      parameters:
+      - $ref: '#/components/parameters/IdPagamento'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuovoSollecito'
+      responses:
+        '201':
+          description: Registrato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sollecito'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+        '409':
+          $ref: '#/components/responses/Conflitto'
+        '422':
+          $ref: '#/components/responses/NonElaborabile'
+  /anomalie:
+    get:
+      tags:
+      - Gestione commerciale
+      operationId: elencaAnomalie
+      summary: Elenca le anomalie trovate nei dati
+      description: 'Le anomalie sono registrate e spiegate, non nascoste: pagamenti senza data, contatti di minori
+        esclusi, codici sconosciuti, abbinamenti dubbi e così via. Le anomalie sui contatti non contengono dati
+        personali.'
+      x-ruoli:
+      - commerciale
+      - amministrazione
+      - direzione
+      parameters:
+      - name: stato
+        in: query
+        schema:
+          type: string
+          enum:
+          - aperta
+          - gestita
+          - da_confermare
+      - name: tabella
+        in: query
+        schema:
+          type: string
+      - $ref: '#/components/parameters/Pagina'
+      - $ref: '#/components/parameters/PerPagina'
+      responses:
+        '200':
+          description: Le anomalie.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Pagina'
+                - type: object
+                  properties:
+                    dati:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Anomalia'
+                  required:
+                  - dati
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+  /edizioni/{id_edizione}/ingressi/andamento:
+    get:
+      tags:
+      - Cruscotto staff
+      operationId: leggiAndamentoIngressi
+      summary: Ingressi per padiglione nel tempo
+      description: 'Restituisce gli ingressi registrati ai varchi, per padiglione e intervallo. Non restituisce
+        le persone presenti: il cliente ha confermato che si registrano solo gli ingressi, non le uscite, e che
+        il varco dice da quale padiglione si entra, non dove si va dopo. Il picco di presenza è una stima con un’ipotesi
+        di permanenza da concordare: un campo facoltativo presenti_stimati verrà aggiunto dopo. Ai varchi passano
+        solo i biglietti, non i pass di staff, espositori e fornitori. Frequenza di aggiornamento da concordare
+        (per esempio ogni minuto).'
+      x-ruoli:
+      - staff
+      - direzione
+      x-stato: parziale
+      x-domande:
+      - 8
+      parameters:
+      - $ref: '#/components/parameters/IdEdizione'
+      - name: codice_padiglione
+        in: query
+        schema:
+          type: string
+          enum:
+          - P1
+          - P2
+          - P3
+      - name: da
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: a
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: intervallo
+        in: query
+        schema:
+          type: string
+          enum:
+          - 1m
+          - 5m
+          - 15m
+          - 1h
+          default: 5m
+      responses:
+        '200':
+          description: La serie degli ingressi.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AndamentoIngressi'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /ingressi:
+    post:
+      tags:
+      - Dati dai varchi
+      operationId: inviaLetture
+      summary: Riceve le letture dai varchi
+      description: 'Invio a gruppi (fino a 1.000 letture). Il server uniforma il nome del varco («P1 Nord» e «P1-Nord»
+        sono lo stesso varco), risolve il biglietto e converte gli orari in ora italiana. Un codice sconosciuto
+        si conserva come «ingresso non riconosciuto» e si registra come anomalia. Il formato reale dei dati dei
+        varchi nel 2026 non è noto: id_lettura, utile a evitare doppioni, è facoltativo finché il BID non lo conferma.'
+      x-ruoli:
+      - sistema_varchi
+      x-stato: da confermare
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvioLetture'
+      responses:
+        '202':
+          description: Letture accettate.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RisultatoInvioLetture'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+      security:
+      - credenzialeServizio: []
+  /espositori/{id_espositore}/riepilogo:
+    get:
+      tags:
+      - Pagina espositore
+      operationId: leggiRiepilogoEspositore
+      summary: Riepilogo della partecipazione
+      description: 'Un utente con ruolo espositore vede solo il proprio riepilogo (403 altrimenti). Se l’espositore
+        non ha usato lo scanner, scanner_usato è falso e le visite sono vuote: non zero. Le visite dell’edizione
+        precedente esistono solo per il 2025.'
+      x-ruoli:
+      - espositore
+      - commerciale
+      - direzione
+      parameters:
+      - $ref: '#/components/parameters/IdEspositore'
+      - name: id_edizione
+        in: query
+        schema:
+          type: integer
+          format: int32
+        required: true
+      responses:
+        '200':
+          description: Il riepilogo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiepilogoEspositore'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /espositori/{id_espositore}/visite:
+    get:
+      tags:
+      - Pagina espositore
+      operationId: leggiVisiteEspositore
+      summary: Visite agli stand dell’espositore per giorno e ora
+      description: 'Solo numeri: quante persone sono passate, in quali giorni e a che ora, e il confronto con la
+        media del padiglione. La media è restituita solo se comprende almeno cinque stand, per non far risalire
+        ai numeri di un concorrente. Per il 2025 i dati sono già aggregati per ora e le righe escluse dai calcoli
+        non compaiono. Per il 2026 le visite si ricavano dalle scansioni conteggiate.'
+      x-ruoli:
+      - espositore
+      - commerciale
+      - direzione
+      parameters:
+      - $ref: '#/components/parameters/IdEspositore'
+      - name: id_edizione
+        in: query
+        schema:
+          type: integer
+          format: int32
+        required: true
+      - name: raggruppa
+        in: query
+        schema:
+          type: string
+          enum:
+          - ora
+          - giorno
+          default: ora
+      responses:
+        '200':
+          description: Le visite e la media del padiglione.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisiteEspositore'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /espositori/{id_espositore}/contatti:
+    get:
+      tags:
+      - Pagina espositore
+      operationId: leggiContattiEspositore
+      summary: Contatti raccolti ai propri stand
+      description: 'L’espositore vede tutto ciò che il visitatore ha lasciato (e-mail, fascia d’età, provincia,
+        interesse, data e ora), ma solo per i contatti che hanno dato il consenso a lui. I minori non compaiono
+        mai: non si conservano dati dei minori.'
+      x-ruoli:
+      - espositore
+      x-domande:
+      - 9
+      parameters:
+      - $ref: '#/components/parameters/IdEspositore'
+      - name: id_edizione
+        in: query
+        schema:
+          type: integer
+          format: int32
+        required: true
+      - $ref: '#/components/parameters/Pagina'
+      - $ref: '#/components/parameters/PerPagina'
+      responses:
+        '200':
+          description: I contatti che hanno dato il consenso all’espositore.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Pagina'
+                - type: object
+                  properties:
+                    dati:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Contatto'
+                  required:
+                  - dati
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /espositori/{id_espositore}/contatti/esportazione:
+    get:
+      tags:
+      - Pagina espositore
+      operationId: esportaContattiEspositore
+      summary: Scarica i contatti in formato CSV
+      description: Una volta scaricati dall’espositore, ne risponde lui. Il download si registra.
+      x-ruoli:
+      - espositore
+      parameters:
+      - $ref: '#/components/parameters/IdEspositore'
+      - name: id_edizione
+        in: query
+        schema:
+          type: integer
+          format: int32
+        required: true
+      responses:
+        '200':
+          description: File CSV con gli stessi contatti dell’elenco.
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /contatti/{id_contatto}:
+    delete:
+      tags:
+      - Pagina espositore
+      operationId: cancellaContatto
+      summary: Cancella un contatto su richiesta dell’interessato
+      description: 'Solo l’amministratore del sistema, per gestire una richiesta di cancellazione. Le cancellazioni
+        per scadenza (due anni dalla fiera: quelli del 2025 entro la fine del 2027) sono automatiche.'
+      x-ruoli:
+      - amministratore
+      parameters:
+      - name: id_contatto
+        in: path
+        required: true
+        schema:
+          type: string
+          example: L2500001
+      responses:
+        '204':
+          description: Contatto cancellato. La cancellazione si registra, senza dati personali.
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+  /scansioni:
+    post:
+      tags:
+      - Scansione allo stand
+      operationId: inviaScansioni
+      summary: Invia le scansioni di visita raccolte dall’app
+      description: 'L’app è per il personale degli espositori e scansiona il QR del biglietto. Deve funzionare anche
+        senza rete e inviare le scansioni a lotti appena la connessione torna: id_client, generato dall’app, rende
+        l’invio sicuro da ripetere (le scansioni già ricevute risultano «duplicata», non si perdono né si contano
+        due volte). Una seconda scansione dello stesso biglietto allo stesso stand entro la finestra di tempo non
+        è conteggiata (proposta: 30 minuti, da confermare). Un espositore può scansionare solo il proprio stand.
+        Se il codice non esiste in biglietteria la visita si registra con riconosciuta=false.'
+      x-ruoli:
+      - espositore
+      x-stato: da confermare
+      x-domande:
+      - 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvioScansioni'
+      responses:
+        '200':
+          description: Esito di ogni scansione.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RisultatoScansioni'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '422':
+          $ref: '#/components/responses/NonElaborabile'
+  /stand/{codice_stand}/contatti:
+    post:
+      tags:
+      - Scansione allo stand
+      operationId: registraContatto
+      summary: Registra un contatto raccolto allo stand
+      description: 'Il visitatore vede una breve informativa, dichiara di essere maggiorenne, inserisce l’e-mail
+        e dà il consenso per quell’espositore (non per tutta la fiera). Si accettano solo contatti da maggiorenni:
+        422 MINORE_NON_AMMESSO per una fascia d’età minorile o se manca la dichiarazione. Per un biglietto ridotto
+        o un gratuito per bambini l’app non propone il contatto. La risposta non restituisce dati personali. Quando
+        l’app è senza rete deve poter decidere da sola se proporre il contatto: da chiarire cosa contiene il QR.'
+      x-ruoli:
+      - espositore
+      x-stato: da confermare
+      x-domande:
+      - 9
+      parameters:
+      - $ref: '#/components/parameters/CodiceStand'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuovoContatto'
+      responses:
+        '201':
+          description: Contatto registrato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContattoCreato'
+        '200':
+          description: Contatto già ricevuto con lo stesso id_client.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContattoCreato'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '404':
+          $ref: '#/components/responses/NonTrovato'
+        '422':
+          $ref: '#/components/responses/NonElaborabile'
+  /informativa/corrente:
+    get:
+      tags:
+      - Scansione allo stand
+      operationId: leggiInformativaCorrente
+      summary: Legge l’informativa in vigore
+      description: L’app la scarica e la mostra prima di raccogliere un contatto. Il contatto registra quale informativa
+        è stata mostrata, per poter dimostrare quando, a quale stand e con quale informativa è stato dato il consenso.
+      x-ruoli:
+      - espositore
+      responses:
+        '200':
+          description: L’informativa da mostrare al visitatore.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Informativa'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token con le informazioni «ruolo» (direzione, commerciale, direttore_commerciale, amministrazione,
+        staff, espositore, amministratore) e, per gli espositori, «id_espositore». Come si autenticano gli utenti,
+        in particolare gli espositori, è un punto aperto del progetto.
+    credenzialeServizio:
+      type: http
+      scheme: bearer
+      description: 'Credenziale del sistema dei varchi. Non è un utente della tabella utente: da confermare con
+        il BID.'
+  parameters:
+    IdEdizione:
+      name: id_edizione
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+        minimum: 2024
+      description: Anno dell’edizione.
+    IdEspositore:
+      name: id_espositore
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^ESP[0-9]{3,}$
+    IdContratto:
+      name: id_contratto
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^C[0-9]{4}-[0-9]{4}$
+    IdPreventivo:
+      name: id_preventivo
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    IdPagamento:
+      name: id_pagamento
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    CodiceStand:
+      name: codice_stand
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^P[1-3]-[A-Z][0-9]{2}$
+    Pagina:
+      name: pagina
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPagina:
+      name: per_pagina
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+  responses:
+    RichiestaNonValida:
+      description: Richiesta non valida.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Errore'
+    NonAutenticato:
+      description: Token assente o scaduto.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Errore'
+    NonAutorizzato:
+      description: Il ruolo non può eseguire l’operazione, oppure l’espositore chiede dati di un altro espositore.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Errore'
+    NonTrovato:
+      description: Risorsa non trovata.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Errore'
+    Conflitto:
+      description: La richiesta contrasta con lo stato attuale (per esempio stand non disponibile).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Errore'
+    NonElaborabile:
+      description: La richiesta è corretta ma viola una regola (per esempio fuori termine, sconto oltre soglia,
+        minore).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Errore'
+  schemas:
+    Errore:
+      type: object
+      required:
+      - codice
+      - messaggio
+      properties:
+        codice:
+          type: string
+          description: 'Codice stabile leggibile dalle macchine: per esempio STAND_NON_DISPONIBILE, STAND_IN_PRELAZIONE,
+            SCONTO_OLTRE_SOGLIA, SPONSORIZZAZIONE_ESAURITA, SPONSORIZZAZIONE_RISERVATA, FUORI_TERMINE, AZIONE_NON_DOVUTA,
+            MINORE_NON_AMMESSO.'
+          example: STAND_NON_DISPONIBILE
+        messaggio:
+          type: string
+          example: Lo stand P1-A02 è già opzionato per l’edizione 2026.
+        dettagli:
+          type: array
+          items:
+            type: object
+            properties:
+              campo:
+                type: string
+              motivo:
+                type: string
+    Pagina:
+      type: object
+      required:
+      - pagina
+      - per_pagina
+      - totale
+      properties:
+        pagina:
+          type: integer
+          minimum: 1
+        per_pagina:
+          type: integer
+          minimum: 1
+          maximum: 200
+        totale:
+          type: integer
+          minimum: 0
+    Edizione:
+      type: object
+      required:
+      - id_edizione
+      - nome
+      - data_inizio
+      - data_fine
+      properties:
+        id_edizione:
+          type: integer
+          format: int32
+          example: 2026
+        nome:
+          type: string
+          example: ARCADE Milano 2026
+        data_inizio:
+          type: string
+          format: date
+          example: '2026-12-18'
+        data_fine:
+          type: string
+          format: date
+          example: '2026-12-20'
+        scadenza_prelazione:
+          type: string
+          format: date
+          description: Per il 2026 è il 2026-03-31 (già passata).
+          example: '2026-03-31'
+          nullable: true
+        scadenza_saldo:
+          type: string
+          format: date
+          description: 'Calcolata: 30 giorni prima dell’apertura. Per il 2026, 2026-11-18.'
+          example: '2026-11-18'
+        scadenza_cambio_stand:
+          type: string
+          format: date
+          description: 'Calcolata: 60 giorni prima dell’apertura. Per il 2026, 2026-10-19 (già passata).'
+          example: '2026-10-19'
+        scadenza_disdetta_con_acconto:
+          type: string
+          format: date
+          description: 'Calcolata: 90 giorni prima dell’apertura. Per il 2026, 2026-09-19 (già passata).'
+          example: '2026-09-19'
+    Padiglione:
+      type: object
+      required:
+      - codice_padiglione
+      - nome
+      properties:
+        codice_padiglione:
+          type: string
+          enum:
+          - P1
+          - P2
+          - P3
+        nome:
+          type: string
+          example: Console & PC
+    StatoStand:
+      type: string
+      enum:
+      - libero
+      - opzionato
+      - in_prelazione
+      - venduto
+    Stand:
+      type: object
+      required:
+      - codice_stand
+      - codice_padiglione
+      - mq
+      - posizione
+      - attivo_dal
+      - stato
+      properties:
+        codice_stand:
+          type: string
+          pattern: ^P[1-3]-[A-Z][0-9]{2}$
+          example: P1-A01
+        codice_padiglione:
+          type: string
+          enum:
+          - P1
+          - P2
+          - P3
+        mq:
+          type: number
+          minimum: 0.1
+          example: 36
+        posizione:
+          type: string
+          enum:
+          - linea
+          - angolo
+          - penisola
+          - isola
+        attivo_dal:
+          type: integer
+          format: int32
+          example: 2024
+        stato:
+          allOf:
+          - $ref: '#/components/schemas/StatoStand'
+          description: Calcolato per l’edizione richiesta.
+        id_contratto:
+          type: string
+          description: Valorizzato se lo stand è venduto.
+          nullable: true
+        id_preventivo:
+          type: integer
+          format: int64
+          description: Valorizzato se lo stand è opzionato.
+          nullable: true
+    TipoVoce:
+      type: string
+      enum:
+      - spazio
+      - maggiorazione
+      - sponsorizzazione
+      - extra
+      - condizione
+    VoceListino:
+      type: object
+      required:
+      - id_edizione
+      - codice_voce
+      - descrizione
+      - tipo_voce
+      properties:
+        id_edizione:
+          type: integer
+          format: int32
+        codice_voce:
+          type: string
+          example: SPAZIO-P1
+        descrizione:
+          type: string
+        tipo_voce:
+          $ref: '#/components/schemas/TipoVoce'
+        unita:
+          type: string
+          example: m²
+          nullable: true
+        prezzo_unitario:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          description: Per le maggiorazioni e per l’acconto è una frazione (0,10, 0,15, 0,25, 0,30), non un importo.
+            Vuoto solo per la prelazione.
+          minimum: 0
+          nullable: true
+        quantita_disponibile:
+          type: integer
+          minimum: 0
+          nullable: true
+        quantita_residua:
+          type: integer
+          minimum: 0
+          description: 'Calcolata: disponibile meno già venduta nell’edizione. Esaurita non si può più proporre.'
+          nullable: true
+        codice_padiglione_vincolo:
+          type: string
+          enum:
+          - P1
+          - P2
+          - P3
+          description: 'Padiglione a cui è riservata la voce: P3 per l’Indie Showcase. Da confermare se vale anche
+            per lo storico.'
+          nullable: true
+        disponibilita:
+          type: string
+          example: da planimetria
+          nullable: true
+        note:
+          type: string
+          nullable: true
+    Espositore:
+      type: object
+      required:
+      - id_espositore
+      - ragione_sociale
+      - partita_iva
+      properties:
+        id_espositore:
+          type: string
+          pattern: ^ESP[0-9]{3,}$
+          example: ESP001
+        ragione_sociale:
+          type: string
+        partita_iva:
+          type: string
+          pattern: ^[0-9]{11}$
+          description: 'Sempre testo di 11 cifre: gli zeri iniziali contano.'
+          example: 01965569816
+        settore:
+          type: string
+          nullable: true
+        citta:
+          type: string
+          nullable: true
+        referente:
+          type: string
+          description: Dato personale, visibile solo a commerciale e amministrazione.
+          nullable: true
+        email_referente:
+          type: string
+          format: email
+          description: Dato personale, visibile solo a commerciale e amministrazione.
+          nullable: true
+    NuovoEspositore:
+      type: object
+      required:
+      - ragione_sociale
+      - partita_iva
+      properties:
+        ragione_sociale:
+          type: string
+        partita_iva:
+          type: string
+          pattern: ^[0-9]{11}$
+          description: 'Sempre testo di 11 cifre: gli zeri iniziali contano.'
+          example: 01965569816
+        settore:
+          type: string
+          nullable: true
+        citta:
+          type: string
+          nullable: true
+        referente:
+          type: string
+          description: Dato personale, visibile solo a commerciale e amministrazione.
+          nullable: true
+        email_referente:
+          type: string
+          format: email
+          description: Dato personale, visibile solo a commerciale e amministrazione.
+          nullable: true
+    StatoRinnovo:
+      type: string
+      enum:
+      - da_proporre
+      - preventivo_inviato
+      - rinnovato
+    Rinnovo:
+      type: object
+      required:
+      - id_espositore
+      - ragione_sociale
+      - id_contratto_precedente
+      - codice_stand_precedente
+      - stato
+      properties:
+        id_espositore:
+          type: string
+        ragione_sociale:
+          type: string
+        id_contratto_precedente:
+          type: string
+        codice_stand_precedente:
+          type: string
+        stato:
+          $ref: '#/components/schemas/StatoRinnovo'
+    StatoPreventivo:
+      type: string
+      enum:
+      - bozza
+      - in_approvazione
+      - inviato
+      - accettato
+      - perso
+      - scaduto
+      description: I sei stati usati dal cliente. «In approvazione» quando lo sconto supera il 10%. «Scaduto» dopo
+        30 giorni dall’invio.
+    RigaDocumento:
+      type: object
+      required:
+      - riga
+      - codice_voce
+      - quantita
+      - prezzo_unitario
+      - importo_eur
+      properties:
+        riga:
+          type: integer
+          minimum: 1
+        codice_voce:
+          type: string
+          example: EX-EL6
+        descrizione:
+          type: string
+          example: Allaccio elettrico
+          nullable: true
+        quantita:
+          type: number
+          minimum: 0
+        prezzo_unitario:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          description: Per la maggiorazione è l’importo calcolato (percentuale per il costo dell’area), non la percentuale
+            del listino.
+        importo_eur:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          description: Quantità per prezzo unitario.
+    RigaPreventivoInput:
+      type: object
+      required:
+      - codice_voce
+      - quantita
+      properties:
+        codice_voce:
+          type: string
+          description: Una voce EX- o SP- del listino dell’edizione.
+          example: SP-SOCIAL
+        quantita:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+    NuovoPreventivo:
+      type: object
+      required:
+      - id_edizione
+      - id_espositore
+      - codice_stand
+      properties:
+        id_edizione:
+          type: integer
+          format: int32
+        id_espositore:
+          type: string
+        codice_stand:
+          type: string
+          pattern: ^P[1-3]-[A-Z][0-9]{2}$
+        righe:
+          type: array
+          items:
+            $ref: '#/components/schemas/RigaPreventivoInput'
+          description: Solo extra e sponsorizzazioni.
+        sconto_pct:
+          type: number
+          minimum: 0
+          maximum: 0.2
+          default: 0
+          description: Frazione tra 0 e 0,2 (0,1 = 10%). Fino a 0,10 decide il commerciale; da 0,10 a 0,20 serve
+            il direttore commerciale. Comprende l’eventuale sconto fedeltà del 5%.
+        in_prelazione:
+          type: boolean
+          default: false
+          description: 'Vero per chi rinnova nel periodo di prelazione: dà lo sconto fedeltà del 5%.'
+        aliquota_iva:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.22
+          description: 'Di norma 22%. Per le aziende estere la decide l’amministrazione: solo il suo ruolo può modificarla.'
+    Preventivo:
+      type: object
+      required:
+      - id_preventivo
+      - id_edizione
+      - id_espositore
+      - codice_stand
+      - data_creazione
+      - stato
+      - imponibile_listino_eur
+      - sconto_pct
+      - imponibile_eur
+      - aliquota_iva
+      properties:
+        id_preventivo:
+          type: integer
+          format: int64
+        id_edizione:
+          type: integer
+          format: int32
+        id_espositore:
+          type: string
+        codice_stand:
+          type: string
+        data_creazione:
+          type: string
+          format: date
+        inviato_il:
+          type: string
+          format: date-time
+          nullable: true
+        valido_fino:
+          type: string
+          format: date
+          description: 30 giorni dopo l’invio.
+          nullable: true
+        imponibile_listino_eur:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          description: Somma delle righe.
+        sconto_pct:
+          type: number
+          minimum: 0
+          maximum: 0.2
+        imponibile_eur:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          description: Importo dopo lo sconto, senza IVA.
+        aliquota_iva:
+          type: number
+          minimum: 0
+          maximum: 1
+        iva_eur:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          description: 'Calcolata: imponibile per aliquota.'
+        totale_eur:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          description: 'Calcolato: imponibile più IVA.'
+        stato:
+          $ref: '#/components/schemas/StatoPreventivo'
+        in_prelazione:
+          type: boolean
+        approvato_da:
+          type: integer
+          format: int64
+          nullable: true
+        approvato_il:
+          type: string
+          format: date-time
+          nullable: true
+        id_contratto:
+          type: string
+          nullable: true
+        righe:
+          type: array
+          items:
+            $ref: '#/components/schemas/RigaDocumento'
+    InvioPreventivo:
+      type: object
+      properties:
+        destinatario:
+          type: string
+          format: email
+          description: Se assente, l’e-mail del referente dell’espositore.
+    DecisioneApprovazione:
+      type: object
+      required:
+      - esito
+      properties:
+        esito:
+          type: string
+          enum:
+          - approvato
+          - respinto
+        motivo:
+          type: string
+          maxLength: 500
+    FirmaContratto:
+      type: object
+      properties:
+        data_firma:
+          type: string
+          format: date
+          description: Se assente, la data di oggi.
+    Variazione:
+      type: object
+      required:
+      - id_variazione
+      - tipo
+      - richiesta_il
+      properties:
+        id_variazione:
+          type: integer
+          format: int64
+        tipo:
+          type: string
+          enum:
+          - cambio_stand
+          - disdetta
+        richiesta_il:
+          type: string
+          format: date
+        codice_stand_precedente:
+          type: string
+          nullable: true
+        codice_stand_nuovo:
+          type: string
+          nullable: true
+        differenza_eur:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          description: 'Cambio stand: positiva se l’espositore paga, negativa se recupera.'
+          nullable: true
+    CambioStand:
+      type: object
+      required:
+      - codice_stand_nuovo
+      properties:
+        codice_stand_nuovo:
+          type: string
+          pattern: ^P[1-3]-[A-Z][0-9]{2}$
+        richiesta_il:
+          type: string
+          format: date
+          description: Se assente, la data di oggi.
+    Disdetta:
+      type: object
+      properties:
+        richiesta_il:
+          type: string
+          format: date
+          description: Se assente, la data di oggi.
+    EsitoDisdetta:
+      type: object
+      required:
+      - contratto
+      - importo_dovuto_eur
+      - disdetta_tempestiva
+      properties:
+        contratto:
+          $ref: '#/components/schemas/Contratto'
+        disdetta_tempestiva:
+          type: boolean
+          description: Vero se la richiesta è entro 90 giorni dall’apertura.
+        importo_dovuto_eur:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          description: Con la disdetta tempestiva è l’acconto, altrimenti l’intero importo del contratto.
+    Contratto:
+      type: object
+      required:
+      - id_contratto
+      - id_edizione
+      - id_espositore
+      - codice_stand
+      - data_firma
+      - imponibile_listino_eur
+      - sconto_pct
+      - imponibile_eur
+      - rinnovo
+      - stato
+      properties:
+        id_contratto:
+          type: string
+          pattern: ^C[0-9]{4}-[0-9]{4}$
+          example: C2026-0001
+        id_edizione:
+          type: integer
+          format: int32
+        id_espositore:
+          type: string
+        id_preventivo:
+          type: integer
+          format: int64
+          description: Vuoto per i 198 contratti storici.
+          nullable: true
+        codice_stand:
+          type: string
+        data_firma:
+          type: string
+          format: date
+        imponibile_listino_eur:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+        sconto_pct:
+          type: number
+          minimum: 0
+          maximum: 0.2
+        imponibile_eur:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+        aliquota_iva:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Vuota per i contratti storici, dove esiste solo l’imponibile.
+          nullable: true
+        iva_eur:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          nullable: true
+        totale_eur:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          nullable: true
+        rinnovo:
+          type: boolean
+          description: 'Presente all’edizione precedente, anche su uno stand diverso. Nel 2024 è sempre falso: è
+            la prima edizione con dati.'
+        metodo_abbinamento:
+          type: string
+          enum:
+          - id da sistema sorgente
+          - nome normalizzato
+          - somiglianza
+          nullable: true
+        stato:
+          type: string
+          enum:
+          - attivo
+          - disdetto
+        disdetto_il:
+          type: string
+          format: date
+          nullable: true
+        deroga_allestimento_il:
+          type: string
+          format: date
+          nullable: true
+        deroga_allestimento_da:
+          type: integer
+          format: int64
+          nullable: true
+        allestimento_consentito:
+          type: boolean
+          description: 'Calcolato: vero se il saldo è pagato oppure esiste una deroga.'
+        righe:
+          type: array
+          items:
+            $ref: '#/components/schemas/RigaDocumento'
+        pagamenti:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pagamento'
+        variazioni:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variazione'
+    StatoPagamento:
+      type: string
+      enum:
+      - da_pagare
+      - scaduto
+      - pagato_nei_termini
+      - pagato_in_ritardo
+      description: 'Calcolato. «Scaduto» vale per qualunque edizione: un saldo senza data oltre la scadenza è un
+        credito aperto.'
+    Pagamento:
+      type: object
+      required:
+      - id_pagamento
+      - id_contratto
+      - tipo
+      - scadenza
+      - importo
+      - stato
+      properties:
+        id_pagamento:
+          type: integer
+          format: int64
+        id_contratto:
+          type: string
+        tipo:
+          type: string
+          enum:
+          - acconto
+          - saldo
+        scadenza:
+          type: string
+          format: date
+        pagato_il:
+          type: string
+          format: date
+          nullable: true
+        importo:
+          type: number
+          format: decimal
+          multipleOf: 0.01
+          description: 'Acconto: 30% dell’imponibile del contratto. Saldo: il resto. Sull’imponibile, senza IVA
+            (da confermare, domanda 5).'
+          minimum: 0
+        stato:
+          $ref: '#/components/schemas/StatoPagamento'
+        data_dedotta:
+          type: boolean
+          description: Vero per gli 8 acconti storici incassati alla data del saldo.
+        annullato:
+          type: boolean
+          description: Vero per il saldo annullato dopo una disdetta tempestiva.
+        solleciti_inviati:
+          type: integer
+          minimum: 0
+    RegistraPagamento:
+      type: object
+      required:
+      - pagato_il
+      properties:
+        pagato_il:
+          type: string
+          format: date
+    TipoSollecito:
+      type: string
+      enum:
+      - promemoria
+      - sollecito
+      - passaggio_amministrazione
+      description: 'Calendario: promemoria 7 giorni prima della scadenza, sollecito il giorno dopo, passaggio all’amministrazione
+        dopo altri 15 giorni.'
+    NuovoSollecito:
+      type: object
+      required:
+      - tipo
+      properties:
+        tipo:
+          $ref: '#/components/schemas/TipoSollecito'
+        destinatario:
+          type: string
+          format: email
+          description: Per il passaggio, l’indirizzo dell’amministrazione.
+        inviato_il:
+          type: string
+          format: date-time
+          description: Se assente, il momento della chiamata.
+    Sollecito:
+      type: object
+      required:
+      - id_sollecito
+      - id_pagamento
+      - tipo
+      - inviato_il
+      properties:
+        id_sollecito:
+          type: integer
+          format: int64
+        id_pagamento:
+          type: integer
+          format: int64
+        tipo:
+          $ref: '#/components/schemas/TipoSollecito'
+        inviato_il:
+          type: string
+          format: date-time
+        destinatario:
+          type: string
+          format: email
+          nullable: true
+    PuntoIngressi:
+      type: object
+      required:
+      - codice_padiglione
+      - inizio
+      - ingressi_validi
+      - ingressi_rifiutati
+      properties:
+        codice_padiglione:
+          type: string
+          enum:
+          - P1
+          - P2
+          - P3
+        inizio:
+          type: string
+          format: date-time
+          description: Inizio dell’intervallo, in ora italiana.
+        ingressi_validi:
+          type: integer
+          minimum: 0
+        ingressi_rifiutati:
+          type: integer
+          minimum: 0
+    AndamentoIngressi:
+      type: object
+      required:
+      - id_edizione
+      - aggiornato_il
+      - intervallo
+      - serie
+      properties:
+        id_edizione:
+          type: integer
+          format: int32
+        aggiornato_il:
+          type: string
+          format: date-time
+        intervallo:
+          type: string
+          enum:
+          - 1m
+          - 5m
+          - 15m
+          - 1h
+        serie:
+          type: array
+          items:
+            $ref: '#/components/schemas/PuntoIngressi'
+        non_riconosciuti:
+          type: integer
+          minimum: 0
+          description: Letture con un codice che non esiste in biglietteria (35 per edizione nei dati storici, tutte
+            rifiutate).
+    LetturaVarco:
+      type: object
+      required:
+      - codice_varco
+      - codice_letto
+      - momento
+      - esito
+      properties:
+        id_lettura:
+          type: string
+          description: 'Identificativo della lettura nel sistema dei varchi, se disponibile. Facoltativo: evita
+            i doppioni.'
+          x-stato: da confermare
+        codice_varco:
+          type: string
+          description: 'Uno dei 4 varchi: P1-Nord, P1-Sud, P2-Ovest, P3-Est.'
+          example: P1-Nord
+        codice_letto:
+          type: string
+          example: T26000001
+        momento:
+          type: string
+          format: date-time
+          description: 'Con fuso orario (per esempio …Z o …+01:00): nel 2025 i varchi registravano in UTC.'
+          example: '2026-12-18T09:03:12+01:00'
+        esito:
+          type: string
+          enum:
+          - valido
+          - rifiutato
+          description: 'Nei file storici: 1 o 0 (2024), OK o KO (2025).'
+    InvioLetture:
+      type: object
+      required:
+      - letture
+      properties:
+        letture:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/LetturaVarco'
+    RisultatoInvioLetture:
+      type: object
+      required:
+      - accettate
+      properties:
+        accettate:
+          type: integer
+          minimum: 0
+        scartate:
+          type: array
+          items:
+            type: object
+            properties:
+              indice:
+                type: integer
+                minimum: 0
+              motivo:
+                type: string
+    RiepilogoEspositore:
+      type: object
+      required:
+      - id_espositore
+      - id_edizione
+      - scanner_usato
+      - contatti
+      properties:
+        id_espositore:
+          type: string
+        id_edizione:
+          type: integer
+          format: int32
+        codice_stand:
+          type: string
+          nullable: true
+        scanner_usato:
+          type: boolean
+          description: 'Falso se lo stand non ha usato l’app: le visite sono allora vuote, non zero (26 stand su
+            110 nel 2025).'
+        visite_totali:
+          type: integer
+          minimum: 0
+          nullable: true
+        contatti:
+          type: integer
+          minimum: 0
+          description: Contatti che hanno dato il consenso all’espositore.
+        visite_edizione_precedente:
+          type: integer
+          minimum: 0
+          description: Vuoto se l’edizione precedente non ha dati di visite (solo il 2025 li ha).
+          nullable: true
+    VisitaOra:
+      type: object
+      required:
+      - codice_stand
+      - data
+      - scansioni
+      properties:
+        codice_stand:
+          type: string
+        data:
+          type: string
+          format: date
+        ora:
+          type: string
+          pattern: ^([01][0-9]|2[0-3]):00$
+          description: Fascia oraria, da 09:00 a 18:00. Vuoto se raggruppa=giorno.
+          example: 09:00
+          nullable: true
+        scansioni:
+          type: integer
+          minimum: 0
+    MediaPadiglione:
+      type: object
+      required:
+      - data
+      - stand_nel_campione
+      properties:
+        data:
+          type: string
+          format: date
+        ora:
+          type: string
+          example: 09:00
+          nullable: true
+        media_scansioni:
+          type: number
+          description: Vuota se gli stand nel campione sono meno di cinque.
+          nullable: true
+        stand_nel_campione:
+          type: integer
+          minimum: 0
+    VisiteEspositore:
+      type: object
+      required:
+      - id_edizione
+      - scanner_usato
+      - visite
+      properties:
+        id_edizione:
+          type: integer
+          format: int32
+        scanner_usato:
+          type: boolean
+        visite:
+          type: array
+          items:
+            $ref: '#/components/schemas/VisitaOra'
+        media_padiglione:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaPadiglione'
+    Contatto:
+      type: object
+      required:
+      - id_contatto
+      - id_edizione
+      - codice_stand
+      - momento
+      - email
+      properties:
+        id_contatto:
+          type: string
+          example: L2500001
+        id_edizione:
+          type: integer
+          format: int32
+        codice_stand:
+          type: string
+        momento:
+          type: string
+          format: date-time
+        email:
+          type: string
+          format: email
+          description: Dato personale.
+        fascia_eta:
+          type: string
+          enum:
+          - 18-24
+          - 25-34
+          - 35-44
+          - 45+
+          nullable: true
+        provincia:
+          type: string
+          pattern: ^[A-Z]{2}$
+          nullable: true
+        interesse:
+          type: string
+          enum:
+          - beta test
+          - newsletter
+          - evento
+          - prodotto
+          - lavoro/stage
+          nullable: true
+    ScansioneInput:
+      type: object
+      required:
+      - id_client
+      - codice_stand
+      - codice_letto
+      properties:
+        id_client:
+          type: string
+          format: uuid
+          description: Generato dall’app a ogni scansione. Rende sicuro ripetere l’invio.
+        codice_stand:
+          type: string
+          pattern: ^P[1-3]-[A-Z][0-9]{2}$
+        codice_letto:
+          type: string
+          example: T26000001
+        momento:
+          type: string
+          format: date-time
+          description: Momento della scansione sul telefono, anche se l’invio avviene dopo.
+    InvioScansioni:
+      type: object
+      required:
+      - scansioni
+      properties:
+        scansioni:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/ScansioneInput'
+    EsitoScansione:
+      type: object
+      required:
+      - id_client
+      - stato
+      properties:
+        id_client:
+          type: string
+          format: uuid
+        stato:
+          type: string
+          enum:
+          - registrata
+          - duplicata
+          - scartata
+          description: «Duplicata» se l’id_client era già stato ricevuto.
+        riconosciuta:
+          type: boolean
+          description: Falso se il codice non esiste in biglietteria.
+        conteggiata:
+          type: boolean
+          description: Falso se è una seconda scansione dello stesso biglietto allo stesso stand entro la finestra
+            di tempo.
+        proponi_contatto:
+          type: boolean
+          description: 'Falso per un biglietto ridotto o un gratuito per bambini: l’app non propone il contatto.'
+        motivo:
+          type: string
+    RisultatoScansioni:
+      type: object
+      required:
+      - esiti
+      properties:
+        esiti:
+          type: array
+          items:
+            $ref: '#/components/schemas/EsitoScansione'
+    NuovoContatto:
+      type: object
+      required:
+      - id_client
+      - email
+      - consenso_marketing
+      - maggiorenne_dichiarato
+      - id_informativa
+      properties:
+        id_client:
+          type: string
+          format: uuid
+          description: 'Generato dall’app: ripetere l’invio non crea un secondo contatto.'
+        email:
+          type: string
+          format: email
+        fascia_eta:
+          type: string
+          enum:
+          - 0-7
+          - 8-13
+          - 14-17
+          - 18-24
+          - 25-34
+          - 35-44
+          - 45+
+          description: Le fasce minorili sono rifiutate con MINORE_NON_AMMESSO.
+        provincia:
+          type: string
+          pattern: ^[A-Z]{2}$
+        interesse:
+          type: string
+          enum:
+          - beta test
+          - newsletter
+          - evento
+          - prodotto
+          - lavoro/stage
+        consenso_marketing:
+          type: boolean
+          enum:
+          - true
+          description: Consenso per quell’espositore, non per tutta la fiera.
+        maggiorenne_dichiarato:
+          type: boolean
+          enum:
+          - true
+          description: Dichiarazione del visitatore nell’app.
+        id_informativa:
+          type: integer
+          description: L’informativa mostrata, da GET /informativa/corrente.
+        id_client_scansione:
+          type: string
+          format: uuid
+          description: La scansione da cui nasce il contatto, se esiste.
+    ContattoCreato:
+      type: object
+      required:
+      - id_contatto
+      properties:
+        id_contatto:
+          type: string
+    Informativa:
+      type: object
+      required:
+      - id_informativa
+      - versione
+      - testo
+      - in_vigore_dal
+      properties:
+        id_informativa:
+          type: integer
+        versione:
+          type: string
+        testo:
+          type: string
+        in_vigore_dal:
+          type: string
+          format: date
+    Anomalia:
+      type: object
+      required:
+      - id_anomalia
+      - tabella
+      - chiave_record
+      - tipo
+      - stato
+      - rilevata_il
+      properties:
+        id_anomalia:
+          type: integer
+          format: int64
+        tabella:
+          type: string
+          example: contratto
+        chiave_record:
+          type: string
+          example: C2024-0078
+        tipo:
+          type: string
+          example: saldo prima dell’acconto
+        descrizione:
+          type: string
+          nullable: true
+        trattamento:
+          type: string
+          nullable: true
+        stato:
+          type: string
+          enum:
+          - aperta
+          - gestita
+          - da_confermare
+        rilevata_il:
+          type: string
+          format: date-time
