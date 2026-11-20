@@ -1,19 +1,19 @@
 openapi: 3.0.3
 info:
   title: ARCADE Milano – API della piattaforma
-  version: 0.2.0-bozza
+  version: 0.4.0-bozza
   description: |-
     Bozza preparata dal team BAD per il SAL 1 (data da definire), **da validare con il BID**, che realizza l’API. Include le risposte del cliente del 22 ottobre 2026 e segue lo schema dati (stessi nomi di tabelle e campi, in minuscolo con trattini bassi).
 
     **Convenzioni.** Percorsi sotto `/v1`. Identificativi di testo come nei dati (ESP001, C2024-0001, P1-A01); numeri generati per le entità nuove. Date `YYYY-MM-DD`. Orari in formato ISO 8601 con fuso orario, restituiti in ora italiana (Europe/Rome). Importi in euro. Sconti e aliquote come frazione tra 0 e 1. Elenchi con `pagina` e `per_pagina` (massimo 200). Errori con corpo `{codice, messaggio, dettagli}`.
 
-    **Ruoli.** direzione, commerciale, direttore_commerciale, amministrazione, staff, espositore, amministratore, più la credenziale di servizio dei varchi. Direzione e staff vedono solo numeri complessivi. Il commerciale vede espositori e contratti, l’amministrazione contratti e pagamenti. I contatti dei visitatori li vede solo l’espositore a cui sono stati lasciati, più l’amministratore per le cancellazioni.
+    **Ruoli.** direzione, commerciale, direttore_commerciale, amministrazione, staff, espositore, amministratore, più la credenziale di servizio dei varchi. Il direttore commerciale è un ruolo a parte. Direzione e staff vedono solo numeri complessivi. Il commerciale vede espositori e contratti, e lo stato dei pagamenti ma senza modificarlo; l’amministrazione vede contratti e pagamenti e registra sempre gli incassi. I contatti dei visitatori li vede solo l’espositore a cui sono stati lasciati, più l’amministratore per le cancellazioni.
 
     **Sicurezza e privacy.** Ogni espositore vede solo i propri dati: lo verifica il server a partire dal token, non solo l’interfaccia. Dei minori non si conserva nessun dato riconoscibile: compaiono solo nei numeri complessivi e non si accettano contatti da minorenni. Il consenso si raccoglie solo allo stand, per quell’espositore, con prova di quando e con quale informativa. I contatti si cancellano dopo due anni dalla fiera.
 
     **Importi.** Gli importi sono imponibili. L’IVA si mostra a parte su preventivi e contratti (`aliquota_iva`, `iva_eur`, `totale_eur`). Fatturazione e regole fiscali non sono comprese.
 
-    **Cosa è ancora aperto.** Le operazioni con `x-stato` «da confermare», «parziale» o «proposta» dipendono da risposte del cliente. `x-domande` indica il numero della domanda nella sezione 11 dell’Addendum 1 all’analisi funzionale. Per reggere il congelamento, i campi che dipendono da queste risposte sono facoltativi: le aggiunte future non rompono il contratto. Non sono comprese: fatturazione e regole fiscali, pagamenti online, vendita online dei biglietti, app per i visitatori, lista d’attesa.
+    **Cosa è ancora aperto.** Le operazioni con `x-stato` «da confermare», «parziale» o «proposta» dipendono da risposte del cliente. `x-domande` indica il numero della domanda nella sezione 11.B dell’analisi funzionale. Per reggere il congelamento, i campi che dipendono da queste risposte sono facoltativi: le aggiunte future non rompono il contratto. Non sono comprese: fatturazione e regole fiscali, pagamenti online, vendita online dei biglietti, app per i visitatori, lista d’attesa.
 servers:
 - url: https://api.example.org/v1
   description: 'Indirizzo segnaposto: da definire con il BID.'
@@ -128,9 +128,10 @@ paths:
       operationId: elencaStand
       summary: Elenca gli stand di un’edizione con il loro stato
       description: 'Lo stato non è salvato: è calcolato, con questa priorità. «venduto» se esiste un contratto attivo
-        per lo stand nell’edizione. «opzionato» se esiste un preventivo «in_approvazione» o «inviato» non scaduto.
-        «in_prelazione» se la prelazione non è scaduta e lo stand era venduto nell’edizione precedente. Altrimenti
-        «libero». Gli stand sono 130 (45 in P1, 40 in P2, 45 in P3). Nel 2026 la prelazione è già scaduta (31 marzo).'
+        per lo stand nell’edizione. «opzionato» se esiste un preventivo «in_approvazione» o «inviato» non scaduto
+        (la bozza non blocca lo stand). «in_prelazione» se la prelazione non è scaduta (31 marzo) e lo stand era
+        venduto nell’edizione precedente: può essere opzionato solo dall’espositore che lo aveva. Altrimenti «libero».
+        Gli stand sono 130 (45 in P1, 40 in P2, 45 in P3). Nel 2026 la prelazione è già scaduta (31 marzo).'
       x-ruoli:
       - commerciale
       - direttore_commerciale
@@ -224,8 +225,6 @@ paths:
       - commerciale
       - direttore_commerciale
       x-stato: proposta
-      x-domande:
-      - 11
       parameters:
       - $ref: '#/components/parameters/IdEdizione'
       - name: stato
@@ -410,19 +409,17 @@ paths:
       - Gestione commerciale
       operationId: creaPreventivo
       summary: Crea un preventivo in bozza
-      description: 'Lo stand deve essere libero, oppure in prelazione se l’espositore è quello dell’edizione precedente
-        (con in_prelazione=true): altrimenti 409 STAND_NON_DISPONIBILE o STAND_IN_PRELAZIONE. Il server aggiunge
-        da solo la riga di area (SPAZIO) e la maggiorazione (angolo 10%, penisola 15%, isola 25%); nel corpo si
-        indicano solo extra e sponsorizzazioni. Le sponsorizzazioni valgono solo insieme a uno stand; se sono esaurite
-        si risponde 409 SPONSORIZZAZIONE_ESAURITA, se la voce è riservata a un altro padiglione 422 SPONSORIZZAZIONE_RISERVATA.
-        Uno sconto oltre 0,20 dà 422 SCONTO_OLTRE_SOGLIA. Il preventivo vale 30 giorni dall’invio. L’IVA è mostrata
-        a parte (aliquota 22% salvo diversa decisione dell’amministrazione).'
+      description: 'Lo stand deve essere libero, oppure in prelazione se l’espositore è quello che lo aveva nell’edizione
+        precedente: altrimenti 409 STAND_NON_DISPONIBILE o STAND_IN_PRELAZIONE. La bozza non blocca lo stand. Il
+        campo in_prelazione e lo sconto fedeltà del 5% li calcola il server, non si inseriscono. Dopo la chiusura
+        delle vendite (15 giorni prima dell’apertura, per il 2026 il 3 dicembre) risponde 422 VENDITE_CHIUSE. Il
+        server aggiunge da solo la riga di area (SPAZIO) e la maggiorazione (angolo 10%, penisola 15%, isola 25%);
+        nel corpo si indicano solo extra e sponsorizzazioni. Le sponsorizzazioni valgono solo insieme a uno stand;
+        se sono esaurite si risponde 409 SPONSORIZZAZIONE_ESAURITA, se la voce è riservata a un altro padiglione
+        422 SPONSORIZZAZIONE_RISERVATA. Uno sconto oltre 0,20 dà 422 SCONTO_OLTRE_SOGLIA. Il preventivo vale 30
+        giorni dall’invio. L’IVA è mostrata a parte (aliquota 22% salvo diversa decisione dell’amministrazione).'
       x-ruoli:
       - commerciale
-      x-stato: da confermare
-      x-domande:
-      - 2
-      - 7
       requestBody:
         required: true
         content:
@@ -481,14 +478,11 @@ paths:
       operationId: richiediInvioPreventivo
       summary: Invia il preventivo, o lo manda in approvazione
       description: 'Fino al 10% di sconto il preventivo passa da «bozza» a «inviato», con data di invio. Oltre il
-        10% passa a «in_approvazione» e attende il direttore commerciale. L’e-mail all’espositore è inviata dal
-        flusso Power Automate «Invia preventivo»: l’API registra l’invio e il flusso la chiama. Da confermare chi
-        invia l’e-mail e come.'
+        10% passa a «in_approvazione» e attende il direttore commerciale. L’e-mail all’espositore la invia la piattaforma
+        con il flusso «Invia preventivo» (confermato dal cliente): l’API registra l’invio e il flusso la chiama.
+        Quando il preventivo va in approvazione si registra in_approvazione_dal.'
       x-ruoli:
       - commerciale
-      x-stato: da confermare
-      x-domande:
-      - 2
       parameters:
       - $ref: '#/components/parameters/IdPreventivo'
       requestBody:
@@ -527,13 +521,15 @@ paths:
       operationId: decidiApprovazionePreventivo
       summary: Approva o respinge uno sconto oltre il 10%
       description: 'Per gli sconti dal 10% al 20% decide il direttore commerciale. Se approva, il preventivo viene
-        inviato (stato «inviato», con approvato_da e approvato_il). Se respinge torna in bozza: da confermare. Oltre
-        il 20% non è possibile.'
+        inviato (stato «inviato», con approvato_da e approvato_il). Se respinge torna in bozza (confermato dal cliente).
+        Un preventivo in approvazione blocca lo stand ma non scade da solo: dopo 3 giorni la piattaforma avvisa
+        il direttore commerciale e dopo 7 giorni senza decisione il preventivo torna in bozza e lo stand si libera
+        (regola proposta, punto aperto 1). Oltre il 20% non è possibile.'
       x-ruoli:
       - direttore_commerciale
-      x-stato: da confermare
+      x-stato: proposta
       x-domande:
-      - 3
+      - 1
       parameters:
       - $ref: '#/components/parameters/IdPreventivo'
       requestBody:
@@ -608,7 +604,8 @@ paths:
       description: 'In un’unica operazione: il preventivo passa ad «accettato», nasce il contratto con le righe
         copiate dal preventivo e l’aliquota IVA, e si creano i due pagamenti. Acconto: 30% dell’imponibile, scadenza
         15 giorni dopo la firma. Saldo: 70% dell’imponibile, scadenza 30 giorni prima dell’apertura (18 novembre
-        2026).'
+        2026). Se la scadenza dell’acconto cadrebbe dopo quella del saldo, acconto e saldo scadono entrambi 15 giorni
+        prima dell’apertura (3 dicembre 2026). Dopo la chiusura delle vendite risponde 422 VENDITE_CHIUSE.'
       x-ruoli:
       - commerciale
       parameters:
@@ -636,6 +633,8 @@ paths:
           $ref: '#/components/responses/NonTrovato'
         '409':
           $ref: '#/components/responses/Conflitto'
+        '422':
+          $ref: '#/components/responses/NonElaborabile'
   /contratti:
     get:
       tags:
@@ -724,14 +723,12 @@ paths:
       summary: Cambia lo stand di un contratto
       description: 'Possibile fino a 60 giorni dall’apertura (per il 2026 fino al 19 ottobre: scadenza già passata).
         Oltre il termine 422 FUORI_TERMINE. Se il nuovo stand non è libero 409 STAND_NON_DISPONIBILE. Le righe del
-        contratto sono ricalcolate; il conguaglio si paga o si recupera. Come si somma il conguaglio al saldo è
-        da chiarire.'
+        contratto sono ricalcolate e la differenza di prezzo si somma al saldo: l’acconto non cambia e i pagamenti
+        restano due. Se il saldo è già pagato, la differenza la gestisce l’amministrazione fuori dalla piattaforma:
+        la variazione ha conguaglio_fuori_piattaforma=true e i pagamenti non cambiano.'
       x-ruoli:
       - commerciale
       - amministrazione
-      x-stato: da confermare
-      x-domande:
-      - 4
       parameters:
       - $ref: '#/components/parameters/IdContratto'
       requestBody:
@@ -767,13 +764,11 @@ paths:
       summary: Registra la disdetta di un contratto
       description: 'Fino a 90 giorni dall’apertura (per il 2026 fino al 19 settembre: scadenza già passata) si trattiene
         l’acconto e il saldo risulta annullato. Dopo l’espositore deve l’intero importo. Lo stand torna libero.
-        Cosa vale per chi firma dopo le scadenze 2026 è da chiarire.'
+        Per chi firma dopo le scadenze 2026 il cambio stand non è possibile e con la disdetta si deve l’intero importo
+        (confermato dal cliente).'
       x-ruoli:
       - commerciale
       - amministrazione
-      x-stato: da confermare
-      x-domande:
-      - 4
       parameters:
       - $ref: '#/components/parameters/IdContratto'
       requestBody:
@@ -834,16 +829,15 @@ paths:
       - Gestione commerciale
       operationId: elencaPagamenti
       summary: Elenca i pagamenti
-      description: Con azione_dovuta il flusso programmato ottiene i pagamenti per cui oggi è dovuto un promemoria
+      description: 'Con azione_dovuta il flusso programmato ottiene i pagamenti per cui oggi è dovuto un promemoria
         (7 giorni prima della scadenza), un sollecito (il giorno dopo) o il passaggio all’amministrazione (16 giorni
         dopo la scadenza) e non ancora registrato. Con stato=scaduto, senza filtro sull’edizione, si ottengono i
-        crediti aperti di tutte le edizioni. Il commerciale vede i pagamenti solo se il cliente lo conferma.
+        crediti aperti di tutte le edizioni. Il commerciale vede lo stato dei pagamenti ma non lo modifica (confermato
+        dal cliente). I promemoria e i solleciti valgono solo per l’edizione in corso: i crediti aperti delle edizioni
+        concluse si mostrano all’amministrazione, senza solleciti automatici (confermato dal cliente).'
       x-ruoli:
       - amministrazione
       - commerciale
-      x-stato: da confermare
-      x-domande:
-      - 3
       parameters:
       - name: id_edizione
         in: query
@@ -892,12 +886,11 @@ paths:
       - Gestione commerciale
       operationId: registraPagamento
       summary: Registra la data in cui un pagamento è arrivato
-      description: 'L’importo non si inserisce: è calcolato (acconto 30% dell’imponibile, saldo il resto). I pagamenti
-        si registrano a mano: i pagamenti online e la fatturazione non sono compresi.'
+      description: 'L’importo non si inserisce: è calcolato (acconto 30% dell’imponibile, saldo il resto). Gli incassi
+        li registra sempre l’amministrazione, a mano: i pagamenti online e la fatturazione non sono compresi. Per
+        ogni pagamento si mostrano scadenza, data di incasso e stato.'
       x-ruoli:
       - amministrazione
-      x-domande:
-      - 5
       parameters:
       - $ref: '#/components/parameters/IdPagamento'
       requestBody:
@@ -929,16 +922,15 @@ paths:
       - Gestione commerciale
       operationId: registraSollecito
       summary: Registra un promemoria, un sollecito o il passaggio all’amministrazione
-      description: 'Chiamato dal flusso programmato dopo l’invio dell’e-mail. Il server verifica il calendario:
-        409 AZIONE_NON_DOVUTA se non è il momento. 422 se il pagamento appartiene a un’edizione conclusa: i crediti
-        aperti di quelle edizioni si mostrano all’amministrazione, senza solleciti automatici (da confermare). Nessuna
-        penale né interessi di mora.'
+      description: 'Promemoria e primo sollecito li invia la piattaforma con un flusso programmato (come il preventivo)
+        e il commerciale li segue; dal passaggio all’amministrazione in poi i solleciti li segue l’amministrazione.
+        Il flusso chiama questa operazione dopo l’invio dell’e-mail. Il server verifica il calendario: 409 AZIONE_NON_DOVUTA
+        se non è il momento. 422 se il pagamento appartiene a un’edizione conclusa: i crediti aperti di quelle edizioni
+        si mostrano all’amministrazione, senza solleciti automatici (confermato dal cliente). Nessuna penale né
+        interessi di mora.'
       x-ruoli:
+      - sistema_flussi
       - amministrazione
-      - commerciale
-      x-stato: da confermare
-      x-domande:
-      - 3
       parameters:
       - $ref: '#/components/parameters/IdPagamento'
       requestBody:
@@ -966,6 +958,9 @@ paths:
           $ref: '#/components/responses/Conflitto'
         '422':
           $ref: '#/components/responses/NonElaborabile'
+      security:
+      - credenzialeServizio: []
+      - bearerAuth: []
   /anomalie:
     get:
       tags:
@@ -1022,18 +1017,19 @@ paths:
       - Cruscotto staff
       operationId: leggiAndamentoIngressi
       summary: Ingressi per padiglione nel tempo
-      description: 'Restituisce gli ingressi registrati ai varchi, per padiglione e intervallo. Non restituisce
-        le persone presenti: il cliente ha confermato che si registrano solo gli ingressi, non le uscite, e che
-        il varco dice da quale padiglione si entra, non dove si va dopo. Il picco di presenza è una stima con un’ipotesi
-        di permanenza da concordare: un campo facoltativo presenti_stimati verrà aggiunto dopo. Ai varchi passano
-        solo i biglietti, non i pass di staff, espositori e fornitori. Frequenza di aggiornamento da concordare
-        (per esempio ogni minuto).'
+      description: 'Restituisce gli ingressi registrati ai varchi, per padiglione e intervallo. Le persone presenti
+        non si misurano: il cliente ha confermato che si registrano solo gli ingressi, non le uscite, e che il varco
+        dice da quale padiglione si entra, non dove si va dopo. Il picco di presenza è una stima: presenti_stimati
+        conta le persone entrate nel padiglione negli ultimi permanenza_minuti minuti (proposta: 120, giustificata
+        dai dati: punto aperto 2). Per un Family si contano le persone entrate davvero, una per lettura. Ai varchi
+        passano solo i biglietti, non i pass di staff, espositori e fornitori. Aggiornamento ogni minuto (confermato
+        dal cliente): i dati dei varchi arrivano a blocchi ogni pochi minuti.'
       x-ruoli:
       - staff
       - direzione
-      x-stato: parziale
+      x-stato: proposta
       x-domande:
-      - 8
+      - 2
       parameters:
       - $ref: '#/components/parameters/IdEdizione'
       - name: codice_padiglione
@@ -1064,6 +1060,14 @@ paths:
           - 15m
           - 1h
           default: 5m
+      - name: permanenza_minuti
+        in: query
+        description: 'Finestra per la stima dei presenti: persone entrate negli ultimi N minuti.'
+        schema:
+          type: integer
+          minimum: 15
+          maximum: 480
+          default: 120
       responses:
         '200':
           description: La serie degli ingressi.
@@ -1085,10 +1089,11 @@ paths:
       - Dati dai varchi
       operationId: inviaLetture
       summary: Riceve le letture dai varchi
-      description: 'Invio a gruppi (fino a 1.000 letture). Il server uniforma il nome del varco («P1 Nord» e «P1-Nord»
-        sono lo stesso varco), risolve il biglietto e converte gli orari in ora italiana. Un codice sconosciuto
-        si conserva come «ingresso non riconosciuto» e si registra come anomalia. Il formato reale dei dati dei
-        varchi nel 2026 non è noto: id_lettura, utile a evitare doppioni, è facoltativo finché il BID non lo conferma.'
+      description: 'I dati dei varchi arrivano a blocchi, ogni pochi minuti (confermato dal cliente): l’invio è
+        a gruppi (fino a 1.000 letture). Il server uniforma il nome del varco («P1 Nord» e «P1-Nord» sono lo stesso
+        varco), risolve il biglietto e converte gli orari in ora italiana. Un codice sconosciuto si conserva come
+        «ingresso non riconosciuto» e si registra come anomalia. Il formato reale dei dati dei varchi nel 2026 non
+        è noto: id_lettura, utile a evitare doppioni, è facoltativo finché il BID non lo conferma.'
       x-ruoli:
       - sistema_varchi
       x-stato: da confermare
@@ -1201,12 +1206,10 @@ paths:
       operationId: leggiContattiEspositore
       summary: Contatti raccolti ai propri stand
       description: 'L’espositore vede tutto ciò che il visitatore ha lasciato (e-mail, fascia d’età, provincia,
-        interesse, data e ora), ma solo per i contatti che hanno dato il consenso a lui. I minori non compaiono
-        mai: non si conservano dati dei minori.'
+        interesse, data e ora), ma solo per i contatti che hanno dato il consenso a lui e il cui biglietto è stato
+        verificato. I minori non compaiono mai: non si conservano dati dei minori.'
       x-ruoli:
       - espositore
-      x-domande:
-      - 9
       parameters:
       - $ref: '#/components/parameters/IdEspositore'
       - name: id_edizione
@@ -1308,17 +1311,15 @@ paths:
       - Scansione allo stand
       operationId: inviaScansioni
       summary: Invia le scansioni di visita raccolte dall’app
-      description: 'L’app è per il personale degli espositori e scansiona il QR del biglietto. Deve funzionare anche
-        senza rete e inviare le scansioni a lotti appena la connessione torna: id_client, generato dall’app, rende
-        l’invio sicuro da ripetere (le scansioni già ricevute risultano «duplicata», non si perdono né si contano
-        due volte). Una seconda scansione dello stesso biglietto allo stesso stand entro la finestra di tempo non
-        è conteggiata (proposta: 30 minuti, da confermare). Un espositore può scansionare solo il proprio stand.
-        Se il codice non esiste in biglietteria la visita si registra con riconosciuta=false.'
+      description: 'L’app è per il personale degli espositori e scansiona il QR del biglietto, che contiene solo
+        il codice. Deve funzionare anche senza rete e inviare le scansioni a lotti appena la connessione torna:
+        id_client, generato dall’app, rende l’invio sicuro da ripetere (le scansioni già ricevute risultano «duplicata»,
+        non si perdono né si contano due volte). Una seconda scansione dello stesso biglietto allo stesso stand
+        entro la finestra di tempo non è conteggiata (30 minuti, confermato dal cliente: il valore è modificabile).
+        Un espositore può scansionare solo il proprio stand. Se il codice non esiste in biglietteria la visita si
+        registra con riconosciuta=false.'
       x-ruoli:
       - espositore
-      x-stato: da confermare
-      x-domande:
-      - 6
       requestBody:
         required: true
         content:
@@ -1340,43 +1341,86 @@ paths:
           $ref: '#/components/responses/NonAutorizzato'
         '422':
           $ref: '#/components/responses/NonElaborabile'
-  /stand/{codice_stand}/contatti:
+  /contatti:
     post:
       tags:
       - Scansione allo stand
-      operationId: registraContatto
-      summary: Registra un contatto raccolto allo stand
+      operationId: inviaContatti
+      summary: Invia i contatti raccolti dall’app
       description: 'Il visitatore vede una breve informativa, dichiara di essere maggiorenne, inserisce l’e-mail
-        e dà il consenso per quell’espositore (non per tutta la fiera). Si accettano solo contatti da maggiorenni:
-        422 MINORE_NON_AMMESSO per una fascia d’età minorile o se manca la dichiarazione. Per un biglietto ridotto
-        o un gratuito per bambini l’app non propone il contatto. La risposta non restituisce dati personali. Quando
-        l’app è senza rete deve poter decidere da sola se proporre il contatto: da chiarire cosa contiene il QR.'
+        e dà il consenso per quell’espositore (non per tutta la fiera). L’app lavora anche senza rete e invia i
+        contatti a lotti al ritorno della connessione: id_client, generato dall’app, rende l’invio sicuro da ripetere.
+        Si accettano solo contatti da maggiorenni. Alla ricezione il server controlla il biglietto: se risulta ridotto,
+        gratuito per bambini o con fascia d’età minorile il contatto non si conserva, l’esito è «scartato» con motivo
+        MINORE_NON_AMMESSO e si registra un’anomalia senza dati personali. Per un biglietto sconosciuto o senza
+        fascia d’età il contatto si conserva solo con la dichiarazione di maggiore età e l’informativa, e resta
+        «in verifica» (non visibile all’espositore) finché il biglietto non è noto: i biglietti venduti durante
+        la fiera arrivano con il file di fine giornata. Nessun contatto di un minorenne deve arrivare all’espositore
+        (confermato dal cliente). Un espositore può inviare contatti solo per il proprio stand. La risposta non
+        restituisce dati personali. La soluzione per l’uso senza rete è approvata dal cliente.'
       x-ruoli:
       - espositore
-      x-stato: da confermare
+      x-stato: proposta
       x-domande:
-      - 9
-      parameters:
-      - $ref: '#/components/parameters/CodiceStand'
+      - 3
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NuovoContatto'
+              $ref: '#/components/schemas/InvioContatti'
       responses:
-        '201':
-          description: Contatto registrato.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ContattoCreato'
         '200':
-          description: Contatto già ricevuto con lo stesso id_client.
+          description: Esito di ogni contatto.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ContattoCreato'
+                $ref: '#/components/schemas/RisultatoContatti'
+        '400':
+          $ref: '#/components/responses/RichiestaNonValida'
+        '401':
+          $ref: '#/components/responses/NonAutenticato'
+        '403':
+          $ref: '#/components/responses/NonAutorizzato'
+        '422':
+          $ref: '#/components/responses/NonElaborabile'
+  /edizioni/{id_edizione}/biglietti/esclusioni-contatto:
+    get:
+      tags:
+      - Scansione allo stand
+      operationId: leggiEsclusioniContatto
+      summary: Elenco dei codici per cui non proporre il contatto
+      description: 'Serve all’app per decidere senza rete. Contiene solo codici di biglietto, senza dati personali:
+        biglietti ridotti, gratuiti per bambini o con fascia d’età minorile (circa il 37% dei biglietti nel 2025).
+        Il solo tipo di biglietto non basta, perché un minorenne può avere un biglietto intero. I biglietti venduti
+        durante la fiera (nel 2025 il 24% dall’apertura in poi) non sono nell’elenco fino al file di fine giornata:
+        per quei codici, e per quelli senza fascia d’età, vale la regola di POST /contatti. L’app lo scarica prima
+        della fiera e lo aggiorna con il parametro «da» quando c’è rete. Il parametro «giorno» riduce i dati sul
+        telefono.'
+      x-ruoli:
+      - espositore
+      x-stato: proposta
+      parameters:
+      - $ref: '#/components/parameters/IdEdizione'
+      - name: da
+        in: query
+        description: Solo le variazioni da questo momento.
+        schema:
+          type: string
+          format: date-time
+      - name: giorno
+        in: query
+        description: Solo i biglietti validi in quel giorno, abbonamenti compresi.
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: I codici da escludere.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EsclusioniContatto'
         '400':
           $ref: '#/components/responses/RichiestaNonValida'
         '401':
@@ -1385,16 +1429,15 @@ paths:
           $ref: '#/components/responses/NonAutorizzato'
         '404':
           $ref: '#/components/responses/NonTrovato'
-        '422':
-          $ref: '#/components/responses/NonElaborabile'
   /informativa/corrente:
     get:
       tags:
       - Scansione allo stand
       operationId: leggiInformativaCorrente
       summary: Legge l’informativa in vigore
-      description: L’app la scarica e la mostra prima di raccogliere un contatto. Il contatto registra quale informativa
-        è stata mostrata, per poter dimostrare quando, a quale stand e con quale informativa è stato dato il consenso.
+      description: L’app la scarica, la conserva per l’uso senza rete e la mostra prima di raccogliere un contatto.
+        Il contatto registra quale informativa è stata mostrata, per poter dimostrare quando, a quale stand e con
+        quale informativa è stato dato il consenso.
       x-ruoli:
       - espositore
       responses:
@@ -1422,8 +1465,8 @@ components:
     credenzialeServizio:
       type: http
       scheme: bearer
-      description: 'Credenziale del sistema dei varchi. Non è un utente della tabella utente: da confermare con
-        il BID.'
+      description: 'Credenziale di servizio, per il sistema dei varchi (invio delle letture) e per i flussi automatici
+        (solleciti). Non è un utente della tabella utente: da confermare con il BID.'
   parameters:
     IdEdizione:
       name: id_edizione
@@ -1462,13 +1505,6 @@ components:
       schema:
         type: integer
         format: int64
-    CodiceStand:
-      name: codice_stand
-      in: path
-      required: true
-      schema:
-        type: string
-        pattern: ^P[1-3]-[A-Z][0-9]{2}$
     Pagina:
       name: pagina
       in: query
@@ -1533,7 +1569,7 @@ components:
           type: string
           description: 'Codice stabile leggibile dalle macchine: per esempio STAND_NON_DISPONIBILE, STAND_IN_PRELAZIONE,
             SCONTO_OLTRE_SOGLIA, SPONSORIZZAZIONE_ESAURITA, SPONSORIZZAZIONE_RISERVATA, FUORI_TERMINE, AZIONE_NON_DOVUTA,
-            MINORE_NON_AMMESSO.'
+            MINORE_NON_AMMESSO, VENDITE_CHIUSE.'
           example: STAND_NON_DISPONIBILE
         messaggio:
           type: string
@@ -1590,7 +1626,8 @@ components:
         scadenza_prelazione:
           type: string
           format: date
-          description: Per il 2026 è il 2026-03-31 (già passata).
+          description: Fino a questa data (31 marzo) uno stand può essere opzionato solo dall’espositore che lo
+            aveva l’anno prima. Per il 2026 è il 2026-03-31 (già passata).
           example: '2026-03-31'
           nullable: true
         scadenza_saldo:
@@ -1608,6 +1645,12 @@ components:
           format: date
           description: 'Calcolata: 90 giorni prima dell’apertura. Per il 2026, 2026-09-19 (già passata).'
           example: '2026-09-19'
+        chiusura_vendite:
+          type: string
+          format: date
+          description: 'Parametro dell’edizione: 15 giorni prima dell’apertura (per il 2026, 2026-12-03). Dopo questa
+            data non si creano né si inviano preventivi e non si firmano contratti.'
+          example: '2026-12-03'
     Padiglione:
       type: object
       required:
@@ -1731,8 +1774,8 @@ components:
           - P1
           - P2
           - P3
-          description: 'Padiglione a cui è riservata la voce: P3 per l’Indie Showcase. Da confermare se vale anche
-            per lo storico.'
+          description: 'Padiglione a cui è riservata la voce: P3 per l’Indie Showcase, dal 2026. Lo storico resta
+            com’è (confermato dal cliente).'
           nullable: true
         disponibilita:
           type: string
@@ -1758,7 +1801,7 @@ components:
           type: string
           pattern: ^[0-9]{11}$
           description: 'Sempre testo di 11 cifre: gli zeri iniziali contano.'
-          example: 01965569816
+          example: '01965569816'
         settore:
           type: string
           nullable: true
@@ -1786,7 +1829,7 @@ components:
           type: string
           pattern: ^[0-9]{11}$
           description: 'Sempre testo di 11 cifre: gli zeri iniziali contano.'
-          example: 01965569816
+          example: '01965569816'
         settore:
           type: string
           nullable: true
@@ -1912,10 +1955,6 @@ components:
           default: 0
           description: Frazione tra 0 e 0,2 (0,1 = 10%). Fino a 0,10 decide il commerciale; da 0,10 a 0,20 serve
             il direttore commerciale. Comprende l’eventuale sconto fedeltà del 5%.
-        in_prelazione:
-          type: boolean
-          default: false
-          description: 'Vero per chi rinnova nel periodo di prelazione: dà lo sconto fedeltà del 5%.'
         aliquota_iva:
           type: number
           minimum: 0
@@ -1990,6 +2029,10 @@ components:
           $ref: '#/components/schemas/StatoPreventivo'
         in_prelazione:
           type: boolean
+          readOnly: true
+          description: 'Indica lo sconto fedeltà del 5%. Calcolato dal server: vero se l’espositore rinnova (anche
+            cambiando stand) e il preventivo è creato entro la scadenza della prelazione (31 marzo). Non è la prelazione
+            sullo stesso stand.'
         approvato_da:
           type: integer
           format: int64
@@ -2005,6 +2048,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RigaDocumento'
+        in_approvazione_dal:
+          type: string
+          format: date-time
+          nullable: true
+          description: Momento in cui il preventivo è andato in approvazione.
     InvioPreventivo:
       type: object
       properties:
@@ -2060,8 +2108,12 @@ components:
           type: number
           format: decimal
           multipleOf: 0.01
-          description: 'Cambio stand: positiva se l’espositore paga, negativa se recupera.'
+          description: 'Cambio stand: positiva se l’espositore paga, negativa se recupera. Si somma al saldo.'
           nullable: true
+        conguaglio_fuori_piattaforma:
+          type: boolean
+          description: 'Vero se il saldo era già pagato: la differenza la gestisce l’amministrazione fuori dalla
+            piattaforma.'
     CambioStand:
       type: object
       required:
@@ -2234,6 +2286,8 @@ components:
         scadenza:
           type: string
           format: date
+          description: 'Acconto: 15 giorni dopo la firma. Saldo: 30 giorni prima dell’apertura. Se la scadenza dell’acconto
+            cadrebbe dopo quella del saldo, entrambe sono 15 giorni prima dell’apertura (per il 2026, 2026-12-03).'
         pagato_il:
           type: string
           format: date
@@ -2243,7 +2297,8 @@ components:
           format: decimal
           multipleOf: 0.01
           description: 'Acconto: 30% dell’imponibile del contratto. Saldo: il resto. Sull’imponibile, senza IVA
-            (da confermare, domanda 5).'
+            (confermato dal cliente). Con un cambio stand l’acconto resta e il saldo si ricalcola, se non è già
+            pagato.'
           minimum: 0
         stato:
           $ref: '#/components/schemas/StatoPagamento'
@@ -2310,6 +2365,11 @@ components:
           type: string
           format: email
           nullable: true
+        registrato_da:
+          type: integer
+          format: int64
+          description: L’utente che ha registrato l’azione; vuoto se è automatica.
+          nullable: true
     PuntoIngressi:
       type: object
       required:
@@ -2334,6 +2394,11 @@ components:
         ingressi_rifiutati:
           type: integer
           minimum: 0
+        presenti_stimati:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: 'Stima: persone entrate nel padiglione negli ultimi permanenza_minuti minuti.'
     AndamentoIngressi:
       type: object
       required:
@@ -2632,10 +2697,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EsitoScansione'
-    NuovoContatto:
+    ContattoInput:
       type: object
       required:
       - id_client
+      - codice_stand
       - email
       - consenso_marketing
       - maggiorenne_dichiarato
@@ -2645,6 +2711,9 @@ components:
           type: string
           format: uuid
           description: 'Generato dall’app: ripetere l’invio non crea un secondo contatto.'
+        codice_stand:
+          type: string
+          pattern: ^P[1-3]-[A-Z][0-9]{2}$
         email:
           type: string
           format: email
@@ -2658,7 +2727,7 @@ components:
           - 25-34
           - 35-44
           - 45+
-          description: Le fasce minorili sono rifiutate con MINORE_NON_AMMESSO.
+          description: Le fasce minorili sono scartate con MINORE_NON_AMMESSO.
         provincia:
           type: string
           pattern: ^[A-Z]{2}$
@@ -2670,6 +2739,10 @@ components:
           - evento
           - prodotto
           - lavoro/stage
+        momento:
+          type: string
+          format: date-time
+          description: Momento della raccolta sul telefono.
         consenso_marketing:
           type: boolean
           enum:
@@ -2687,13 +2760,70 @@ components:
           type: string
           format: uuid
           description: La scansione da cui nasce il contatto, se esiste.
-    ContattoCreato:
+    InvioContatti:
       type: object
       required:
-      - id_contatto
+      - contatti
       properties:
+        contatti:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items:
+            $ref: '#/components/schemas/ContattoInput'
+    EsitoContatto:
+      type: object
+      required:
+      - id_client
+      - stato
+      properties:
+        id_client:
+          type: string
+          format: uuid
+        stato:
+          type: string
+          enum:
+          - registrato
+          - in_verifica
+          - duplicato
+          - scartato
+          description: '«In_verifica»: contatto registrato ma non ancora visibile all’espositore.'
         id_contatto:
           type: string
+          nullable: true
+        motivo:
+          type: string
+          description: Per esempio MINORE_NON_AMMESSO.
+    RisultatoContatti:
+      type: object
+      required:
+      - esiti
+      properties:
+        esiti:
+          type: array
+          items:
+            $ref: '#/components/schemas/EsitoContatto'
+    EsclusioniContatto:
+      type: object
+      required:
+      - id_edizione
+      - aggiornato_il
+      - codici
+      properties:
+        id_edizione:
+          type: integer
+          format: int32
+        aggiornato_il:
+          type: string
+          format: date-time
+        codici:
+          type: array
+          items:
+            type: string
+            example: T26000001
+        totale:
+          type: integer
+          minimum: 0
     Informativa:
       type: object
       required:
