@@ -11,7 +11,7 @@
   },
   "Properties": {
     "AppCreationSource": "AppFromScratch",
-    "AppDescription": "",
+    "AppDescription": "Optimize ARCADE’s back-office operations by managing stand availability, contracts, quotes, and payments. Facilitate exhibitor selection and sales process oversight. Enable users to maintain accurate records for each event edition, ensuring efficient workflow and comprehensive tracking.",
     "AppPreviewFlagsMap": {
       "adaptivepaging": false,
       "aibuilderserviceenrollment": false,
@@ -138,6 +138,8 @@
     "scrStand",
     "scrPreventivo",
     "scrContratto",
-    "scrPreventivi"
+    "scrPreventivi",
+    "scrListino",
+    "scrApprovazioni"
   ]
 }

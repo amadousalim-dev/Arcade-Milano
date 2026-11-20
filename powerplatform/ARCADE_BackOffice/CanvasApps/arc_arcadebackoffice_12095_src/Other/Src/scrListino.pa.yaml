@@ -1,0 +1,176 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  scrListino:
+    Properties:
+      OnVisible: |-
+        =ClearCollect(colListinoVista,
+          ShowColumns(Filter('arcade.listino', id_edizione = EdizioneSel.id_edizione),
+            codice_voce, descrizione, tipo_voce, unita, prezzo_unitario,
+            quantita_disponibile, codice_padiglione_vincolo, note))
+    Children:
+      - RectQuickActionBar1:
+          Control: Rectangle@2.3.0
+          Properties:
+            Height: =64
+            Width: =Parent.Width
+      - Title2:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =App.Theme.Colors.PrimaryForeground
+            Height: =64
+            PaddingRight: =10
+            Size: =18
+            Text: ="Nome app"
+            Width: =Parent.Width
+      - galListino:
+          Control: Gallery@2.15.0
+          Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+          Properties:
+            Height: =639
+            Items: |-
+              =SortByColumns(
+                Filter(colListinoVista,
+                  drpTipoVoce.Selected.Value = "Tutti" || tipo_voce = drpTipoVoce.Selected.Value),
+                "tipo_voce", SortOrder.Ascending, "codice_voce", SortOrder.Ascending)
+            TemplateSize: =205
+            Width: =Parent.Width
+            Y: =124
+          Children:
+            - lblLisCodice:
+                Control: Label@2.5.1
+                Properties:
+                  AutoHeight: =true
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(50, 49, 48, 1)
+                  FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                  Height: =Self.Size * 1.8
+                  OnSelect: =Select(Parent)
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  Size: =14
+                  Text: =ThisItem.codice_voce
+                  VerticalAlign: =VerticalAlign.Top
+                  Width: =Parent.TemplateWidth - 173
+                  X: =86
+                  Y: =2
+            - Separator6:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(255, 255, 255, 1)
+                  Height: =8
+                  OnSelect: =Select(Parent)
+                  Width: =Parent.TemplateWidth
+                  Y: =Parent.TemplateHeight - Self.Height
+            - Rectangle3:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =App.Theme.Colors.Darker30
+                  Height: =Parent.TemplateHeight - Separator6.Height
+                  OnSelect: =Select(Parent)
+                  Visible: =ThisItem.IsSelected
+                  Width: =4
+            - lblLisDescr:
+                Control: Label@2.5.1
+                Properties:
+                  AutoHeight: =true
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(50, 49, 48, 1)
+                  FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                  Height: =Self.Size * 1.8
+                  OnSelect: =Select(Parent)
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  Size: =14
+                  Text: =ThisItem.descrizione
+                  VerticalAlign: =VerticalAlign.Top
+                  Width: =Parent.TemplateWidth - 173
+                  X: =86
+                  Y: =36
+            - lblLisTipo:
+                Control: Label@2.5.1
+                Properties:
+                  AutoHeight: =true
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(50, 49, 48, 1)
+                  FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                  Height: =Self.Size * 1.8
+                  OnSelect: =Select(Parent)
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  Size: =14
+                  Text: =Proper(ThisItem.tipo_voce)
+                  VerticalAlign: =VerticalAlign.Top
+                  Width: =Parent.TemplateWidth - 173
+                  X: =86
+                  Y: =68
+            - lblLisPrezzo:
+                Control: Label@2.5.1
+                Properties:
+                  AutoHeight: =true
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(50, 49, 48, 1)
+                  FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                  Height: =Self.Size * 1.8
+                  OnSelect: =Select(Parent)
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  Size: =14
+                  Text: |-
+                    =If(IsBlank(ThisItem.prezzo_unitario), "—",
+                         ThisItem.tipo_voce = "maggiorazione" || ThisItem.unita = "%",
+                           Text(ThisItem.prezzo_unitario * 100, "[$-en-US]0", "it-IT") & "%",
+                         Text(ThisItem.prezzo_unitario, "[$-en-US]#,##0.00", "it-IT") & " € / " & ThisItem.unita)
+                  VerticalAlign: =VerticalAlign.Top
+                  Width: =Parent.TemplateWidth - 173
+                  X: =86
+                  Y: =106
+            - lblLisNote:
+                Control: Label@2.5.1
+                Properties:
+                  AutoHeight: =true
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(50, 49, 48, 1)
+                  FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                  Height: =Self.Size * 1.8
+                  OnSelect: =Select(Parent)
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  Size: =14
+                  Text: |-
+                    =If(!IsBlank(ThisItem.quantita_disponibile),
+                           "Pacchetti per edizione: " & ThisItem.quantita_disponibile & "  ", "") &
+                      If(!IsBlank(ThisItem.codice_padiglione_vincolo),
+                           "Solo padiglione " & ThisItem.codice_padiglione_vincolo & "  ", "") &
+                      Coalesce(ThisItem.note, "")
+                  VerticalAlign: =VerticalAlign.Top
+                  Width: =Parent.TemplateWidth - 173
+                  X: =86
+                  Y: =139
+      - drpTipoVoce:
+          Control: ModernDropdown@1.0.3
+          Properties:
+            Default: |-
+              ={Value: "Tutti"}
+            ItemDisplayText: =ThisItem.Value
+            Items: =["Tutti", "spazio", "maggiorazione", "extra", "sponsorizzazione", "condizione"]
+            X: =54
+            Y: =75

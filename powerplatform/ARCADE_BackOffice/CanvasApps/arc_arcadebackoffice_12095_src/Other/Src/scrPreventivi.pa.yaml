@@ -8,12 +8,14 @@
 # ************************************************************************************************
 Screens:
   scrPreventivi:
+    Properties:
+      Fill: =nfColoreSfondo
     Children:
       - ScreenContainer1:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
-            Fill: =RGBA(245, 245, 245, 1)
+            Fill: =nfColoreSfondo
             Height: =Parent.Height
             LayoutAlignItems: =LayoutAlignItems.Stretch
             LayoutDirection: =LayoutDirection.Vertical
@@ -28,27 +30,28 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
-                  Fill: =RGBA(255, 255, 255, 1)
+                  Fill: =nfColoreSuperficie
                   FillPortions: =0
                   Height: =75
                   LayoutAlignItems: =LayoutAlignItems.Center
                   LayoutDirection: =LayoutDirection.Horizontal
-                  LayoutGap: =400
+                  LayoutGap: =16
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
                   PaddingBottom: =8
                   PaddingLeft: =8
                   PaddingRight: =8
                   PaddingTop: =8
-                  RadiusBottomLeft: =8
-                  RadiusBottomRight: =8
-                  RadiusTopLeft: =8
-                  RadiusTopRight: =8
+                  RadiusBottomLeft: =nfRaggio
+                  RadiusBottomRight: =nfRaggio
+                  RadiusTopLeft: =nfRaggio
+                  RadiusTopRight: =nfRaggio
                 Children:
                   - btnIndietroPrev:
                       Control: Classic/Icon@2.5.0
                       Properties:
                         AccessibleLabel: ="1"
+                        Color: =nfColoreTesto
                         Height: =61
                         Icon: =Icon.BackArrow
                         OnSelect: =Navigate(scrStand)
@@ -56,6 +59,15 @@ Screens:
                         Width: =53
                         X: =34
                         Y: =3
+                  - lblTitoloPreventivi:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =nfColoreTesto
+                        FillPortions: =1
+                        FontWeight: =FontWeight.Bold
+                        Role: =TextRole.Heading1
+                        Size: =nfDimTitolo
+                        Text: ="Preventivi"
                   - drpStatoPrev:
                       Control: ModernDropdown@1.0.3
                       Properties:
@@ -73,7 +85,9 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
-                  Fill: =RGBA(255, 255, 255, 1)
+                  BorderColor: =nfAccentoPreventivi
+                  BorderThickness: =nfSpessoreBordo
+                  Fill: =nfColoreSuperficie
                   LayoutAlignItems: =LayoutAlignItems.Center
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutMinHeight: =16
@@ -82,16 +96,17 @@ Screens:
                   PaddingLeft: =8
                   PaddingRight: =8
                   PaddingTop: =8
-                  RadiusBottomLeft: =8
-                  RadiusBottomRight: =8
-                  RadiusTopLeft: =8
-                  RadiusTopRight: =8
+                  RadiusBottomLeft: =nfRaggio
+                  RadiusBottomRight: =nfRaggio
+                  RadiusTopLeft: =nfRaggio
+                  RadiusTopRight: =nfRaggio
                 Children:
                   - galPreventivi:
                       Control: Gallery@2.15.0
                       Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                       Properties:
                         AccessibleLabel: ="1"
+                        Fill: =nfColoreSuperficie
                         Items: |-
                           =SortByColumns(
                             Filter('arcade.preventivo',
@@ -122,7 +137,7 @@ Screens:
                             Control: Label@2.5.1
                             Properties:
                               BorderColor: =RGBA(0, 0, 0, 1)
-                              Color: =RGBA(50, 49, 48, 1)
+                              Color: =nfColoreTesto
                               FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                               Height: =Self.Size * 1.8
                               OnSelect: =Select(Parent)
@@ -130,7 +145,7 @@ Screens:
                               PaddingLeft: =0
                               PaddingRight: =0
                               PaddingTop: =0
-                              Size: =14
+                              Size: =nfDimTesto
                               Text: ="n. " & ThisItem.id_preventivo
                               VerticalAlign: =VerticalAlign.Top
                               Width: =Parent.TemplateWidth - 173
@@ -140,6 +155,7 @@ Screens:
                             Control: Label@2.5.1
                             Properties:
                               BorderColor: =RGBA(0, 0, 0, 1)
+                              Color: =nfColoreTesto
                               FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                               Height: =Self.Size * 1.8
                               OnSelect: =Select(Parent)
@@ -158,7 +174,7 @@ Screens:
                             Properties:
                               AccessibleLabel: =Self.Tooltip
                               BorderColor: =RGBA(0, 0, 0, 1)
-                              Color: =RGBA(166, 166, 166, 1)
+                              Color: =nfColoreTestoSecondario
                               DisabledBorderColor: =RGBA(56, 56, 56, 1)
                               DisabledColor: =RGBA(119, 119, 119, 1)
                               Height: =50
@@ -175,7 +191,7 @@ Screens:
                         - Separator5:
                             Control: Rectangle@2.3.0
                             Properties:
-                              Fill: =RGBA(255, 255, 255, 1)
+                              Fill: =nfColoreSfondo
                               Height: =8
                               OnSelect: =Select(Parent)
                               Width: =Parent.TemplateWidth
@@ -183,7 +199,7 @@ Screens:
                         - Rectangle4:
                             Control: Rectangle@2.3.0
                             Properties:
-                              Fill: =App.Theme.Colors.Darker30
+                              Fill: =nfAccentoPreventivi
                               Height: =Parent.TemplateHeight - Separator5.Height
                               OnSelect: =Select(Parent)
                               Visible: =ThisItem.IsSelected
@@ -192,6 +208,7 @@ Screens:
                             Control: Label@2.5.1
                             Properties:
                               BorderColor: =RGBA(0, 0, 0, 1)
+                              Color: =nfColoreTestoSecondario
                               FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                               Height: =Self.Size * 1.8
                               OnSelect: =Select(Parent)
@@ -211,6 +228,7 @@ Screens:
                             Control: Label@2.5.1
                             Properties:
                               BorderColor: =RGBA(0, 0, 0, 1)
+                              Color: =nfColoreTestoSecondario
                               FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                               Height: =Self.Size * 1.8
                               OnSelect: =Select(Parent)
@@ -228,6 +246,7 @@ Screens:
                             Control: Label@2.5.1
                             Properties:
                               BorderColor: =RGBA(0, 0, 0, 1)
+                              Color: =nfColoreTesto
                               FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                               Height: =Self.Size * 1.8
                               OnSelect: =Select(Parent)
@@ -245,6 +264,7 @@ Screens:
                             Control: Label@2.5.1
                             Properties:
                               BorderColor: =RGBA(0, 0, 0, 1)
+                              Color: =nfColoreTestoSecondario
                               FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                               Height: =Self.Size * 1.8
                               OnSelect: =Select(Parent)
@@ -260,22 +280,3 @@ Screens:
                               Width: =lblPrevNumero.Width
                               X: =103
                               Y: =77
-            - FooterContainer1:
-                Control: GroupContainer@1.5.0
-                Variant: AutoLayout
-                Properties:
-                  Fill: =RGBA(255, 255, 255, 1)
-                  FillPortions: =0
-                  Height: =75
-                  LayoutAlignItems: =LayoutAlignItems.Center
-                  LayoutDirection: =LayoutDirection.Horizontal
-                  LayoutMinHeight: =16
-                  LayoutMinWidth: =16
-                  PaddingBottom: =8
-                  PaddingLeft: =8
-                  PaddingRight: =8
-                  PaddingTop: =8
-                  RadiusBottomLeft: =8
-                  RadiusBottomRight: =8
-                  RadiusTopLeft: =8
-                  RadiusTopRight: =8

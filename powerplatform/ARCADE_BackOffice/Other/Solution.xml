@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ImportExportXml version="9.2.26111.129" SolutionPackageVersion="9.2" languagecode="1040" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26111.129" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26111.00134">
+<ImportExportXml version="9.2.26112.137" SolutionPackageVersion="9.2" languagecode="1040" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26112.137" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26112.00139">
   <SolutionManifest>
     <UniqueName>ARCADE_BackOffice</UniqueName>
     <LocalizedNames>
       <LocalizedName description="ARCADE_BackOffice" languagecode="1040" />
     </LocalizedNames>
     <Descriptions />
-    <Version>1.0.0.3</Version>
+    <Version>1.0.0.4</Version>
     <Managed>1</Managed>
     <Publisher>
       <UniqueName>Vittorio_Sossi</UniqueName>
@@ -80,7 +80,9 @@
       </Addresses>
     </Publisher>
     <RootComponents>
+      <RootComponent type="29" id="{1e2ed16e-fae3-f111-84e8-0022489e47ea}" behavior="0" />
       <RootComponent type="300" schemaName="arc_arcadebackoffice_12095" behavior="0" />
+      <RootComponent type="372" id="{b717470f-a0c5-4e12-887e-4cd600a0deaf}" schemaName="mpet_5Farcade-20supabase-20rest" behavior="0" />
     </RootComponents>
     <MissingDependencies />
   </SolutionManifest>

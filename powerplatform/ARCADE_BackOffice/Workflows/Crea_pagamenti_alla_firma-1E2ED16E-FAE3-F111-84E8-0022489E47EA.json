@@ -1,0 +1,270 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_mpet-5farcade-20supabase-20rest-5f7a398d02ce005cad": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "cr37a_sharedmpet5farcade20supabase20rest5f7a398d02ce005cad_22ca6"
+        },
+        "api": {
+          "name": "shared_mpet-5farcade-20supabase-20rest-5f130e0b49bf8ce5b0",
+          "logicalName": "mpet_5Farcade-20supabase-20rest"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "undefined",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "30e9a4bb-8d25-489f-bebb-2a1f5432c380"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "description": "Immetti l'input",
+                  "title": "id_contratto",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "text_1": {
+                  "description": "Immetti l'input",
+                  "title": "data_firma",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "text",
+                "text_1"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Rispondi_a_una_Power_App_o_a_un_flusso": {
+          "runAfter": {
+            "CreaPagamenti": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "a3c5527c-6f6e-4c53-9c3a-8769fed8bc35"
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "statusCode": 200,
+            "body": {
+              "esito": "ok",
+              "messaggio": "@{concat('Pagamenti creati per ', trim(triggerBody()?['text']))}"
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "esito": {
+                  "title": "esito",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                },
+                "messaggio": {
+                  "title": "messaggio",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "Firma15": {
+          "runAfter": {
+            "LeggiEdizione": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "da3c864f-5f68-4504-b2f3-032bfe11389f"
+          },
+          "type": "Compose",
+          "inputs": "@addDays(trim(triggerBody()?['text_1']), 15, 'yyyy-MM-dd')"
+        },
+        "Apertura30": {
+          "runAfter": {
+            "Firma15": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "7956d337-1003-454e-a939-0a64594e3994"
+          },
+          "type": "Compose",
+          "inputs": "@addDays(body('LeggiEdizione')?[0]?['data_inizio'], -30, 'yyyy-MM-dd')"
+        },
+        "Apertura15": {
+          "runAfter": {
+            "Apertura30": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "5f48ac3e-fa89-4f42-88df-49b723e459c5"
+          },
+          "type": "Compose",
+          "inputs": "@addDays(body('LeggiEdizione')?[0]?['data_inizio'], -15, 'yyyy-MM-dd')"
+        },
+        "Righepagamento": {
+          "runAfter": {
+            "Apertura15": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "8cf050e7-2901-497f-84ff-2ad2e93afd6a"
+          },
+          "type": "Compose",
+          "inputs": [
+            {
+              "id_contratto": "@{trim(triggerBody()?['text'])}",
+              "tipo": "acconto",
+              "scadenza": "@{if(greater(outputs('Firma15'), outputs('Apertura30')), outputs('Apertura15'), outputs('Firma15'))}",
+              "importo": "@float(formatNumber(mul(float(body('LeggiContratto')?[0]?['imponibile_eur']), 0.3), '0.00', 'en-US'))"
+            },
+            {
+              "id_contratto": "@{trim(triggerBody()?['text'])}",
+              "tipo": "saldo",
+              "scadenza": "@{if(greater(outputs('Firma15'), outputs('Apertura30')), outputs('Apertura15'), outputs('Apertura30'))}",
+              "importo": "@sub(float(body('LeggiContratto')?[0]?['imponibile_eur']), float(formatNumber(mul(float(body('LeggiContratto')?[0]?['imponibile_eur']), 0.3), '0.00', 'en-US')))"
+            }
+          ]
+        },
+        "Rispondi_a_una_Power_App_o_a_un_flusso_1": {
+          "runAfter": {
+            "CreaPagamenti": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "4e49d8c9-1881-4a02-9417-24b4bd08ae42"
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "statusCode": 200,
+            "body": {
+              "esito": "errore",
+              "messaggio": "@{coalesce(outputs('CreaPagamenti')?['body']?['message'], outputs('LeggiEdizione')?['body']?['message'], outputs('LeggiContratto')?['body']?['message'], outputs('CreaPagamenti')?['error']?['message'], outputs('LeggiEdizione')?['error']?['message'], outputs('LeggiContratto')?['error']?['message'], 'Errore generico')}"
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "esito": {
+                  "title": "esito",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                },
+                "messaggio": {
+                  "title": "messaggio",
+                  "x-ms-dynamically-added": true,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "LeggiContratto": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "dc697af9-2d6d-4ac9-b6fd-6055caf1da77"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_mpet-5farcade-20supabase-20rest-5f7a398d02ce005cad",
+              "operationId": "LeggiRighe",
+              "apiId": ""
+            },
+            "parameters": {
+              "tabella": "contratto",
+              "select": "id_contratto,id_edizione,imponibile_eur",
+              "and": "(id_contratto.eq.@{trim(triggerBody()?['text'])})",
+              "Accept-Profile": "arcade"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "LeggiEdizione": {
+          "runAfter": {
+            "LeggiContratto": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "cc797e85-ad1e-4105-8a06-b902eb25ea0c"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_mpet-5farcade-20supabase-20rest-5f7a398d02ce005cad",
+              "operationId": "LeggiRighe",
+              "apiId": ""
+            },
+            "parameters": {
+              "tabella": "edizione",
+              "select": "data_inizio",
+              "and": "(id_edizione.eq.@{body('LeggiContratto')?[0]?['id_edizione']})",
+              "Accept-Profile": "arcade"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "CreaPagamenti": {
+          "runAfter": {
+            "Righepagamento": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "a73da15e-2ae1-4c8f-acdd-a91b5b23f7d4"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_mpet-5farcade-20supabase-20rest-5f7a398d02ce005cad",
+              "operationId": "InserisciRighe",
+              "apiId": ""
+            },
+            "parameters": {
+              "tabella": "pagamento",
+              "corpo": "@outputs('Righepagamento')",
+              "Content-Profile": "arcade",
+              "Prefer": "return=representation"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

@@ -1,8 +1,9 @@
 scrStand As screen:
+    ContentLanguage: =""
     CopilotContext: |-
         ={ ScreenName: Self.Name }
     CopilotPromptSuggestions: =[]
-    Fill: =Color.White
+    Fill: =nfColoreSfondo
     LoadingSpinnerColor: =App.Theme.Colors.Primary
     OnVisible: |-
         =If(IsEmpty(colEdizioni),
@@ -12,10 +13,13 @@ scrStand As screen:
     drpEdizione As modernDropdown:
         AccessibleLabel: ="1"
         Appearance: =Appearance.FilledDarker
+        BorderStyle: =""
         Default: =LookUp(colEdizioni, id_edizione = EdizioneSel.id_edizione)
+        Font: =""
         ItemDisplayText: =ThisItem.nome
         Items: =colEdizioni
         OnChange: =Select(btnCalcolaStati)
+        Required: =false
         ValidationState: =ValidationState.None
         Width: =280
         X: =64
@@ -24,6 +28,8 @@ scrStand As screen:
 
     btnCalcolaStati As modernButton:
         AccessibleLabel: ="1"
+        BorderStyle: =""
+        Font: =""
         OnSelect: |-
             =// edizione da usare: quella del menu, o il 2026 se il menu non è ancora pronto
             Set(gblEdVista, If(IsBlank(drpEdizione.Selected),
@@ -74,6 +80,7 @@ scrStand As screen:
                   prezzo_listino: If(IsBlank(prezzoMq), Blank(), Round(s.mq * prezzoMq * (1 + pctMagg), 2)),
                   imponibile_contratto: c.imponibile_eur
                 })))
+        Size: =0
         Text: ="Pulsante"
         Visible: =false
         X: =152
@@ -82,6 +89,11 @@ scrStand As screen:
 
     lblLiberi As modernText:
         AccessibleLabel: ="1"
+        BorderStyle: =""
+        Color: =nfColoreTesto
+        Font: =""
+        FontWeight: =FontWeight.Bold
+        Size: =nfDimTitoloRiquadro
         Text: =CountIf(colStatoStand, stato = "libero")
         X: =64
         Y: =75
@@ -90,7 +102,10 @@ scrStand As screen:
     lblOpzionati As modernText:
         AccessibleLabel: ="1"
         BorderStyle: =""
+        Color: =nfColoreTesto
         Font: =""
+        FontWeight: =FontWeight.Bold
+        Size: =nfDimTitoloRiquadro
         Text: =CountIf(colStatoStand, stato = "opzionato")
         X: =235
         Y: =75
@@ -99,7 +114,10 @@ scrStand As screen:
     lblPrelaz As modernText:
         AccessibleLabel: ="1"
         BorderStyle: =""
+        Color: =nfColoreTesto
         Font: =""
+        FontWeight: =FontWeight.Bold
+        Size: =nfDimTitoloRiquadro
         Text: =CountIf(colStatoStand, stato = "in_prelazione")
         X: =419
         Y: =75
@@ -108,7 +126,10 @@ scrStand As screen:
     lblVenduti As modernText:
         AccessibleLabel: ="1"
         BorderStyle: =""
+        Color: =nfColoreTesto
         Font: =""
+        FontWeight: =FontWeight.Bold
+        Size: =nfDimTitoloRiquadro
         Text: =CountIf(colStatoStand, stato = "venduto")
         X: =677
         Y: =75
@@ -117,7 +138,10 @@ scrStand As screen:
     lblSatStand As modernText:
         AccessibleLabel: ="1"
         BorderStyle: =""
+        Color: =nfColoreTesto
         Font: =""
+        FontWeight: =FontWeight.Bold
+        Size: =nfDimTitoloRiquadro
         Text: |-
             =If(IsEmpty(colStatoStand), "—",
                  Text(CountIf(colStatoStand, stato = "venduto") / CountRows(colStatoStand) * 100,
@@ -129,7 +153,10 @@ scrStand As screen:
     lblSatMq As modernText:
         AccessibleLabel: ="1"
         BorderStyle: =""
+        Color: =nfColoreTesto
         Font: =""
+        FontWeight: =FontWeight.Bold
+        Size: =nfDimTitoloRiquadro
         Text: |-
             =If(IsEmpty(colStatoStand), "—",
                  Text(Sum(Filter(colStatoStand, stato = "venduto"), mq) / Sum(colStatoStand, mq) * 100,
@@ -192,7 +219,10 @@ scrStand As screen:
     txtCerca As modernTextInput:
         AccessibleLabel: ="1"
         Appearance: =Appearance.FilledDarker
+        BorderStyle: =""
+        Font: =""
         Placeholder: ="Cerca"
+        Required: =false
         TriggerOutput: =TriggerOutput.Keypress
         ValidationState: =ValidationState.None
         X: =53
@@ -200,9 +230,11 @@ scrStand As screen:
         ZIndex: =12
 
     "galStand As gallery.'BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0'":
+        '#CopilotOverlayLabel': ="Filtro applicato"
         AccessibleLabel: ="1"
         BorderColor: =App.Theme.Colors.Darker40
         DelayItemLoading: =true
+        Fill: =nfColoreSuperficie
         Items: |-
             =SortByColumns(
               Filter(colStatoStand,
@@ -215,7 +247,7 @@ scrStand As screen:
         LoadingSpinner: =LoadingSpinner.Data
         OnSelect: =galStand.Selected
         TabIndex: =1
-        TemplateFill: =If(ThisItem.IsSelected, RGBA(0, 120, 212, 0.1), Color.Transparent)
+        TemplateFill: =If(ThisItem.IsSelected, nfColoreSelezione, Color.Transparent)
         TemplatePadding: =0
         TemplateSize: =278
         Width: =Parent.Width * 0.6 - 30
@@ -235,17 +267,17 @@ scrStand As screen:
             Width: =72
             X: =16
             Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
-            ZIndex: =2
+            ZIndex: =1
 
         Subtitle1 As label:
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTestoSuAccento
             DisabledColor: =RGBA(166, 166, 166, 1)
             Fill: |-
-                =Switch(galStand.Selected.stato,
-                         "libero",        ColorValue("#2E7D32"),
-                         "opzionato",     ColorValue("#F9A825"),
-                         "in_prelazione", ColorValue("#0277BD"),
-                         "venduto",       ColorValue("#616161"))
+                =Switch(ThisItem.stato,
+                         "libero",        nfStatoLibero,
+                         "opzionato",     nfStatoOpzionato,
+                         "in_prelazione", nfStatoPrelazione,
+                         "venduto",       nfStatoVenduto)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
             Height: =Self.Size * 1.8
@@ -260,11 +292,11 @@ scrStand As screen:
             Width: =lblpadiglione.Width
             X: =99
             Y: =185
-            ZIndex: =3
+            ZIndex: =2
 
-        NextArrow1 As icon.ChevronRight:
+        NextArrow1 As icon:
             AccessibleLabel: =Self.Tooltip
-            Color: =RGBA(166, 166, 166, 1)
+            Color: =nfColoreTestoSecondario
             Height: =50
             Icon: =Icon.ChevronRight
             OnSelect: =Select(Parent)
@@ -276,28 +308,28 @@ scrStand As screen:
             Width: =50
             X: =Parent.TemplateWidth - Self.Width - 12
             Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
-            ZIndex: =4
+            ZIndex: =3
 
         Separator1 As rectangle:
             BorderColor: =App.Theme.Colors.Darker40
-            Fill: =RGBA(255, 255, 255, 1)
+            Fill: =nfColoreSfondo
             Height: =8
             OnSelect: =Select(Parent)
             Width: =Parent.TemplateWidth
             Y: =Parent.TemplateHeight - Self.Height
-            ZIndex: =5
+            ZIndex: =4
 
         Rectangle1 As rectangle:
             BorderColor: =App.Theme.Colors.Darker40
-            Fill: =App.Theme.Colors.Darker30
+            Fill: =nfAccentoStand
             Height: =Parent.TemplateHeight - Separator1.Height
             OnSelect: =Select(Parent)
             Visible: =ThisItem.IsSelected
             Width: =4
-            ZIndex: =6
+            ZIndex: =5
 
         lblpadiglione As label:
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -312,10 +344,10 @@ scrStand As screen:
             Width: =Parent.TemplateWidth - 173
             X: =99
             Y: =62
-            ZIndex: =8
+            ZIndex: =6
 
         lblcodicestand As label:
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTesto
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -330,15 +362,15 @@ scrStand As screen:
             Width: =Parent.TemplateWidth - 173
             X: =99
             Y: =29
-            ZIndex: =9
+            ZIndex: =7
 
         lblmq As label:
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
             Height: =Self.Size * 1.8
-            OnSelect: =Select(Parent)
+            OnSelect: =
             PaddingBottom: =0
             PaddingLeft: =0
             PaddingRight: =0
@@ -349,15 +381,15 @@ scrStand As screen:
             Width: =lblpadiglione.Width
             X: =99
             Y: =95
-            ZIndex: =10
+            ZIndex: =8
 
         lblprezzolistino As label:
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
             Height: =Self.Size * 1.8
-            OnSelect: =Select(Parent)
+            OnSelect: =
             PaddingBottom: =0
             PaddingLeft: =0
             PaddingRight: =0
@@ -368,10 +400,10 @@ scrStand As screen:
             Width: =lblpadiglione.Width
             X: =99
             Y: =123
-            ZIndex: =11
+            ZIndex: =9
 
         lblposizione As label:
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -387,12 +419,13 @@ scrStand As screen:
             Width: =lblpadiglione.Width
             X: =99
             Y: =156
-            ZIndex: =12
+            ZIndex: =10
 
-    conDettaglio As groupContainer.verticalAutoLayoutContainer:
-        BorderThickness: =1
+    conDettaglio As groupContainer.horizontalAutoLayoutContainer:
+        BorderColor: =nfAccentoStand
+        BorderThickness: =nfSpessoreBordo
         DropShadow: =DropShadow.Light
-        Fill: =Color.LightGray
+        Fill: =nfColoreSuperficie
         Height: =galStand.Height
         LayoutAlignItems: =LayoutAlignItems.Center
         LayoutDirection: =LayoutDirection.Vertical
@@ -406,10 +439,10 @@ scrStand As screen:
         PaddingLeft: =16
         PaddingRight: =16
         PaddingTop: =16
-        RadiusBottomLeft: =4
-        RadiusBottomRight: =4
-        RadiusTopLeft: =4
-        RadiusTopRight: =4
+        RadiusBottomLeft: =nfRaggio
+        RadiusBottomRight: =nfRaggio
+        RadiusTopLeft: =nfRaggio
+        RadiusTopRight: =nfRaggio
         Visible: =!IsBlank(galStand.Selected)
         Width: =Parent.Width - Self.X - 20
         X: =galStand.X + galStand.Width + 20
@@ -419,29 +452,31 @@ scrStand As screen:
         lblDetTitolo As label:
             AutoHeight: =true
             BorderColor: =App.Theme.Colors.Darker40
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTesto
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
+            FontWeight: =FontWeight.Bold
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
             LayoutMinWidth: =16
-            Size: =20
+            Size: =nfDimTitoloRiquadro
             Text: ="Stand " & galStand.Selected.codice_stand
             ZIndex: =1
 
         lblDetStato As label:
             AutoHeight: =true
             BorderColor: =App.Theme.Colors.Darker40
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTestoSuAccento
             DisabledColor: =RGBA(166, 166, 166, 1)
             Fill: |-
                 =Switch(galStand.Selected.stato,
-                         "libero",        ColorValue("#2E7D32"),
-                         "opzionato",     ColorValue("#F9A825"),
-                         "in_prelazione", ColorValue("#0277BD"),
-                         "venduto",       ColorValue("#616161"))
+                         "libero",        nfStatoLibero,
+                         "opzionato",     nfStatoOpzionato,
+                         "in_prelazione", nfStatoPrelazione,
+                         "venduto",       nfStatoVenduto)
             Font: =App.Theme.Font
+            FontWeight: =FontWeight.Semibold
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
@@ -453,14 +488,14 @@ scrStand As screen:
         lblDetDati As label:
             AutoHeight: =true
             BorderColor: =App.Theme.Colors.Darker40
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTesto
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
             LayoutMinWidth: =16
-            Size: =13
+            Size: =nfDimTesto
             Text: |-
                 ="Padiglione: " & galStand.Selected.codice_padiglione & Char(10) &
                 "Superficie: " & galStand.Selected.mq & " m²" & Char(10) &
@@ -477,14 +512,14 @@ scrStand As screen:
         lblDetEspositore As label:
             AutoHeight: =true
             BorderColor: =App.Theme.Colors.Darker40
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
             LayoutMinWidth: =16
-            Size: =13
+            Size: =nfDimTesto
             Text: |-
                 =If(IsBlank(galStand.Selected.id_espositore_rif),
                    "Nessun espositore collegato",
@@ -498,14 +533,14 @@ scrStand As screen:
         lblDetRiferimento As label:
             AutoHeight: =true
             BorderColor: =App.Theme.Colors.Darker40
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTesto
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
             LayoutMinWidth: =16
-            Size: =13
+            Size: =nfDimTesto
             Text: |-
                 =If(!IsBlank(galStand.Selected.id_contratto), "Contratto " & galStand.Selected.id_contratto,
                    !IsBlank(galStand.Selected.id_preventivo), "Preventivo n. " & galStand.Selected.id_preventivo,
@@ -514,12 +549,16 @@ scrStand As screen:
 
         btnNuovoPreventivo As modernButton:
             AccessibleLabel: ="1"
+            BasePaletteColor: =nfAccentoNuovoPrev
+            BorderStyle: =""
+            Color: =nfColoreTestoSuAccento
             DisplayMode: |-
                 =If(
                   drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione &&
                   Today() <= ChiusuraVendite &&
                   galStand.Selected.stato in ["libero", "in_prelazione"],
                   DisplayMode.Edit, DisplayMode.Disabled)
+            Font: =""
             Height: =40
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
@@ -530,12 +569,15 @@ scrStand As screen:
                            Set(gblIdPreventivo, Blank());   // nuovo preventivo
                            Set(gblIdPreventivo, If(false, 0));
                            Navigate(scrPreventivo)
+            Size: =0
             Text: ="Nuovo Preventivo"
             ZIndex: =6
 
         btnNuovoPreventivo_1 As modernButton:
             AccessibleLabel: ="1"
+            BasePaletteColor: =nfAccentoContratti
             BorderStyle: =""
+            Color: =nfColoreTestoSuAccento
             Font: =""
             Height: =40
             LayoutMaxHeight: =0
@@ -558,8 +600,13 @@ scrStand As screen:
 
     btnPreventivi As modernButton:
         AccessibleLabel: ="1"
+        BasePaletteColor: =nfAccentoPreventivi
+        BorderStyle: =""
+        Color: =nfColoreTestoSuAccento
+        Font: =""
         Height: =43
         OnSelect: =Navigate(scrPreventivi)
+        Size: =0
         Text: ="Preventivi"
         Visible: =drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
         Width: =145
@@ -570,15 +617,99 @@ scrStand As screen:
     btnIndietroContr_2 As icon:
         AccessibleLabel: ="1"
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =App.Theme.Colors.Darker30
+        Color: =nfColoreTesto
         DisabledBorderColor: =RGBA(166, 166, 166, 1)
         DisabledColor: =RGBA(244, 244, 244, 1)
         Height: =40
         Icon: =Icon.BackArrow
-        OnSelect: =Navigate(scrStand)
+        OnSelect: =Navigate(scrHome)
         TabIndex: =1
         Width: =40
         X: =13
         Y: =4
         ZIndex: =16
+
+    lblDidSatMq As modernText:
+        BorderStyle: =""
+        Color: =nfColoreTestoSecondario
+        Font: =""
+        Height: =28
+        Size: =12
+        Text: ="Saturazione m²"
+        X: =1131
+        Y: =46
+        ZIndex: =17
+
+    lblDidPrelaz As modernText:
+        BorderStyle: =""
+        Color: =nfColoreTestoSecondario
+        Font: =""
+        Height: =28
+        Size: =12
+        Text: ="In prelazione"
+        X: =419
+        Y: =46
+        ZIndex: =18
+
+    lblDidLiberi As modernText:
+        BorderStyle: =""
+        Color: =nfColoreTestoSecondario
+        Font: =""
+        Height: =28
+        Size: =12
+        Text: ="Liberi"
+        X: =64
+        Y: =46
+        ZIndex: =19
+
+    lblDidSatStand As modernText:
+        BorderStyle: =""
+        Color: =nfColoreTestoSecondario
+        Font: =""
+        Height: =28
+        Size: =12
+        Text: ="Saturazione stand"
+        X: =903
+        Y: =46
+        ZIndex: =20
+
+    lblDidVenduti As modernText:
+        BorderStyle: =""
+        Color: =nfColoreTestoSecondario
+        Font: =""
+        Height: =28
+        Size: =12
+        Text: ="Venduti"
+        X: =677
+        Y: =46
+        ZIndex: =21
+
+    lblDidOpzionati As modernText:
+        BorderStyle: =""
+        Color: =nfColoreTestoSecondario
+        Font: =""
+        Height: =28
+        Size: =12
+        Text: ="Opzionati"
+        X: =235
+        Y: =46
+        ZIndex: =22
+
+    btnApprovazioni As modernButton:
+        AccessibleLabel: ="1"
+        BasePaletteColor: =nfAccentoPreventivi
+        BorderStyle: =""
+        Color: =nfColoreTestoSuAccento
+        Font: =""
+        Height: =43
+        OnSelect: =Navigate(scrApprovazioni)
+        Size: =0
+        Text: |-
+            ="Approvazioni (" & CountRows(Filter('arcade.preventivo',
+                         id_edizione = EdizioneSel.id_edizione && stato = "in_approvazione")) & ")"
+        Visible: =drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
+        Width: =145
+        X: =887
+        Y: =135
+        ZIndex: =23
 

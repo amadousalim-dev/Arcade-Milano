@@ -13,3 +13,5 @@ EditorState:
     - scrPreventivo
     - scrContratto
     - scrPreventivi
+    - scrListino
+    - scrApprovazioni
