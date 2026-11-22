@@ -140,6 +140,20 @@
     "OverridableProperties": {},
     "Version": "1.1.2"
   },
+  "modernDatePicker": {
+    "CustomGroupControlTemplateName": "",
+    "FirstParty": true,
+    "Id": "http://microsoft.com/appmagic/modernDatePicker",
+    "IsComponentTemplate": false,
+    "IsCustomGroupControlTemplate": false,
+    "IsPcfControl": false,
+    "IsPremiumPcfControl": false,
+    "IsWidgetTemplate": true,
+    "LastModifiedTimestamp": "0",
+    "Name": "modernDatePicker",
+    "OverridableProperties": {},
+    "Version": "1.0.2"
+  },
   "modernDropdown": {
     "CustomGroupControlTemplateName": "",
     "FirstParty": true,

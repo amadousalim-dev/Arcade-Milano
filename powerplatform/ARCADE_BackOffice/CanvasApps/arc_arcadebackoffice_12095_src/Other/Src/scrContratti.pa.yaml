@@ -1,0 +1,315 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  scrContratti:
+    Properties:
+      Fill: =nfColoreSfondo
+      OnVisible: |-
+        =Refresh('arcade.contratto'); Refresh('arcade.pagamento');
+        // tutti i pagamenti (circa 400): una sola richiesta semplice
+        ClearCollect(colPagamenti, 'arcade.pagamento');
+        Select(btnCaricaContratti)
+    Children:
+      - ScreenContainer1_1:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =nfColoreSfondo
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =16
+            PaddingBottom: =16
+            PaddingLeft: =16
+            PaddingRight: =16
+            PaddingTop: =16
+            Width: =Parent.Width
+          Children:
+            - HeaderContainer1_1:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =nfColoreSuperficie
+                  FillPortions: =0
+                  Height: =75
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =16
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  PaddingBottom: =8
+                  PaddingLeft: =8
+                  PaddingRight: =8
+                  PaddingTop: =8
+                  RadiusBottomLeft: =nfRaggio
+                  RadiusBottomRight: =nfRaggio
+                  RadiusTopLeft: =nfRaggio
+                  RadiusTopRight: =nfRaggio
+                Children:
+                  - btnIndietroCont:
+                      Control: Classic/Icon@2.5.0
+                      Properties:
+                        AccessibleLabel: ="1"
+                        Color: =nfColoreTesto
+                        Height: =61
+                        Icon: =Icon.BackArrow
+                        OnSelect: =Navigate(scrStand)
+                        TabIndex: =1
+                        Width: =53
+                        X: =34
+                        Y: =3
+                  - lblTitoloContratti:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =nfColoreTesto
+                        FillPortions: =1
+                        FontWeight: =FontWeight.Bold
+                        Role: =TextRole.Heading1
+                        Size: =nfDimTitolo
+                        Text: ="Contratti"
+                  - drpEdizioneContr:
+                      Control: ModernDropdown@1.0.3
+                      Properties:
+                        AccessibleLabel: ="1"
+                        Default: =LookUp(colEdizioni, id_edizione = EdizioneSel.id_edizione)
+                        ItemDisplayText: =ThisItem.nome
+                        Items: =colEdizioni
+                        OnChange: =Select(btnCaricaContratti)
+                        Size: =21
+                        Width: =280
+                        X: =719
+                        Y: =33
+                  - drpFiltroPag:
+                      Control: ModernDropdown@1.0.3
+                      Properties:
+                        AccessibleLabel: ="1"
+                        Default: |-
+                          ={Value: "Tutti"}
+                        ItemDisplayText: =ThisItem.Value
+                        Items: =["Tutti", "Con crediti aperti", "Da pagare", "Pagati in ritardo", "Non consegnabili", "Disdetti"]
+                        OnChange: =
+                        Size: =21
+                        Width: =280
+                        X: =719
+                        Y: =33
+            - OverviewContainer:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =nfColoreSuperficie
+                  FillPortions: =0
+                  Height: =75
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =16
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  PaddingBottom: =8
+                  PaddingLeft: =8
+                  PaddingRight: =8
+                  PaddingTop: =8
+                  RadiusBottomLeft: =nfRaggio
+                  RadiusBottomRight: =nfRaggio
+                  RadiusTopLeft: =nfRaggio
+                  RadiusTopRight: =nfRaggio
+                Children:
+                  - txtCercaContr:
+                      Control: ModernTextInput@1.1.3
+                      Properties:
+                        FillPortions: =2
+                        LayoutMinHeight: =16
+                        LayoutMinWidth: =16
+                        Placeholder: ="Cerca contratto..."
+                  - lblContrNumero:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =nfColoreTesto
+                        FillPortions: =1
+                        FontWeight: =FontWeight.Bold
+                        Role: =TextRole.Heading1
+                        Size: =20
+                        Text: =CountRows(colContratti) & " contratti"
+                  - lblContrCrediti:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =If(Sum(colContratti, credito_aperto) > 0, Color.Red, Color.DarkGreen)
+                        FillPortions: =3
+                        FontWeight: =FontWeight.Bold
+                        Role: =TextRole.Heading1
+                        Size: =20
+                        Text: |-
+                          ="Crediti aperti: " & Text(Sum(colContratti, credito_aperto), "[$-en-US]#,##0.00", "it-IT") &
+                            " € su " & CountRows(Filter(colContratti, credito_aperto > 0)) & " contratti"
+            - MainContainer1_1:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  BorderColor: =nfAccentoPreventivi
+                  BorderThickness: =nfSpessoreBordo
+                  Fill: =nfColoreSuperficie
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  PaddingBottom: =8
+                  PaddingLeft: =8
+                  PaddingRight: =8
+                  PaddingTop: =8
+                  RadiusBottomLeft: =nfRaggio
+                  RadiusBottomRight: =nfRaggio
+                  RadiusTopLeft: =nfRaggio
+                  RadiusTopRight: =nfRaggio
+                Children:
+                  - galContratti:
+                      Control: Gallery@2.15.0
+                      Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                      Properties:
+                        AccessibleLabel: ="1"
+                        Fill: =nfColoreSuperficie
+                        Items: |-
+                          =SortByColumns(
+                            Filter(colContratti,
+                              Switch(drpFiltroPag.Selected.Value,
+                                "Con crediti aperti", credito_aperto > 0,
+                                "Da pagare",          da_pagare > 0,
+                                "Pagati in ritardo",  in_ritardo,
+                                "Non consegnabili",   stato = "attivo" && !consegnabile,
+                                "Disdetti",           stato = "disdetto",
+                                true) &&
+                              (IsBlank(txtCercaContr.Text) || StartsWith(codice_stand, Upper(txtCercaContr.Text)) ||
+                               StartsWith(id_contratto, Upper(txtCercaContr.Text)))),
+                            "id_contratto", SortOrder.Ascending)
+                        LayoutMinHeight: =16
+                        LayoutMinWidth: =16
+                        OnSelect: |-
+                          =Set(gblIdContratto, ThisItem.id_contratto);
+                          Navigate(scrContratto)
+                        TabIndex: =1
+                        TemplateSize: =150
+                      Children:
+                        - Rectangle4_1:
+                            Control: Rectangle@2.3.0
+                            Properties:
+                              Fill: =nfAccentoPreventivi
+                              Height: =Parent.TemplateHeight - Separator5_1.Height
+                              OnSelect: =Select(Parent)
+                              Visible: =ThisItem.IsSelected
+                              Width: =4
+                        - lblCtrTitolo:
+                            Control: Label@2.5.1
+                            Properties:
+                              AutoHeight: =true
+                              BorderColor: =RGBA(0, 0, 0, 1)
+                              Color: =nfColoreTesto
+                              FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                              Height: =Self.Size * 1.8
+                              OnSelect: =Select(Parent)
+                              PaddingBottom: =0
+                              PaddingLeft: =0
+                              PaddingRight: =0
+                              PaddingTop: =0
+                              Size: =nfDimTesto
+                              Text: |-
+                                =ThisItem.id_contratto & " – stand " & ThisItem.codice_stand &
+                                                    If(ThisItem.stato = "disdetto", "  (DISDETTO)", "")
+                              VerticalAlign: =VerticalAlign.Top
+                              Width: =Parent.TemplateWidth - 173
+                              X: =57
+                              Y: =6
+                        - lblCtrEsp:
+                            Control: Label@2.5.1
+                            Properties:
+                              AutoHeight: =true
+                              BorderColor: =RGBA(0, 0, 0, 1)
+                              Color: =nfColoreTesto
+                              FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                              Height: =Self.Size * 1.8
+                              OnSelect: =Select(Parent)
+                              PaddingBottom: =0
+                              PaddingLeft: =0
+                              PaddingRight: =0
+                              PaddingTop: =0
+                              Size: =12
+                              Text: =LookUp(colEspositori, id_espositore = ThisItem.id_espositore).ragione_sociale
+                              VerticalAlign: =VerticalAlign.Top
+                              Width: =1056
+                              X: =57
+                              Y: =47
+                        - NextArrow5_1:
+                            Control: Classic/Icon@2.5.0
+                            Properties:
+                              AccessibleLabel: =Self.Tooltip
+                              BorderColor: =RGBA(0, 0, 0, 1)
+                              Color: =nfColoreTestoSecondario
+                              DisabledBorderColor: =RGBA(56, 56, 56, 1)
+                              DisabledColor: =RGBA(119, 119, 119, 1)
+                              Height: =50
+                              Icon: =Icon.ChevronRight
+                              OnSelect: =Select(Parent)
+                              PaddingBottom: =16
+                              PaddingLeft: =16
+                              PaddingRight: =16
+                              PaddingTop: =16
+                              Tooltip: ="Visualizza dettagli elementi"
+                              Width: =50
+                              X: =Parent.TemplateWidth - Self.Width - 12
+                              Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
+                        - lblCtrImporti:
+                            Control: Label@2.5.1
+                            Properties:
+                              AutoHeight: =true
+                              BorderColor: =RGBA(0, 0, 0, 1)
+                              Color: =If(ThisItem.credito_aperto > 0, Color.Red, Color.White)
+                              FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                              Height: =Self.Size * 1.8
+                              OnSelect: =Select(Parent)
+                              PaddingBottom: =0
+                              PaddingLeft: =0
+                              PaddingRight: =0
+                              PaddingTop: =0
+                              Size: =12
+                              Text: |-
+                                ="Imponibile " & Text(ThisItem.imponibile_eur, "[$-en-US]#,##0.00", "it-IT") & " €" &
+                                  If(ThisItem.credito_aperto > 0,
+                                     "  ·  Credito aperto " & Text(ThisItem.credito_aperto, "[$-en-US]#,##0.00", "it-IT") & " €", "")
+                              VerticalAlign: =VerticalAlign.Top
+                              Width: =lblCtrTitolo.Width
+                              X: =57
+                              Y: =87
+                        - Separator5_1:
+                            Control: Rectangle@2.3.0
+                            Properties:
+                              Fill: =nfColoreSfondo
+                              Height: =8
+                              OnSelect: =Select(Parent)
+                              Width: =Parent.TemplateWidth
+                              Y: =Parent.TemplateHeight - Self.Height
+      - btnCaricaContratti:
+          Control: ModernButton@1.0.0
+          Properties:
+            OnSelect: |-
+              =ClearCollect(colContratti,
+                ForAll(Filter('arcade.contratto', id_edizione = drpEdizioneContr.Selected.id_edizione) As c,
+                  With({ pag: Filter(colPagamenti, id_contratto = c.id_contratto) },
+                    { id_contratto: c.id_contratto,
+                      id_espositore: c.id_espositore,
+                      codice_stand: c.codice_stand,
+                      imponibile_eur: c.imponibile_eur,
+                      stato: c.stato,
+                      deroga_allestimento_il: c.deroga_allestimento_il,
+                      // credito aperto: scaduto, non pagato, non annullato
+                      credito_aperto: Sum(Filter(pag, IsBlank(pagato_il) && !annullato && scadenza < Today()), importo),
+                      da_pagare: Sum(Filter(pag, IsBlank(pagato_il) && !annullato && scadenza >= Today()), importo),
+                      consegnabile: c.stato = "attivo" &&
+                        (!IsBlank(LookUp(pag, tipo = "saldo").pagato_il) || !IsBlank(c.deroga_allestimento_il)),
+                      saldo_pagato: !IsBlank(LookUp(pag, tipo = "saldo").pagato_il),
+                      in_ritardo: CountRows(Filter(pag, !IsBlank(pagato_il) && pagato_il > scadenza)) > 0 })))
+            Visible: =false
+            X: =420
+            Y: =33

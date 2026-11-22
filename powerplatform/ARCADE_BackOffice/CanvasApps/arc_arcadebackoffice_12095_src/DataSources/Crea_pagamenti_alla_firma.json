@@ -1,0 +1,10 @@
+[
+  {
+    "ApiId": "/providers/microsoft.powerapps/apis/shared_logicflows",
+    "FlowNameId": "1dad9f85-d301-4e62-8c44-4c1e0a0815ce",
+    "Name": "Crea_pagamenti_alla_firma",
+    "ServiceKind": "ConnectedWadl",
+    "Type": "ServiceInfo",
+    "WorkflowEntityId": "1e2ed16e-fae3-f111-84e8-0022489e47ea"
+  }
+]

@@ -525,7 +525,7 @@ scrHome As screen:
                         LayoutMaxWidth: =0
                         LayoutMinHeight: =44
                         LayoutMinWidth: =140
-                        OnSelect: =Navigate(scrPreventivi)
+                        OnSelect: =Navigate(scrContratti)
                         Size: =0
                         Text: ="Apri ›"
                         Width: =140

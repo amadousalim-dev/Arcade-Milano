@@ -384,6 +384,6 @@ Screens:
                                     Layout: =ButtonLayout.TextOnly
                                     LayoutMinHeight: =44
                                     LayoutMinWidth: =140
-                                    OnSelect: =Navigate(scrPreventivi)
+                                    OnSelect: =Navigate(scrContratti)
                                     Text: ="Apri ›"
                                     Width: =140
