@@ -1,0 +1,181 @@
+"scrListino As screen.'tabletLayout_HeaderAndGallery_ver3.0'":
+    CopilotContext: |-
+        ={ ScreenName: Self.Name }
+    CopilotPromptSuggestions: =[]
+    Fill: =Color.White
+    LoadingSpinnerColor: =App.Theme.Colors.Primary
+    OnVisible: |-
+        =ClearCollect(colListinoVista,
+          ShowColumns(Filter('arcade.listino', id_edizione = EdizioneSel.id_edizione),
+            codice_voce, descrizione, tipo_voce, unita, prezzo_unitario,
+            quantita_disponibile, codice_padiglione_vincolo, note))
+
+    RectQuickActionBar1 As rectangle:
+        BorderColor: =App.Theme.Colors.Darker40
+        Fill: =App.Theme.Colors.Primary
+        Height: =64
+        Width: =Parent.Width
+        ZIndex: =1
+
+    Title2 As label:
+        Align: =Align.Center
+        Color: =App.Theme.Colors.PrimaryForeground
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =64
+        PaddingRight: =10
+        Size: =18
+        Text: ="Nome app"
+        Width: =Parent.Width
+        ZIndex: =2
+
+    "galListino As gallery.'BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0'":
+        BorderColor: =App.Theme.Colors.Darker40
+        DelayItemLoading: =true
+        Height: =639
+        Items: |-
+            =SortByColumns(
+              Filter(colListinoVista,
+                drpTipoVoce.Selected.Value = "Tutti" || tipo_voce = drpTipoVoce.Selected.Value),
+              "tipo_voce", SortOrder.Ascending, "codice_voce", SortOrder.Ascending)
+        Layout: =Layout.Vertical
+        LoadingSpinner: =LoadingSpinner.Data
+        TemplatePadding: =0
+        TemplateSize: =205
+        Width: =Parent.Width
+        Y: =124
+        ZIndex: =3
+
+        lblLisCodice As label:
+            AutoHeight: =true
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: =ThisItem.codice_voce
+            VerticalAlign: =VerticalAlign.Top
+            Width: =Parent.TemplateWidth - 173
+            X: =86
+            Y: =2
+            ZIndex: =2
+
+        Separator6 As rectangle:
+            BorderColor: =App.Theme.Colors.Darker40
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =8
+            OnSelect: =Select(Parent)
+            Width: =Parent.TemplateWidth
+            Y: =Parent.TemplateHeight - Self.Height
+            ZIndex: =5
+
+        Rectangle3 As rectangle:
+            BorderColor: =App.Theme.Colors.Darker40
+            Fill: =App.Theme.Colors.Darker30
+            Height: =Parent.TemplateHeight - Separator6.Height
+            OnSelect: =Select(Parent)
+            Visible: =ThisItem.IsSelected
+            Width: =4
+            ZIndex: =6
+
+        lblLisDescr As label:
+            AutoHeight: =true
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: =ThisItem.descrizione
+            VerticalAlign: =VerticalAlign.Top
+            Width: =Parent.TemplateWidth - 173
+            X: =86
+            Y: =36
+            ZIndex: =7
+
+        lblLisTipo As label:
+            AutoHeight: =true
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: =Proper(ThisItem.tipo_voce)
+            VerticalAlign: =VerticalAlign.Top
+            Width: =Parent.TemplateWidth - 173
+            X: =86
+            Y: =68
+            ZIndex: =8
+
+        lblLisPrezzo As label:
+            AutoHeight: =true
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: |-
+                =If(IsBlank(ThisItem.prezzo_unitario), "—",
+                     ThisItem.tipo_voce = "maggiorazione" || ThisItem.unita = "%",
+                       Text(ThisItem.prezzo_unitario * 100, "[$-en-US]0", "it-IT") & "%",
+                     Text(ThisItem.prezzo_unitario, "[$-en-US]#,##0.00", "it-IT") & " € / " & ThisItem.unita)
+            VerticalAlign: =VerticalAlign.Top
+            Width: =Parent.TemplateWidth - 173
+            X: =86
+            Y: =106
+            ZIndex: =9
+
+        lblLisNote As label:
+            AutoHeight: =true
+            Color: =RGBA(50, 49, 48, 1)
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+            Height: =Self.Size * 1.8
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Text: |-
+                =If(!IsBlank(ThisItem.quantita_disponibile),
+                       "Pacchetti per edizione: " & ThisItem.quantita_disponibile & "  ", "") &
+                  If(!IsBlank(ThisItem.codice_padiglione_vincolo),
+                       "Solo padiglione " & ThisItem.codice_padiglione_vincolo & "  ", "") &
+                  Coalesce(ThisItem.note, "")
+            VerticalAlign: =VerticalAlign.Top
+            Width: =Parent.TemplateWidth - 173
+            X: =86
+            Y: =139
+            ZIndex: =10
+
+    drpTipoVoce As modernDropdown:
+        Appearance: =Appearance.FilledDarker
+        Default: |-
+            ={Value: "Tutti"}
+        ItemDisplayText: =ThisItem.Value
+        Items: =["Tutti", "spazio", "maggiorazione", "extra", "sponsorizzazione", "condizione"]
+        ValidationState: =ValidationState.None
+        X: =54
+        Y: =75
+        ZIndex: =4
+

@@ -22,8 +22,41 @@ App:
       ScadenzaSaldo = DateAdd(EdizioneSel.data_inizio, -30, TimeUnit.Days);
       // TEMPORANEO finché non esiste la colonna edizione.chiusura_vendite
       ChiusuraVendite = DateAdd(EdizioneSel.data_inizio, -15, TimeUnit.Days);
+
+      // Tema grafico (stile di scrHome): solo aspetto, nessuna logica
+      nfColoreSfondo = RGBA(18, 19, 31, 1);             // sfondo delle schermate
+      nfColoreSuperficie = RGBA(30, 32, 51, 1);         // riquadri, intestazioni, pannelli
+      nfColoreTesto = RGBA(255, 255, 255, 1);           // testo principale
+      nfColoreTestoSecondario = RGBA(201, 204, 224, 1); // descrizioni, testo secondario
+      nfColoreTestoSuAccento = RGBA(18, 19, 31, 1);     // testo sopra un colore acceso
+      nfAccentoStand = RGBA(0, 229, 255, 1);            // ciano
+      nfAccentoPreventivi = RGBA(255, 79, 163, 1);      // magenta
+      nfAccentoNuovoPrev = RGBA(255, 210, 63, 1);       // giallo
+      nfAccentoContratti = RGBA(61, 220, 132, 1);       // verde
+      nfAccentoPrimario = nfAccentoStand;               // accento generico dell'app
+      nfSpessoreBordo = 2;
+      nfRaggio = 12;
+      nfDimTitolo = 26;
+      nfDimSottotitolo = 15;
+      nfDimTitoloRiquadro = 20;
+      nfDimTesto = 14;
+      // Colori degli stati dello stand e della riga selezionata
+      nfStatoLibero = RGBA(61, 220, 132, 1);
+      nfStatoOpzionato = RGBA(255, 210, 63, 1);
+      nfStatoPrelazione = RGBA(100, 181, 246, 1);
+      nfStatoVenduto = RGBA(158, 158, 158, 1);
+      nfColoreSelezione = RGBA(0, 229, 255, 0.15);
+      // Colori degli stati dei pagamenti (scrContratto)
+      nfPagNeutro = nfStatoVenduto;                 // grigio: annullato, da pagare
+      nfPagScaduto = RGBA(255, 82, 82, 1);         // rosso
+      nfPagRitardo = RGBA(255, 152, 0, 1);         // arancione
+      nfPagRegolare = nfAccentoContratti;          // verde
+      // Colori di avviso generici
+      nfColoreErrore = RGBA(255, 82, 82, 1);       // rosso
+      nfColoreAttenzione = RGBA(255, 152, 0, 1);   // arancione
     OnStart: |-
       =ClearCollect(colEspositori, Sort('arcade.espositore', ragione_sociale));
-      ClearCollect(colEdizioni, Sort('arcade.edizione', id_edizione, SortOrder.Descending))
-    StartScreen: =scrStand
+      ClearCollect(colEdizioni, Sort('arcade.edizione', id_edizione, SortOrder.Descending));
+      Set(gblUtente, LookUp('arcade.utente', Lower(email) = Lower(User().Email)))
+    StartScreen: =scrHome
     Theme: =PowerAppsTheme

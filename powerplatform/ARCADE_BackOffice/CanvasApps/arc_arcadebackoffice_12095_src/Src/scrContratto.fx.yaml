@@ -1,8 +1,9 @@
 scrContratto As screen:
+    ContentLanguage: =""
     CopilotContext: |-
         ={ ScreenName: Self.Name }
     CopilotPromptSuggestions: =[]
-    Fill: =Color.White
+    Fill: =nfColoreSfondo
     LoadingSpinnerColor: =App.Theme.Colors.Primary
     OnVisible: |-
         =Refresh('arcade.contratto'); Refresh('arcade.riga_contratto'); Refresh('arcade.pagamento');
@@ -13,7 +14,7 @@ scrContratto As screen:
     btnIndietroContr As icon:
         AccessibleLabel: ="1"
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =App.Theme.Colors.Darker30
+        Color: =nfColoreTesto
         DisabledBorderColor: =RGBA(166, 166, 166, 1)
         DisabledColor: =RGBA(244, 244, 244, 1)
         Height: =61
@@ -28,12 +29,13 @@ scrContratto As screen:
     lblTitoloContr As label:
         AutoHeight: =true
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        Color: =nfColoreTesto
         DisabledColor: =RGBA(166, 166, 166, 1)
         FocusedBorderThickness: =1
         Font: =App.Theme.Font
+        FontWeight: =FontWeight.Bold
         Height: =42
-        Size: =21
+        Size: =nfDimTitolo
         TabIndex: =1
         Text: ="Contratto " & gblContratto.id_contratto & " – stand " & gblContratto.codice_stand
         Width: =650
@@ -44,12 +46,13 @@ scrContratto As screen:
     lblTitoloContr_1 As label:
         AutoHeight: =true
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        Color: =nfAccentoContratti
         DisabledColor: =RGBA(166, 166, 166, 1)
         FocusedBorderThickness: =1
         Font: =App.Theme.Font
+        FontWeight: =FontWeight.Bold
         Height: =42
-        Size: =21
+        Size: =nfDimTitoloRiquadro
         TabIndex: =1
         Text: =Upper(gblContratto.stato)
         Width: =305
@@ -58,12 +61,18 @@ scrContratto As screen:
         ZIndex: =3
 
     lblContrDati As label:
-        BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        BorderColor: =nfAccentoContratti
+        BorderThickness: =nfSpessoreBordo
+        Color: =nfColoreTesto
         DisabledColor: =RGBA(166, 166, 166, 1)
+        Fill: =nfColoreSuperficie
         Font: =App.Theme.Font
         Height: =319
-        Size: =21
+        PaddingBottom: =16
+        PaddingLeft: =16
+        PaddingRight: =16
+        PaddingTop: =16
+        Size: =nfDimTesto
         Text: |-
             ="Espositore: " & LookUp(colEspositori, id_espositore = gblContratto.id_espositore).ragione_sociale & Char(10) &
             "Edizione: " & gblContratto.id_edizione & Char(10) &
@@ -78,10 +87,12 @@ scrContratto As screen:
         ZIndex: =4
 
     "galRigheContr As gallery.'BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0'":
+        '#CopilotOverlayLabel': ="Filtro applicato"
         AccessibleLabel: ="1"
         BorderColor: =App.Theme.Colors.Darker40
         DelayItemLoading: =true
-        Height: =304
+        Fill: =nfColoreSuperficie
+        Height: =260
         Items: =Sort(Filter('arcade.riga_contratto', id_contratto = gblIdContratto), riga)
         Layout: =Layout.Vertical
         LoadingSpinner: =LoadingSpinner.Data
@@ -94,7 +105,7 @@ scrContratto As screen:
         ZIndex: =5
 
         Title1 As label:
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTesto
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -104,14 +115,15 @@ scrContratto As screen:
             PaddingLeft: =0
             PaddingRight: =0
             PaddingTop: =0
+            Size: =nfDimTesto
             Text: =ThisItem.descrizione
             VerticalAlign: =VerticalAlign.Top
             Width: =Parent.TemplateWidth - 173
             X: =103
-            ZIndex: =2
+            ZIndex: =1
 
         Subtitle2 As label:
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -128,28 +140,28 @@ scrContratto As screen:
             Width: =Title1.Width
             X: =103
             Y: =25
-            ZIndex: =3
+            ZIndex: =2
 
         Separator3 As rectangle:
             BorderColor: =App.Theme.Colors.Darker40
-            Fill: =RGBA(255, 255, 255, 3)
+            Fill: =nfColoreSfondo
             Height: =8
             OnSelect: =Select(Parent)
             Width: =Parent.TemplateWidth
             Y: =Parent.TemplateHeight - Self.Height
-            ZIndex: =5
+            ZIndex: =3
 
         Rectangle2 As rectangle:
             BorderColor: =App.Theme.Colors.Darker40
-            Fill: =App.Theme.Colors.Darker30
+            Fill: =nfAccentoContratti
             Height: =Parent.TemplateHeight - Separator3.Height
             OnSelect: =Select(Parent)
             Visible: =ThisItem.IsSelected
             Width: =4
-            ZIndex: =6
+            ZIndex: =4
 
         Subtitle2_1 As label:
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -166,10 +178,10 @@ scrContratto As screen:
             Width: =Title1.Width
             X: =103
             Y: =52
-            ZIndex: =7
+            ZIndex: =5
 
         Subtitle2_2 As label:
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -186,17 +198,17 @@ scrContratto As screen:
             Width: =Title1.Width
             X: =103
             Y: =71
-            ZIndex: =8
+            ZIndex: =6
 
     lblContrListino As label:
         AutoHeight: =true
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        Color: =nfColoreTestoSecondario
         DisabledColor: =RGBA(166, 166, 166, 1)
         Font: =App.Theme.Font
-        Size: =11
+        Size: =nfDimTesto
         Text: |-
-            ="Imponibile: " & Text(gblContratto.imponibile_listino_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
+            ="Listino: " & Text(gblContratto.imponibile_listino_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
         Width: =321
         X: =63
         Y: =459
@@ -205,11 +217,11 @@ scrContratto As screen:
     lblContrSconto As label:
         AutoHeight: =true
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        Color: =nfColoreTestoSecondario
         DisabledColor: =RGBA(166, 166, 166, 1)
         FocusedBorderThickness: =1
         Font: =App.Theme.Font
-        Size: =11
+        Size: =nfDimTesto
         TabIndex: =1
         Text: |-
             ="Sconto: " & Text(gblContratto.sconto_pct * 100, "[$-en-US]0.0", "it-IT") & "%"
@@ -221,11 +233,11 @@ scrContratto As screen:
     lblContrImponibile As label:
         AutoHeight: =true
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        Color: =nfColoreTestoSecondario
         DisabledColor: =RGBA(166, 166, 166, 1)
         FocusedBorderThickness: =1
         Font: =App.Theme.Font
-        Size: =11
+        Size: =nfDimTesto
         TabIndex: =1
         Text: |-
             ="Imponibile: " & Text(gblContratto.imponibile_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
@@ -237,11 +249,11 @@ scrContratto As screen:
     lblContrIva As label:
         AutoHeight: =true
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        Color: =nfColoreTestoSecondario
         DisabledColor: =RGBA(166, 166, 166, 1)
         FocusedBorderThickness: =1
         Font: =App.Theme.Font
-        Size: =11
+        Size: =nfDimTesto
         TabIndex: =1
         Text: |-
             ="IVA: " & If(IsBlank(gblContratto.aliquota_iva),
@@ -256,11 +268,12 @@ scrContratto As screen:
     ContrTotale As label:
         AutoHeight: =true
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        Color: =nfColoreTesto
         DisabledColor: =RGBA(166, 166, 166, 1)
         FocusedBorderThickness: =1
         Font: =App.Theme.Font
-        Size: =11
+        FontWeight: =FontWeight.Bold
+        Size: =nfDimTitoloRiquadro
         TabIndex: =1
         Text: |-
             ="Totale: " & If(IsBlank(gblContratto.aliquota_iva), "—",
@@ -272,9 +285,11 @@ scrContratto As screen:
         ZIndex: =10
 
     "galPagamenti As gallery.'BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0'":
+        '#CopilotOverlayLabel': ="Filtro applicato"
         AccessibleLabel: ="1"
         BorderColor: =App.Theme.Colors.Darker40
         DelayItemLoading: =true
+        Fill: =nfColoreSuperficie
         Height: =388
         Items: =Sort(Filter('arcade.pagamento', id_contratto = gblIdContratto), tipo)
         Layout: =Layout.Vertical
@@ -282,13 +297,13 @@ scrContratto As screen:
         TabIndex: =1
         TemplatePadding: =0
         TemplateSize: =197
-        Width: =709
-        X: =633
+        Width: =712
+        X: =630
         Y: =364
         ZIndex: =11
 
         lblPagTipo As label:
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTesto
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -298,25 +313,26 @@ scrContratto As screen:
             PaddingLeft: =0
             PaddingRight: =0
             PaddingTop: =0
+            Size: =nfDimTesto
             Text: |-
                 ="Tipo: " & ThisItem.tipo
             VerticalAlign: =VerticalAlign.Top
             Width: =130
             X: =92
             Y: =38
-            ZIndex: =2
+            ZIndex: =1
 
         Separator4 As rectangle:
             BorderColor: =App.Theme.Colors.Darker40
-            Fill: =RGBA(255, 255, 255, 1)
+            Fill: =nfColoreSfondo
             Height: =8
             OnSelect: =Select(Parent)
             Width: =Parent.TemplateWidth
             Y: =Parent.TemplateHeight - Self.Height
-            ZIndex: =5
+            ZIndex: =2
 
         lblPagImporto As label:
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTesto
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -326,16 +342,17 @@ scrContratto As screen:
             PaddingLeft: =0
             PaddingRight: =0
             PaddingTop: =0
+            Size: =nfDimTesto
             Text: |-
                 ="Importo: " & Text(ThisItem.importo, "[$-en-US]#,##0.00", "it-IT") & " €"
             VerticalAlign: =VerticalAlign.Top
             Width: =193
             X: =92
             Y: =63
-            ZIndex: =7
+            ZIndex: =3
 
         lblPagScadenza As label:
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -345,16 +362,17 @@ scrContratto As screen:
             PaddingLeft: =0
             PaddingRight: =0
             PaddingTop: =0
+            Size: =nfDimTesto
             Text: |-
                 ="Scadenza: " & Text(ThisItem.scadenza, "dd/mm/yyyy")
             VerticalAlign: =VerticalAlign.Top
             Width: =193
             X: =92
             Y: =88
-            ZIndex: =8
+            ZIndex: =4
 
         lblPagIncasso As label:
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -364,6 +382,7 @@ scrContratto As screen:
             PaddingLeft: =0
             PaddingRight: =0
             PaddingTop: =0
+            Size: =nfDimTesto
             Text: |-
                 ="Stato Pagamento: " & If(IsBlank(ThisItem.pagato_il), "Non incassato",
                                          "Incassato il " & Text(ThisItem.pagato_il, "dd/mm/yyyy") &
@@ -372,18 +391,18 @@ scrContratto As screen:
             Width: =292
             X: =92
             Y: =113
-            ZIndex: =9
+            ZIndex: =5
 
         lblPagStato As label:
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTestoSuAccento
             DisabledColor: =RGBA(166, 166, 166, 1)
             Fill: |-
                 =Switch(true,
-                  ThisItem.annullato, ColorValue("#9E9E9E"),
-                  IsBlank(ThisItem.pagato_il) && ThisItem.scadenza < Today(), ColorValue("#C62828"),
-                  IsBlank(ThisItem.pagato_il), ColorValue("#9E9E9E"),
-                  ThisItem.pagato_il > ThisItem.scadenza, ColorValue("#EF6C00"),
-                  ColorValue("#2E7D32"))
+                  ThisItem.annullato, nfPagNeutro,
+                  IsBlank(ThisItem.pagato_il) && ThisItem.scadenza < Today(), nfPagScaduto,
+                  IsBlank(ThisItem.pagato_il), nfPagNeutro,
+                  ThisItem.pagato_il > ThisItem.scadenza, nfPagRitardo,
+                  nfPagRegolare)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
             Height: =Self.Size * 1.8
@@ -392,6 +411,7 @@ scrContratto As screen:
             PaddingLeft: =0
             PaddingRight: =0
             PaddingTop: =0
+            Size: =nfDimTesto
             Text: |-
                 =Upper(Substitute(
                   If(ThisItem.annullato, "annullato",
@@ -400,8 +420,8 @@ scrContratto As screen:
                      ThisItem.pagato_il > ThisItem.scadenza, "pagato_in_ritardo",
                      "pagato_nei_termini"), "_", " "))
             VerticalAlign: =VerticalAlign.Top
-            Width: =130
+            Width: =200
             X: =92
             Y: =138
-            ZIndex: =10
+            ZIndex: =6
 

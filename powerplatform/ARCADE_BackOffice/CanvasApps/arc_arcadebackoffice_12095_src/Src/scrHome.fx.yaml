@@ -1,7 +1,533 @@
 scrHome As screen:
+    ContentLanguage: =""
     CopilotContext: |-
         ={ ScreenName: Self.Name }
     CopilotPromptSuggestions: =[]
-    Fill: =Color.White
+    Fill: =nfColoreSfondo
     LoadingSpinnerColor: =App.Theme.Colors.Primary
+
+    conHomeRoot As groupContainer.horizontalAutoLayoutContainer:
+        Fill: =nfColoreSfondo
+        Height: =Parent.Height
+        LayoutAlignItems: =LayoutAlignItems.Stretch
+        LayoutDirection: =LayoutDirection.Vertical
+        LayoutGap: =24
+        LayoutGridColumnMinWidth: =0
+        LayoutGridColumns: =6
+        LayoutGridRowMinHeight: =0
+        LayoutGridRows: =6
+        LayoutMode: =LayoutMode.Auto
+        LayoutOverflowY: =LayoutOverflow.Scroll
+        PaddingBottom: =32
+        PaddingLeft: =32
+        PaddingRight: =32
+        PaddingTop: =32
+        Width: =Parent.Width
+        ZIndex: =1
+
+        conHomeHeader As groupContainer.horizontalAutoLayoutContainer:
+            Fill: =nfColoreSuperficie
+            FillPortions: =0
+            Height: =112
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutGap: =20
+            LayoutGridColumnMinWidth: =0
+            LayoutGridColumns: =6
+            LayoutGridRowMinHeight: =0
+            LayoutGridRows: =6
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =100
+            LayoutMinWidth: =250
+            LayoutMode: =LayoutMode.Auto
+            PaddingBottom: =16
+            PaddingRight: =24
+            PaddingTop: =16
+            RadiusBottomLeft: =nfRaggio
+            RadiusBottomRight: =nfRaggio
+            RadiusTopLeft: =nfRaggio
+            RadiusTopRight: =nfRaggio
+            ZIndex: =1
+
+            conHomeAccento As groupContainer.horizontalAutoLayoutContainer:
+                Fill: =nfAccentoPrimario
+                FillPortions: =0
+                LayoutDirection: =LayoutDirection.Vertical
+                LayoutGridColumnMinWidth: =0
+                LayoutGridColumns: =6
+                LayoutGridRowMinHeight: =0
+                LayoutGridRows: =6
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =100
+                LayoutMinWidth: =8
+                LayoutMode: =LayoutMode.Auto
+                RadiusBottomRight: =4
+                RadiusTopRight: =4
+                Width: =8
+                ZIndex: =2
+
+            conHomeTitoli As groupContainer.horizontalAutoLayoutContainer:
+                LayoutDirection: =LayoutDirection.Vertical
+                LayoutGap: =4
+                LayoutGridColumnMinWidth: =0
+                LayoutGridColumns: =6
+                LayoutGridRowMinHeight: =0
+                LayoutGridRows: =6
+                LayoutJustifyContent: =LayoutJustifyContent.Center
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =80
+                LayoutMinWidth: =250
+                LayoutMode: =LayoutMode.Auto
+                RadiusBottomLeft: =4
+                RadiusBottomRight: =4
+                RadiusTopLeft: =4
+                RadiusTopRight: =4
+                ZIndex: =3
+
+                lblHomeTitolo As label:
+                    AlignInContainer: =AlignInContainer.Stretch
+                    BorderColor: =App.Theme.Colors.Darker40
+                    Color: =nfColoreTesto
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Font: =App.Theme.Font
+                    FontWeight: =FontWeight.Bold
+                    Height: =44
+                    LayoutMaxHeight: =0
+                    LayoutMaxWidth: =0
+                    PaddingLeft: =0
+                    Role: =TextRole.Heading1
+                    Size: =nfDimTitolo
+                    Text: ="ARCADE Milano – Back-office commerciale"
+                    ZIndex: =4
+
+                lblHomeSottotitolo As label:
+                    AlignInContainer: =AlignInContainer.Stretch
+                    BorderColor: =App.Theme.Colors.Darker40
+                    Color: =nfColoreTestoSecondario
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Font: =App.Theme.Font
+                    Height: =28
+                    LayoutMaxHeight: =0
+                    LayoutMaxWidth: =0
+                    PaddingLeft: =0
+                    Size: =nfDimSottotitolo
+                    Text: ="Edizione 2026 · 18–20 dicembre · 3 padiglioni"
+                    ZIndex: =5
+
+        conHomeRiquadri As groupContainer.horizontalAutoLayoutContainer:
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =24
+            LayoutGridColumnMinWidth: =0
+            LayoutGridColumns: =6
+            LayoutGridRowMinHeight: =0
+            LayoutGridRows: =6
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =384
+            LayoutMinWidth: =250
+            LayoutMode: =LayoutMode.Auto
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            ZIndex: =6
+
+            conHomeRiga1 As groupContainer.horizontalAutoLayoutContainer:
+                LayoutAlignItems: =LayoutAlignItems.Stretch
+                LayoutGap: =24
+                LayoutGridColumnMinWidth: =0
+                LayoutGridColumns: =6
+                LayoutGridRowMinHeight: =0
+                LayoutGridRows: =6
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =180
+                LayoutMinWidth: =250
+                LayoutMode: =LayoutMode.Auto
+                RadiusBottomLeft: =4
+                RadiusBottomRight: =4
+                RadiusTopLeft: =4
+                RadiusTopRight: =4
+                ZIndex: =1
+
+                conHomeStand As groupContainer.horizontalAutoLayoutContainer:
+                    BorderColor: =nfAccentoStand
+                    BorderThickness: =nfSpessoreBordo
+                    Fill: =nfColoreSuperficie
+                    LayoutDirection: =LayoutDirection.Vertical
+                    LayoutGap: =8
+                    LayoutGridColumnMinWidth: =0
+                    LayoutGridColumns: =6
+                    LayoutGridRowMinHeight: =0
+                    LayoutGridRows: =6
+                    LayoutMaxHeight: =0
+                    LayoutMaxWidth: =0
+                    LayoutMinHeight: =180
+                    LayoutMinWidth: =280
+                    LayoutMode: =LayoutMode.Auto
+                    PaddingBottom: =20
+                    PaddingLeft: =24
+                    PaddingRight: =24
+                    PaddingTop: =20
+                    RadiusBottomLeft: =nfRaggio
+                    RadiusBottomRight: =nfRaggio
+                    RadiusTopLeft: =nfRaggio
+                    RadiusTopRight: =nfRaggio
+                    ZIndex: =19
+
+                    icoHomeStand As icon:
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfAccentoStand
+                        DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                        DisabledColor: =RGBA(244, 244, 244, 1)
+                        Height: =44
+                        Icon: =Icon.Shop
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =44
+                        LayoutMinWidth: =44
+                        Width: =44
+                        ZIndex: =20
+
+                    lblHomeStandTit As label:
+                        AlignInContainer: =AlignInContainer.Stretch
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfColoreTesto
+                        DisabledColor: =RGBA(166, 166, 166, 1)
+                        Font: =App.Theme.Font
+                        FontWeight: =FontWeight.Bold
+                        Height: =36
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        PaddingLeft: =0
+                        Role: =TextRole.Heading2
+                        Size: =nfDimTitoloRiquadro
+                        Text: ="Stand"
+                        ZIndex: =21
+
+                    lblHomeStandDesc As label:
+                        AlignInContainer: =AlignInContainer.Stretch
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfColoreTestoSecondario
+                        DisabledColor: =RGBA(166, 166, 166, 1)
+                        FillPortions: =1
+                        Font: =App.Theme.Font
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =28
+                        PaddingLeft: =0
+                        Size: =nfDimTesto
+                        Text: ="Disponibilità e stato degli stand per padiglione"
+                        VerticalAlign: =VerticalAlign.Top
+                        ZIndex: =22
+
+                    btnHomeStand As modernButton:
+                        AccessibleLabel: ="Apri Stand"
+                        BasePaletteColor: =nfAccentoStand
+                        BorderStyle: =""
+                        Color: =nfColoreTestoSuAccento
+                        Font: =""
+                        FontWeight: =FontWeight.Semibold
+                        Height: =44
+                        Layout: =ButtonLayout.TextOnly
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =44
+                        LayoutMinWidth: =140
+                        OnSelect: =Navigate(scrStand)
+                        Size: =0
+                        Text: ="Apri ›"
+                        Width: =140
+                        ZIndex: =23
+
+                conHomePreventivi As groupContainer.horizontalAutoLayoutContainer:
+                    BorderColor: =nfAccentoPreventivi
+                    BorderThickness: =nfSpessoreBordo
+                    Fill: =nfColoreSuperficie
+                    LayoutDirection: =LayoutDirection.Vertical
+                    LayoutGap: =8
+                    LayoutGridColumnMinWidth: =0
+                    LayoutGridColumns: =6
+                    LayoutGridRowMinHeight: =0
+                    LayoutGridRows: =6
+                    LayoutMaxHeight: =0
+                    LayoutMaxWidth: =0
+                    LayoutMinHeight: =180
+                    LayoutMinWidth: =280
+                    LayoutMode: =LayoutMode.Auto
+                    PaddingBottom: =20
+                    PaddingLeft: =24
+                    PaddingRight: =24
+                    PaddingTop: =20
+                    RadiusBottomLeft: =nfRaggio
+                    RadiusBottomRight: =nfRaggio
+                    RadiusTopLeft: =nfRaggio
+                    RadiusTopRight: =nfRaggio
+                    ZIndex: =24
+
+                    icoHomePreventivi As icon:
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfAccentoPreventivi
+                        DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                        DisabledColor: =RGBA(244, 244, 244, 1)
+                        Height: =44
+                        Icon: =Icon.DetailList
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =44
+                        LayoutMinWidth: =44
+                        Width: =44
+                        ZIndex: =25
+
+                    lblHomePreventiviTit As label:
+                        AlignInContainer: =AlignInContainer.Stretch
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfColoreTesto
+                        DisabledColor: =RGBA(166, 166, 166, 1)
+                        Font: =App.Theme.Font
+                        FontWeight: =FontWeight.Bold
+                        Height: =36
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        PaddingLeft: =0
+                        Role: =TextRole.Heading2
+                        Size: =nfDimTitoloRiquadro
+                        Text: ="Preventivi"
+                        ZIndex: =26
+
+                    lblHomePreventiviDesc As label:
+                        AlignInContainer: =AlignInContainer.Stretch
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfColoreTestoSecondario
+                        DisabledColor: =RGBA(166, 166, 166, 1)
+                        FillPortions: =1
+                        Font: =App.Theme.Font
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =28
+                        PaddingLeft: =0
+                        Size: =nfDimTesto
+                        Text: ="Elenco dei preventivi con stato e scadenze"
+                        VerticalAlign: =VerticalAlign.Top
+                        ZIndex: =27
+
+                    btnHomePreventivi As modernButton:
+                        AccessibleLabel: ="Apri Preventivi"
+                        BasePaletteColor: =nfAccentoPreventivi
+                        BorderStyle: =""
+                        Color: =nfColoreTestoSuAccento
+                        Font: =""
+                        FontWeight: =FontWeight.Semibold
+                        Height: =44
+                        Layout: =ButtonLayout.TextOnly
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =44
+                        LayoutMinWidth: =140
+                        OnSelect: =Navigate(scrPreventivi)
+                        Size: =0
+                        Text: ="Apri ›"
+                        Width: =140
+                        ZIndex: =28
+
+            conHomeRiga2 As groupContainer.horizontalAutoLayoutContainer:
+                LayoutAlignItems: =LayoutAlignItems.Stretch
+                LayoutGap: =24
+                LayoutGridColumnMinWidth: =0
+                LayoutGridColumns: =6
+                LayoutGridRowMinHeight: =0
+                LayoutGridRows: =6
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =180
+                LayoutMinWidth: =250
+                LayoutMode: =LayoutMode.Auto
+                RadiusBottomLeft: =4
+                RadiusBottomRight: =4
+                RadiusTopLeft: =4
+                RadiusTopRight: =4
+                ZIndex: =2
+
+                conHomeNuovoPrev As groupContainer.horizontalAutoLayoutContainer:
+                    BorderColor: =nfAccentoNuovoPrev
+                    BorderThickness: =nfSpessoreBordo
+                    Fill: =nfColoreSuperficie
+                    LayoutDirection: =LayoutDirection.Vertical
+                    LayoutGap: =8
+                    LayoutGridColumnMinWidth: =0
+                    LayoutGridColumns: =6
+                    LayoutGridRowMinHeight: =0
+                    LayoutGridRows: =6
+                    LayoutMaxHeight: =0
+                    LayoutMaxWidth: =0
+                    LayoutMinHeight: =180
+                    LayoutMinWidth: =280
+                    LayoutMode: =LayoutMode.Auto
+                    PaddingBottom: =20
+                    PaddingLeft: =24
+                    PaddingRight: =24
+                    PaddingTop: =20
+                    RadiusBottomLeft: =nfRaggio
+                    RadiusBottomRight: =nfRaggio
+                    RadiusTopLeft: =nfRaggio
+                    RadiusTopRight: =nfRaggio
+                    ZIndex: =8
+
+                    icoHomeNuovoPrev As icon:
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfAccentoNuovoPrev
+                        DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                        DisabledColor: =RGBA(244, 244, 244, 1)
+                        Height: =44
+                        Icon: =Icon.AddDocument
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =44
+                        LayoutMinWidth: =44
+                        Width: =44
+                        ZIndex: =9
+
+                    lblHomeNuovoPrevTit As label:
+                        AlignInContainer: =AlignInContainer.Stretch
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfColoreTesto
+                        DisabledColor: =RGBA(166, 166, 166, 1)
+                        Font: =App.Theme.Font
+                        FontWeight: =FontWeight.Bold
+                        Height: =36
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        PaddingLeft: =0
+                        Role: =TextRole.Heading2
+                        Size: =nfDimTitoloRiquadro
+                        Text: ="Nuovo preventivo"
+                        ZIndex: =10
+
+                    lblHomeNuovoPrevDesc As label:
+                        AlignInContainer: =AlignInContainer.Stretch
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfColoreTestoSecondario
+                        DisabledColor: =RGBA(166, 166, 166, 1)
+                        FillPortions: =1
+                        Font: =App.Theme.Font
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =28
+                        PaddingLeft: =0
+                        Size: =nfDimTesto
+                        Text: ="Scegli uno stand libero per creare un preventivo"
+                        VerticalAlign: =VerticalAlign.Top
+                        ZIndex: =11
+
+                    btnHomeNuovoPrev As modernButton:
+                        AccessibleLabel: ="Apri Nuovo preventivo"
+                        BasePaletteColor: =nfAccentoNuovoPrev
+                        BorderStyle: =""
+                        Color: =nfColoreTestoSuAccento
+                        Font: =""
+                        FontWeight: =FontWeight.Semibold
+                        Height: =44
+                        Layout: =ButtonLayout.TextOnly
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =44
+                        LayoutMinWidth: =140
+                        OnSelect: =Navigate(scrStand)
+                        Size: =0
+                        Text: ="Apri ›"
+                        Width: =140
+                        ZIndex: =12
+
+                conHomeContratti As groupContainer.horizontalAutoLayoutContainer:
+                    BorderColor: =nfAccentoContratti
+                    BorderThickness: =nfSpessoreBordo
+                    Fill: =nfColoreSuperficie
+                    LayoutDirection: =LayoutDirection.Vertical
+                    LayoutGap: =8
+                    LayoutGridColumnMinWidth: =0
+                    LayoutGridColumns: =6
+                    LayoutGridRowMinHeight: =0
+                    LayoutGridRows: =6
+                    LayoutMaxHeight: =0
+                    LayoutMaxWidth: =0
+                    LayoutMinHeight: =180
+                    LayoutMinWidth: =280
+                    LayoutMode: =LayoutMode.Auto
+                    PaddingBottom: =20
+                    PaddingLeft: =24
+                    PaddingRight: =24
+                    PaddingTop: =20
+                    RadiusBottomLeft: =nfRaggio
+                    RadiusBottomRight: =nfRaggio
+                    RadiusTopLeft: =nfRaggio
+                    RadiusTopRight: =nfRaggio
+                    ZIndex: =13
+
+                    icoHomeContratti As icon:
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfAccentoContratti
+                        DisabledBorderColor: =RGBA(166, 166, 166, 1)
+                        DisabledColor: =RGBA(244, 244, 244, 1)
+                        Height: =44
+                        Icon: =Icon.DocumentWithContent
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =44
+                        LayoutMinWidth: =44
+                        Width: =44
+                        ZIndex: =14
+
+                    lblHomeContrattiTit As label:
+                        AlignInContainer: =AlignInContainer.Stretch
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfColoreTesto
+                        DisabledColor: =RGBA(166, 166, 166, 1)
+                        Font: =App.Theme.Font
+                        FontWeight: =FontWeight.Bold
+                        Height: =36
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        PaddingLeft: =0
+                        Role: =TextRole.Heading2
+                        Size: =nfDimTitoloRiquadro
+                        Text: ="Contratti"
+                        ZIndex: =15
+
+                    lblHomeContrattiDesc As label:
+                        AlignInContainer: =AlignInContainer.Stretch
+                        BorderColor: =App.Theme.Colors.Darker40
+                        Color: =nfColoreTestoSecondario
+                        DisabledColor: =RGBA(166, 166, 166, 1)
+                        FillPortions: =1
+                        Font: =App.Theme.Font
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =28
+                        PaddingLeft: =0
+                        Size: =nfDimTesto
+                        Text: ="Apri un contratto dall'elenco dei preventivi firmati"
+                        VerticalAlign: =VerticalAlign.Top
+                        ZIndex: =16
+
+                    btnHomeContratti As modernButton:
+                        AccessibleLabel: ="Apri Contratti"
+                        BasePaletteColor: =nfAccentoContratti
+                        BorderStyle: =""
+                        Color: =nfColoreTestoSuAccento
+                        Font: =""
+                        FontWeight: =FontWeight.Semibold
+                        Height: =44
+                        Layout: =ButtonLayout.TextOnly
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =44
+                        LayoutMinWidth: =140
+                        OnSelect: =Navigate(scrPreventivi)
+                        Size: =0
+                        Text: ="Apri ›"
+                        Width: =140
+                        ZIndex: =17
 

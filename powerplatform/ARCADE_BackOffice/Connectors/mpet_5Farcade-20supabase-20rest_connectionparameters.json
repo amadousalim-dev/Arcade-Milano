@@ -1,0 +1,1 @@
+{"api_key":{"type":"securestring","uiDefinition":{"displayName":"api_key","description":"api_key per questa API","tooltip":"Specificare la api_key","constraints":{"tabIndex":2,"clearText":false,"required":"true"}}}}

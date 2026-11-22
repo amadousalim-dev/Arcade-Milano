@@ -1,11 +1,13 @@
 scrPreventivo As screen:
+    ContentLanguage: =""
     CopilotContext: |-
         ={ ScreenName: Self.Name }
     CopilotPromptSuggestions: =[]
-    Fill: =Color.White
+    Fill: =nfColoreSfondo
     LoadingSpinnerColor: =App.Theme.Colors.Primary
     OnVisible: |-
-        =ClearCollect(colListinoVend, Filter('arcade.listino', id_edizione = EdizioneSel.id_edizione));
+        =If(IsEmpty(colEspositori),
+           ClearCollect(colEspositori, Sort('arcade.espositore', ragione_sociale)));ClearCollect(colListinoVend, Filter('arcade.listino', id_edizione = EdizioneSel.id_edizione));
         If(IsBlank(gblIdPreventivo),
           // NUOVO: righe automatiche dal listino
           With({
@@ -28,10 +30,10 @@ scrPreventivo As screen:
                   importo_eur: imp, automatica: true })))
           );
           Reset(txtSconto); Reset(cmbEspositore);
-          Set(gblStato, "bozza"),
+          Set(gblStato, "bozza"); Set(gblPreventivo, Blank());
           // ESISTENTE: righe e testata dal database
           With({ p: LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo) },
-            Set(gblStato, p.stato);
+            Set(gblStato, p.stato); Set(gblPreventivo, p);
             ClearCollect(colRighe,
               AddColumns(Filter('arcade.riga_preventivo', id_preventivo = gblIdPreventivo),
                 automatica, StartsWith(codice_voce, "SPAZIO") || StartsWith(codice_voce, "MAGG"))))
@@ -39,10 +41,13 @@ scrPreventivo As screen:
           Today() <= EdizioneSel.scadenza_prelazione &&
           !IsBlank(LookUp('arcade.contratto', id_edizione = EdizioneSel.id_edizione - 1 &&
              id_espositore = cmbEspositore.Selected.id_espositore && stato = "attivo")));
-        Select(btnRicalcola)
+        Select(btnRicalcola);
+        Select(btnCaricaImpegni)
 
     btnRicalcola As modernButton:
         AccessibleLabel: ="1"
+        BorderStyle: =""
+        Font: =""
         OnSelect: |-
             =With({ sc: Value(txtSconto.Text) / 100, listino: Sum(colRighe, importo_eur) },
               With({ imp: Round(listino * (1 - sc), 2) },
@@ -54,16 +59,17 @@ scrPreventivo As screen:
                   totale: imp + Round(imp * AliquotaIvaStd, 2),
                   valido: sc >= 0 && sc <= ScontoMassimo,
                   serveApprovazione: sc > SogliaApprovazione })))
+        Size: =0
         Text: ="Pulsante"
         Visible: =false
         X: =476
         Y: =496
         ZIndex: =1
 
-    btnIndietro As icon.Undo:
+    btnIndietro As icon:
         AccessibleLabel: ="1"
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =App.Theme.Colors.Darker30
+        Color: =nfColoreTesto
         DisabledBorderColor: =RGBA(166, 166, 166, 1)
         DisabledColor: =RGBA(244, 244, 244, 1)
         Height: =61
@@ -78,11 +84,12 @@ scrPreventivo As screen:
     lblTitoloPrev As label:
         AutoHeight: =true
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        Color: =nfColoreTesto
         DisabledColor: =RGBA(166, 166, 166, 1)
         Font: =App.Theme.Font
+        FontWeight: =FontWeight.Bold
         Height: =42
-        Size: =21
+        Size: =nfDimTitolo
         Text: |-
             =If(IsBlank(gblIdPreventivo), "Nuovo preventivo", "Preventivo n. " & gblIdPreventivo) &
             " – stand " & gblStand.codice_stand
@@ -93,17 +100,21 @@ scrPreventivo As screen:
 
     lblStatoPrev As label:
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        Color: =nfAccentoPreventivi
         DisabledColor: =RGBA(166, 166, 166, 1)
         Font: =App.Theme.Font
-        Size: =13
+        FontWeight: =FontWeight.Bold
+        Size: =nfDimSottotitolo
         Text: =Upper(Substitute(gblStato, "_", " "))
         X: =1055
         Y: =5
         ZIndex: =4
 
-    conTestata As groupContainer.verticalAutoLayoutContainer:
+    conTestata As groupContainer.horizontalAutoLayoutContainer:
+        BorderColor: =nfAccentoPreventivi
+        BorderThickness: =nfSpessoreBordo
         DropShadow: =DropShadow.Light
+        Fill: =nfColoreSuperficie
         Height: =632
         LayoutAlignItems: =LayoutAlignItems.Center
         LayoutDirection: =LayoutDirection.Vertical
@@ -117,94 +128,99 @@ scrPreventivo As screen:
         PaddingLeft: =8
         PaddingRight: =8
         PaddingTop: =8
-        RadiusBottomLeft: =4
-        RadiusBottomRight: =4
-        RadiusTopLeft: =4
-        RadiusTopRight: =4
+        RadiusBottomLeft: =nfRaggio
+        RadiusBottomRight: =nfRaggio
+        RadiusTopLeft: =nfRaggio
+        RadiusTopRight: =nfRaggio
         Width: =476
         Y: =75
         ZIndex: =6
 
-        cmbEspositore As combobox:
+        cmbEspositore As modernCombobox:
             AccessibleLabel: ="1"
-            BorderColor: =App.Theme.Colors.Darker40
-            ChevronBackground: =App.Theme.Colors.Primary
-            ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
-            ChevronDisabledFill: =RGBA(244, 244, 244, 1)
-            ChevronFill: =App.Theme.Colors.PrimaryForeground
-            ChevronHoverBackground: =App.Theme.Colors.Darker10
-            ChevronHoverFill: =App.Theme.Colors.PrimaryForeground
+            Appearance: =Appearance.FilledDarker
+            BorderStyle: =""
             DefaultSelectedItems: |-
                 =If(gblStand.stato = "in_prelazione",
-                     // stand in prelazione: solo l'espositore dell'anno prima
-                     Filter('arcade.espositore', id_espositore = gblStand.id_espositore_rif),
-                     !IsBlank(gblIdPreventivo),
-                     // preventivo esistente: l'espositore salvato
-                     Filter('arcade.espositore', id_espositore =
-                       LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).id_espositore))
-            DisabledBorderColor: =RGBA(166, 166, 166, 1)
-            DisabledColor: =RGBA(166, 166, 166, 1)
-            DisabledFill: =RGBA(244, 244, 244, 1)
-            DisplayFields: =["ragione_sociale"]
+                   // stand in prelazione: solo l'espositore dell'anno prima
+                   Filter(colEspositori, id_espositore = gblStand.id_espositore_rif),
+                   !IsBlank(gblPreventivo),
+                   // preventivo esistente: l'espositore salvato
+                   Filter(colEspositori, id_espositore = gblPreventivo.id_espositore))
             DisplayMode: |-
                 =If(gblStato = "bozza" && gblStand.stato <> "in_prelazione",
                                  DisplayMode.Edit, DisplayMode.View)
-            Font: =App.Theme.Font
-            HoverColor: =RGBA(0, 0, 0, 1)
-            HoverFill: =App.Theme.Colors.Lighter70
+            Font: =""
             InputTextPlaceholder: ="Seleziona espositore"
+            ItemDisplayText: =ThisItem.ragione_sociale
             Items: =colEspositori
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
             LayoutMinWidth: =16
             OnChange: =Select(btnRicalcola)
-            PressedColor: =App.Theme.Colors.PrimaryForeground
-            PressedFill: =App.Theme.Colors.Darker30
-            SearchFields: =["ragione_sociale"]
-            SearchItems: =Search(Sort('arcade.espositore',ragione_sociale),cmbEspositore.SearchText,ragione_sociale)
-            SelectionColor: =App.Theme.Colors.PrimaryForeground
-            SelectionFill: =App.Theme.Colors.Primary
+            Required: =false
             SelectMultiple: =false
-            Size: =13
-            ZIndex: =2
+            ValidationState: =ValidationState.None
+            ZIndex: =1
 
         lblStandInfo As label:
+            AutoHeight: =true
             BorderColor: =App.Theme.Colors.Darker40
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfColoreTesto
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
             LayoutMinWidth: =16
-            Size: =13
+            Size: =nfDimTesto
             Text: |-
                 ="Stand " & gblStand.codice_stand & " · " & gblStand.codice_padiglione & Char(10) &
                 gblStand.mq & " m² · " & gblStand.posizione
             Width: =300
+            ZIndex: =2
+
+        lblDidSconto As label:
+            BorderColor: =App.Theme.Colors.Darker40
+            Color: =nfColoreTestoSecondario
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            FontWeight: =FontWeight.Semibold
+            Height: =24
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            PaddingLeft: =0
+            Size: =nfDimTesto
+            Text: ="Sconto sul listino (%)"
+            Width: =txtSconto.Width
             ZIndex: =3
 
         txtSconto As modernTextInput:
             AccessibleLabel: ="1"
             Appearance: =Appearance.FilledDarker
+            BorderStyle: =""
             Default: |-
                 =If(IsBlank(gblIdPreventivo), "0",
                               Text(LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).sconto_pct * 100))
             DisplayMode: =If(gblStato = "bozza", DisplayMode.Edit, DisplayMode.View)
+            Font: =""
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
             LayoutMinWidth: =16
             OnChange: =Select(btnRicalcola)
             Placeholder: ="Sconto in %"
+            Required: =false
             TriggerOutput: =TriggerOutput.Keypress
             ValidationState: =ValidationState.None
             ZIndex: =4
 
         lblAvvisoSconto As label:
             BorderColor: =App.Theme.Colors.Darker40
-            Color: =If(!gblTot.valido, Color.Red, Color.DarkOrange)
+            Color: =If(!gblTot.valido, nfColoreErrore, nfColoreAttenzione)
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             LayoutMaxHeight: =0
@@ -222,9 +238,10 @@ scrPreventivo As screen:
         lblFedelta As label:
             AutoHeight: =true
             BorderColor: =App.Theme.Colors.Darker40
-            Color: =RGBA(0, 0, 0, 1)
+            Color: =nfAccentoContratti
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
+            FontWeight: =FontWeight.Semibold
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
@@ -239,7 +256,8 @@ scrPreventivo As screen:
 
     conRighe As groupContainer.horizontalAutoLayoutContainer:
         DropShadow: =DropShadow.Light
-        Height: =609
+        Fill: =nfColoreSuperficie
+        Height: =649
         LayoutAlignItems: =LayoutAlignItems.Center
         LayoutDirection: =LayoutDirection.Vertical
         LayoutGridColumnMinWidth: =0
@@ -251,19 +269,100 @@ scrPreventivo As screen:
         PaddingLeft: =8
         PaddingRight: =8
         PaddingTop: =8
-        RadiusBottomLeft: =4
-        RadiusBottomRight: =4
-        RadiusTopLeft: =4
-        RadiusTopRight: =4
+        RadiusBottomLeft: =nfRaggio
+        RadiusBottomRight: =nfRaggio
+        RadiusTopLeft: =nfRaggio
+        RadiusTopRight: =nfRaggio
         Width: =890
         X: =476
-        Y: =98
+        Y: =58
         ZIndex: =7
 
+        conIntestRighe As groupContainer.manualLayoutContainer:
+            DropShadow: =DropShadow.Light
+            FillPortions: =0
+            Height: =32
+            LayoutGridColumnMinWidth: =0
+            LayoutGridColumns: =6
+            LayoutGridRowMinHeight: =0
+            LayoutGridRows: =6
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinWidth: =250
+            RadiusBottomLeft: =4
+            RadiusBottomRight: =4
+            RadiusTopLeft: =4
+            RadiusTopRight: =4
+            ZIndex: =1
+
+            Label7 As label:
+                BorderColor: =App.Theme.Colors.Darker40
+                Color: =nfColoreTestoSecondario
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                FontWeight: =FontWeight.Semibold
+                Height: =32
+                PaddingLeft: =0
+                PaddingRight: =0
+                Size: =nfDimTesto
+                Text: ="Descrizione"
+                Width: =Parent.Width - 462
+                X: =16
+                ZIndex: =8
+
+            lblIntQta As label:
+                Align: =Align.Center
+                BorderColor: =App.Theme.Colors.Darker40
+                Color: =nfColoreTestoSecondario
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                FontWeight: =FontWeight.Semibold
+                Height: =32
+                PaddingLeft: =0
+                PaddingRight: =0
+                Size: =nfDimTesto
+                Text: ="Q.tà"
+                Width: =100
+                X: =Parent.Width - 446
+                ZIndex: =9
+
+            lblIntPrezzo As label:
+                Align: =Align.Right
+                BorderColor: =App.Theme.Colors.Darker40
+                Color: =nfColoreTestoSecondario
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                FontWeight: =FontWeight.Semibold
+                Height: =32
+                PaddingLeft: =0
+                PaddingRight: =0
+                Size: =nfDimTesto
+                Text: ="Prezzo unitario"
+                Width: =140
+                X: =Parent.Width - 346
+                ZIndex: =10
+
+            lblIntImporto As label:
+                Align: =Align.Right
+                BorderColor: =App.Theme.Colors.Darker40
+                Color: =nfColoreTestoSecondario
+                DisabledColor: =RGBA(166, 166, 166, 1)
+                Font: =App.Theme.Font
+                FontWeight: =FontWeight.Semibold
+                Height: =32
+                PaddingLeft: =0
+                PaddingRight: =0
+                Size: =nfDimTesto
+                Text: ="Importo"
+                X: =Parent.Width - 206
+                ZIndex: =11
+
         "Gallery1 As gallery.'BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0'":
+            '#CopilotOverlayLabel': ="Filtro applicato"
             AccessibleLabel: ="1"
             BorderColor: =App.Theme.Colors.Darker40
             DelayItemLoading: =true
+            Fill: =nfColoreSuperficie
             Items: =Sort(colRighe, riga)
             Layout: =Layout.Vertical
             LayoutMaxHeight: =0
@@ -273,44 +372,31 @@ scrPreventivo As screen:
             LoadingSpinner: =LoadingSpinner.Data
             TabIndex: =1
             TemplatePadding: =0
-            TemplateSize: =120
-            ZIndex: =1
+            TemplateSize: =60
+            ZIndex: =2
 
             lblRigaDescr As label:
-                Color: =RGBA(50, 49, 48, 1)
+                Color: =nfColoreTesto
                 DisabledColor: =RGBA(166, 166, 166, 1)
                 Font: =App.Theme.Font
                 FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                 Height: =Self.Size * 1.8
-                OnSelect: =Select(Parent)
+                OnSelect: =
                 PaddingBottom: =0
                 PaddingLeft: =0
                 PaddingRight: =0
                 PaddingTop: =0
+                Size: =nfDimTesto
                 Text: =ThisItem.descrizione
                 VerticalAlign: =VerticalAlign.Top
-                Width: =89
-                ZIndex: =2
-
-            NextArrow2 As icon.ChevronRight:
-                AccessibleLabel: =Self.Tooltip
-                Color: =RGBA(166, 166, 166, 1)
-                Height: =50
-                Icon: =Icon.ChevronRight
-                OnSelect: =Select(Parent)
-                PaddingBottom: =16
-                PaddingLeft: =16
-                PaddingRight: =16
-                PaddingTop: =16
-                Tooltip: ="Visualizza dettagli elementi"
-                Width: =50
-                X: =Parent.TemplateWidth - Self.Width - 12
-                Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
-                ZIndex: =4
+                Width: =Parent.TemplateWidth - 462
+                X: =16
+                Y: =(Parent.TemplateHeight - Separator2.Height - Self.Height) / 2
+                ZIndex: =1
 
             lblRigaQta As label:
                 Align: =Align.Center
-                Color: =RGBA(50, 49, 48, 1)
+                Color: =nfColoreTestoSecondario
                 DisabledColor: =RGBA(166, 166, 166, 1)
                 Font: =App.Theme.Font
                 FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -320,15 +406,17 @@ scrPreventivo As screen:
                 PaddingLeft: =0
                 PaddingRight: =0
                 PaddingTop: =0
+                Size: =nfDimTesto
                 Text: =ThisItem.quantita
                 VerticalAlign: =VerticalAlign.Top
-                Width: =48
-                X: =89
-                ZIndex: =5
+                Width: =100
+                X: =Parent.TemplateWidth - 446
+                Y: =(Parent.TemplateHeight - Separator2.Height - Self.Height) / 2
+                ZIndex: =2
 
             lblRigaPrezzo As label:
-                Align: =Align.Center
-                Color: =RGBA(50, 49, 48, 1)
+                Align: =Align.Right
+                Color: =nfColoreTestoSecondario
                 DisabledColor: =RGBA(166, 166, 166, 1)
                 Font: =App.Theme.Font
                 FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -338,25 +426,27 @@ scrPreventivo As screen:
                 PaddingLeft: =0
                 PaddingRight: =0
                 PaddingTop: =0
+                Size: =nfDimTesto
                 Text: |-
                     =Text(ThisItem.prezzo_unitario, "[$-en-US]#,##0.00", "it-IT")
                 VerticalAlign: =VerticalAlign.Top
-                Width: =129
-                X: =137
-                ZIndex: =6
+                Width: =140
+                X: =Parent.TemplateWidth - 346
+                Y: =(Parent.TemplateHeight - Separator2.Height - Self.Height) / 2
+                ZIndex: =3
 
             Separator2 As rectangle:
                 BorderColor: =App.Theme.Colors.Darker40
-                Fill: =RGBA(255, 255, 255, 1)
+                Fill: =nfColoreSfondo
                 Height: =8
-                OnSelect: =Select(Parent)
+                OnSelect: =
                 Width: =Parent.TemplateWidth
                 Y: =Parent.TemplateHeight - Self.Height
-                ZIndex: =7
+                ZIndex: =4
 
             lblRigaPrezzo_1 As label:
                 Align: =Align.Right
-                Color: =RGBA(50, 49, 48, 1)
+                Color: =nfColoreTesto
                 DisabledColor: =RGBA(166, 166, 166, 1)
                 Font: =App.Theme.Font
                 FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -366,17 +456,18 @@ scrPreventivo As screen:
                 PaddingLeft: =0
                 PaddingRight: =0
                 PaddingTop: =0
+                Size: =nfDimTesto
                 Text: |-
                     =Text(ThisItem.importo_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
                 VerticalAlign: =VerticalAlign.Top
-                Width: =129
-                X: =266
-                ZIndex: =8
+                X: =Parent.TemplateWidth - 206
+                Y: =(Parent.TemplateHeight - Separator2.Height - Self.Height) / 2
+                ZIndex: =5
 
-            icoElimina As icon.Trash:
+            icoElimina As icon:
                 AccessibleLabel: ="1"
                 BorderColor: =App.Theme.Colors.Darker40
-                Color: =App.Theme.Colors.Darker30
+                Color: =nfColoreErrore
                 DisabledBorderColor: =RGBA(166, 166, 166, 1)
                 DisabledColor: =RGBA(244, 244, 244, 1)
                 Height: =20
@@ -385,13 +476,14 @@ scrPreventivo As screen:
                 TabIndex: =1
                 Visible: =!ThisItem.automatica && gblStato = "bozza"
                 Width: =20
-                X: =774
-                Y: =10
-                ZIndex: =9
+                X: =Parent.TemplateWidth - 44
+                Y: =(Parent.TemplateHeight - Separator2.Height - Self.Height) / 2
+                ZIndex: =6
 
         Container5 As groupContainer.horizontalAutoLayoutContainer:
             DropShadow: =DropShadow.Light
-            Height: =150
+            FillPortions: =0
+            Height: =64
             LayoutAlignItems: =LayoutAlignItems.Center
             LayoutGap: =20
             LayoutGridColumnMinWidth: =0
@@ -411,54 +503,46 @@ scrPreventivo As screen:
             RadiusBottomRight: =4
             RadiusTopLeft: =4
             RadiusTopRight: =4
-            ZIndex: =2
+            ZIndex: =3
 
-            cmbVoce As combobox:
-                AccessibleLabel: ="1"
-                BorderColor: =App.Theme.Colors.Darker40
-                ChevronBackground: =App.Theme.Colors.Primary
-                ChevronDisabledBackground: =RGBA(166, 166, 166, 1)
-                ChevronDisabledFill: =RGBA(244, 244, 244, 1)
-                ChevronFill: =App.Theme.Colors.PrimaryForeground
-                ChevronHoverBackground: =App.Theme.Colors.Darker10
-                ChevronHoverFill: =App.Theme.Colors.PrimaryForeground
-                DisabledBorderColor: =RGBA(166, 166, 166, 1)
-                DisabledColor: =RGBA(166, 166, 166, 1)
-                DisabledFill: =RGBA(244, 244, 244, 1)
-                DisplayFields: =["descrizione"]
-                Font: =App.Theme.Font
-                HoverColor: =RGBA(0, 0, 0, 1)
-                HoverFill: =App.Theme.Colors.Lighter70
+            cmbVoce As modernCombobox:
+                Appearance: =Appearance.FilledDarker
+                BorderStyle: =""
+                Font: =""
+                InputTextPlaceholder: ="Scegli un extra o una sponsorizzazione"
+                ItemDisplayText: =ThisItem.descrizione
                 Items: =Filter(colListinoVend, tipo_voce in ["extra", "sponsorizzazione"])
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
                 LayoutMinHeight: =16
                 LayoutMinWidth: =16
-                PressedColor: =App.Theme.Colors.PrimaryForeground
-                PressedFill: =App.Theme.Colors.Darker30
-                SearchFields: =["descrizione"]
-                SearchItems: =Search(Filter(colListinoVend,tipo_voce in ["extra","sponsorizzazione"]),cmbVoce.SearchText,descrizione)
-                SelectionColor: =App.Theme.Colors.PrimaryForeground
-                SelectionFill: =App.Theme.Colors.Primary
+                Required: =false
                 SelectMultiple: =false
-                Size: =13
+                ValidationState: =ValidationState.None
                 ZIndex: =1
 
             txtQuantita As modernTextInput:
                 AccessibleLabel: ="1"
                 Appearance: =Appearance.FilledDarker
+                BorderStyle: =""
                 Default: =If(cmbVoce.Selected.unita = "m²", gblStand.mq, 1)
+                Font: =""
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
                 LayoutMinHeight: =16
                 LayoutMinWidth: =16
                 Placeholder: ="Immetti un testo"
+                Required: =false
                 TriggerOutput: =TriggerOutput.Keypress
                 ValidationState: =ValidationState.None
                 ZIndex: =2
 
             btnAggiungiRiga As modernButton:
                 AccessibleLabel: ="1"
+                BasePaletteColor: =nfAccentoPreventivi
+                BorderStyle: =""
+                Color: =nfColoreTestoSuAccento
+                Font: =""
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
                 LayoutMinHeight: =16
@@ -466,21 +550,19 @@ scrPreventivo As screen:
                 OnSelect: |-
                     =With({
                       v: cmbVoce.Selected,
-                      q: Value(txtQuantita.Text),
-                      // pacchetti già venduti nei contratti attivi 2026
-                      venduti: Sum(Filter('arcade.riga_contratto',
-                                 codice_voce = cmbVoce.Selected.codice_voce &&
-                                 id_contratto in Filter('arcade.contratto',
-                                   id_edizione = EdizioneSel.id_edizione && stato = "attivo").id_contratto),
-                               quantita)
+                      q: Value(txtQuantita.Text)
                     },
                       If(
                         IsBlank(v) || q <= 0,
                           Notify("Scegli una voce e una quantità maggiore di zero", NotificationType.Error),
                         !IsBlank(v.codice_padiglione_vincolo) && v.codice_padiglione_vincolo <> gblStand.codice_padiglione,
                           Notify(v.descrizione & " è riservata al padiglione " & v.codice_padiglione_vincolo, NotificationType.Error),
-                        v.tipo_voce = "sponsorizzazione" && v.quantita_disponibile - venduti < q,
-                          Notify("Sponsorizzazione esaurita", NotificationType.Error),
+                        // sponsorizzazione: disponibili (già calcolati da btnCaricaImpegni)
+                        // meno quelle già messe in questo preventivo
+                        v.tipo_voce = "sponsorizzazione" &&
+                          LookUp(colSponsorOccupati, codice_voce = v.codice_voce).disponibili
+                            - Sum(Filter(colRighe, codice_voce = v.codice_voce), quantita) < q,
+                          Notify("Sponsorizzazione esaurita o già impegnata in un altro preventivo", NotificationType.Error),
                         Collect(colRighe, {
                           riga: Max(colRighe, riga) + 1, codice_voce: v.codice_voce, descrizione: v.descrizione,
                           quantita: q, prezzo_unitario: v.prezzo_unitario,
@@ -488,13 +570,16 @@ scrPreventivo As screen:
                         Select(btnRicalcola)
                       )
                     )
+                Size: =0
                 Text: ="Aggiungi Riga"
                 Width: =150
                 ZIndex: =3
 
-        Container6 As groupContainer.verticalAutoLayoutContainer:
+        Container6 As groupContainer.horizontalAutoLayoutContainer:
             DropShadow: =DropShadow.Light
-            LayoutAlignItems: =LayoutAlignItems.Center
+            FillPortions: =0
+            Height: =216
+            LayoutAlignItems: =LayoutAlignItems.End
             LayoutDirection: =LayoutDirection.Vertical
             LayoutGridColumnMinWidth: =0
             LayoutGridColumns: =6
@@ -513,82 +598,94 @@ scrPreventivo As screen:
             RadiusBottomRight: =4
             RadiusTopLeft: =4
             RadiusTopRight: =4
-            ZIndex: =3
+            ZIndex: =4
 
             lblImpListino As label:
+                Align: =Align.Right
                 BorderColor: =App.Theme.Colors.Darker40
-                Color: =RGBA(0, 0, 0, 1)
+                Color: =nfColoreTestoSecondario
                 DisabledColor: =RGBA(166, 166, 166, 1)
                 Font: =App.Theme.Font
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
                 LayoutMinHeight: =16
                 LayoutMinWidth: =16
-                Size: =13
+                Size: =nfDimTesto
                 Text: |-
-                    =Text(gblTot.listino, "[$-en-US]#,##0.00", "it-IT") & " €"
+                    ="Listino: " & Text(gblTot.listino, "[$-en-US]#,##0.00", "it-IT") & " €"
+                Width: =320
                 X: =148
                 Y: =16
                 ZIndex: =1
 
             lblScontoEur As label:
+                Align: =Align.Right
                 BorderColor: =App.Theme.Colors.Darker40
-                Color: =RGBA(0, 0, 0, 1)
+                Color: =nfColoreTestoSecondario
                 DisabledColor: =RGBA(166, 166, 166, 1)
                 Font: =App.Theme.Font
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
                 LayoutMinHeight: =16
                 LayoutMinWidth: =16
-                Size: =13
+                Size: =nfDimTesto
                 Text: |-
-                    ="-" & Text(gblTot.listino - gblTot.imponibile, "[$-en-US]#,##0.00", "it-IT") & " €"
+                    ="Sconto (" & Text(gblTot.sconto * 100, "[$-en-US]0.0", "it-IT") & "%): -" & Text(gblTot.listino - gblTot.imponibile, "[$-en-US]#,##0.00", "it-IT") & " €"
+                Width: =320
                 ZIndex: =2
 
             lblImponibile As label:
+                Align: =Align.Right
                 BorderColor: =App.Theme.Colors.Darker40
-                Color: =RGBA(0, 0, 0, 1)
+                Color: =nfColoreTestoSecondario
                 DisabledColor: =RGBA(166, 166, 166, 1)
                 Font: =App.Theme.Font
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
                 LayoutMinHeight: =16
                 LayoutMinWidth: =16
-                Size: =13
+                Size: =nfDimTesto
                 Text: |-
-                    =Text(gblTot.imponibile, "[$-en-US]#,##0.00", "it-IT") & " €"
+                    ="Imponibile: " & Text(gblTot.imponibile, "[$-en-US]#,##0.00", "it-IT") & " €"
+                Width: =320
                 ZIndex: =3
 
             lblIva As label:
+                Align: =Align.Right
                 BorderColor: =App.Theme.Colors.Darker40
-                Color: =RGBA(0, 0, 0, 1)
+                Color: =nfColoreTestoSecondario
                 DisabledColor: =RGBA(166, 166, 166, 1)
                 Font: =App.Theme.Font
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
                 LayoutMinHeight: =16
                 LayoutMinWidth: =16
-                Size: =13
+                Size: =nfDimTesto
                 Text: |-
-                    =Text(gblTot.iva, "[$-en-US]#,##0.00", "it-IT") & " €"
+                    ="IVA " & Text(AliquotaIvaStd * 100, "[$-en-US]0", "it-IT") & "%: " & Text(gblTot.iva, "[$-en-US]#,##0.00", "it-IT") & " €"
+                Width: =320
                 ZIndex: =4
 
             lblTotale As label:
+                Align: =Align.Right
                 BorderColor: =App.Theme.Colors.Darker40
-                Color: =RGBA(0, 0, 0, 1)
+                Color: =nfColoreTesto
                 DisabledColor: =RGBA(166, 166, 166, 1)
                 Font: =App.Theme.Font
+                FontWeight: =FontWeight.Bold
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
                 LayoutMinHeight: =16
                 LayoutMinWidth: =16
-                Size: =13
+                Size: =nfDimTitoloRiquadro
                 Text: |-
-                    =Text(gblTot.totale, "[$-en-US]#,##0.00", "it-IT") & " €"
+                    ="Totale: " & Text(gblTot.totale, "[$-en-US]#,##0.00", "it-IT") & " €"
+                Width: =320
                 ZIndex: =5
 
     conAzioni As groupContainer.horizontalAutoLayoutContainer:
         DropShadow: =DropShadow.Light
+        Fill: =nfColoreSuperficie
         Height: =58
         LayoutAlignItems: =LayoutAlignItems.Center
         LayoutGap: =60
@@ -612,9 +709,13 @@ scrPreventivo As screen:
 
         btnSalvaBozza As modernButton:
             AccessibleLabel: ="1"
+            BasePaletteColor: =nfAccentoNuovoPrev
+            BorderStyle: =""
+            Color: =nfColoreTestoSuAccento
             DisplayMode: |-
                 =If(gblStato = "bozza" && gblTot.valido && !IsBlank(cmbEspositore.Selected),
                      DisplayMode.Edit, DisplayMode.Disabled)
+            Font: =""
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
@@ -648,6 +749,8 @@ scrPreventivo As screen:
                           descrizione: r.descrizione, quantita: r.quantita,
                           prezzo_unitario: r.prezzo_unitario, importo_eur: r.importo_eur })));
                     Set(gblIdPreventivo, idP);
+                    Set(gblPreventivo, LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo));
+                    Set(gblStato, gblPreventivo.stato);
                     Notify("Bozza salvata", NotificationType.Success),
                 
                     // in caso di errore: prima si rimette a posto, poi si avvisa
@@ -656,21 +759,45 @@ scrPreventivo As screen:
                       RemoveIf('arcade.preventivo', id_preventivo = idP));
                     Notify("Salvataggio non riuscito: " & FirstError.Message, NotificationType.Error)
                   )
-                )
+                ); Select(btnCaricaImpegni)
+            Size: =0
             Text: ="Salva Bozza"
             ZIndex: =1
 
         btnInvia As modernButton:
             AccessibleLabel: ="1"
+            BasePaletteColor: =nfAccentoPreventivi
+            BorderStyle: =""
+            Color: =nfColoreTestoSuAccento
             DisplayMode: |
                 =If(gblStato = "bozza" && !IsBlank(gblIdPreventivo),
                      DisplayMode.Edit, DisplayMode.Disabled)
+            Font: =""
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
             LayoutMinWidth: =16
             OnSelect: |-
                 =Refresh('arcade.preventivo'); Refresh('arcade.contratto');
+                With({
+                  attivi: Filter('arcade.contratto', id_edizione = EdizioneSel.id_edizione && stato = "attivo"),
+                  aperti: Filter('arcade.preventivo', id_edizione = EdizioneSel.id_edizione &&
+                            id_preventivo <> gblIdPreventivo &&
+                            (stato = "in_approvazione" || (stato = "inviato" && valido_fino >= Today())))
+                },
+                  If(
+                    // c'è almeno una sponsorizzazione del preventivo che non è più disponibile?
+                    CountRows(Filter(colRighe As r,
+                      StartsWith(r.codice_voce, "SP-") &&
+                      LookUp(colListinoVend, codice_voce = r.codice_voce).quantita_disponibile
+                        - Sum(Filter('arcade.riga_contratto', codice_voce = r.codice_voce &&
+                                id_contratto in attivi.id_contratto), quantita)
+                        - Sum(Filter('arcade.riga_preventivo', codice_voce = r.codice_voce &&
+                                id_preventivo in aperti.id_preventivo), quantita)
+                        < r.quantita)) > 0,
+                
+                    Notify("Una sponsorizzazione del preventivo non è più disponibile: toglila prima di inviare",
+                           NotificationType.Error),
                 With({ p: LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo) },
                   If(
                     // lo stand nel frattempo è stato opzionato o venduto?
@@ -689,20 +816,26 @@ scrPreventivo As screen:
                         // sconto fino al 10%: inviato e valido 30 giorni
                         Patch('arcade.preventivo', p, { stato: "inviato", inviato_il: Now(),
                           valido_fino: DateAdd(Today(), GiorniValidita, TimeUnit.Days) }));
-                      Set(gblStato, LookUp('arcade.preventivo', id_preventivo = p.id_preventivo).stato);
+                      Set(gblPreventivo, LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo));
+                      Set(gblStato, gblPreventivo.stato);
                       Notify("Preventivo " & Substitute(gblStato, "_", " "), NotificationType.Success),
                 
                       // errore: di solito l'indice univoco del database ha rifiutato
                       Notify("Lo stand è già opzionato da un altro preventivo", NotificationType.Error)
                     )
                   )
-                )
+                ))); Select(btnCaricaImpegni)
+            Size: =0
             Text: ="Invia"
             ZIndex: =2
 
         btnPerso As modernButton:
             AccessibleLabel: ="1"
+            BasePaletteColor: =nfStatoVenduto
+            BorderStyle: =""
+            Color: =nfColoreTestoSuAccento
             DisplayMode: =If(gblStato = "inviato", DisplayMode.Edit, DisplayMode.Disabled)
+            Font: =""
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
@@ -712,21 +845,27 @@ scrPreventivo As screen:
                     Patch('arcade.preventivo',
                           LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo),
                           { stato: "perso" });
-                    Set(gblStato, "perso");
+                    Set(gblPreventivo, LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo));
+                    Set(gblStato, gblPreventivo.stato);
                     Notify("Preventivo segnato come perso: lo stand " & gblStand.codice_stand &
                            " torna libero", NotificationType.Information),
                 
                     Notify("Operazione non riuscita: " & FirstError.Message, NotificationType.Error)
                 )
+            Size: =0
             Text: ="Perso"
             ZIndex: =3
 
         btnFirma As modernButton:
             AccessibleLabel: ="1"
+            BasePaletteColor: =nfAccentoContratti
+            BorderStyle: =""
+            Color: =nfColoreTestoSuAccento
             DisplayMode: |-
                 =If(gblStato = "inviato" && Today() <= ChiusuraVendite &&
                      LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).valido_fino >= Today(),
                      DisplayMode.Edit, DisplayMode.Disabled)
+            Font: =""
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
             LayoutMinHeight: =16
@@ -790,35 +929,65 @@ scrPreventivo As screen:
                     Notify("Firma non riuscita: " & FirstError.Message, NotificationType.Error)
                   )
                 ))
+            Size: =0
             Text: ="Firma"
             ZIndex: =4
 
-    Label7 As label:
+    lblApprovato As label:
         BorderColor: =App.Theme.Colors.Darker40
         Color: =RGBA(0, 0, 0, 1)
         DisabledColor: =RGBA(166, 166, 166, 1)
         Font: =App.Theme.Font
-        Size: =13
-        Text: ="Descrizione | Q.tà | Prezzo unitario | Importo"
-        Width: =890
-        X: =476
-        Y: =58
-        ZIndex: =9
-
-    Label2 As label:
-        BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
-        DisabledColor: =RGBA(166, 166, 166, 1)
-        Font: =App.Theme.Font
-        Height: =117
         Size: =13
         Text: |-
-            ="stato: " & gblStato &
-            " | entro chiusura: " & (Today() <= ChiusuraVendite) &
-            " | valido fino: " & Text(LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).valido_fino, "dd/mm/yyyy") &
-            " | non scaduto: " & (LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).valido_fino >= Today())
-        Width: =311
-        X: =45
-        Y: =323
+            ="Sconto approvato il " & Text(gblPreventivo.approvato_il, "dd/mm/yyyy") &
+              If(IsBlank(gblPreventivo.approvato_da), "",
+                 " da " & LookUp('arcade.utente', id_utente = gblPreventivo.approvato_da).email)
+        Visible: =!IsBlank(gblPreventivo.approvato_il)
+        X: =651
+        Y: =564
+        ZIndex: =9
+
+    btnCaricaImpegni As modernButton:
+        OnSelect: |-
+            =// contratti attivi dell'edizione e preventivi aperti (escluso quello corrente)
+            ClearCollect(colContrattiVend,
+              Filter('arcade.contratto', id_edizione = EdizioneSel.id_edizione && stato = "attivo"));
+            ClearCollect(colPrevAperti,
+              Filter('arcade.preventivo', id_edizione = EdizioneSel.id_edizione &&
+                id_preventivo <> Coalesce(gblIdPreventivo, -1) &&
+                (stato = "in_approvazione" || (stato = "inviato" && valido_fino >= Today()))));
+            // quantità già occupate per ogni sponsorizzazione
+            ClearCollect(colSponsorOccupati,
+              ForAll(Filter(colListinoVend, tipo_voce = "sponsorizzazione") As v,
+                { codice_voce: v.codice_voce,
+                  disponibili: v.quantita_disponibile
+                    - Sum(Filter('arcade.riga_contratto', codice_voce = v.codice_voce &&
+                            id_contratto in colContrattiVend.id_contratto), quantita)
+                    - Sum(Filter('arcade.riga_preventivo', codice_voce = v.codice_voce &&
+                            id_preventivo in colPrevAperti.id_preventivo), quantita) }))
+        Text: ="Pulsante"
+        Visible: =false
+        X: =233
+        Y: =17
         ZIndex: =10
+
+    lblDispSponsor As label:
+        AutoHeight: =true
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: |-
+            =If(LookUp(colSponsorOccupati, codice_voce = cmbVoce.Selected.codice_voce).disponibili <= 0,
+                       Color.Red, Color.DarkGreen)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =35
+        Size: =13
+        Text: |-
+            =With({ d: LookUp(colSponsorOccupati, codice_voce = cmbVoce.Selected.codice_voce).disponibili },
+              If(d <= 0, "Esaurita", "Disponibili: " & d & " su " & cmbVoce.Selected.quantita_disponibile))
+        Visible: =cmbVoce.Selected.tipo_voce = "sponsorizzazione"
+        Width: =244
+        X: =496
+        Y: =476
+        ZIndex: =11
 

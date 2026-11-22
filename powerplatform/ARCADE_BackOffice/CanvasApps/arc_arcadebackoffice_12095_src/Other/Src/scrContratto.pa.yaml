@@ -9,6 +9,7 @@
 Screens:
   scrContratto:
     Properties:
+      Fill: =nfColoreSfondo
       OnVisible: |-
         =Refresh('arcade.contratto'); Refresh('arcade.riga_contratto'); Refresh('arcade.pagamento');
         Set(gblContratto, LookUp('arcade.contratto', id_contratto = gblIdContratto)); ClearCollect(colPagamenti,
@@ -19,6 +20,7 @@ Screens:
           Control: Classic/Icon@2.5.0
           Properties:
             AccessibleLabel: ="1"
+            Color: =nfColoreTesto
             Height: =61
             Icon: =Icon.BackArrow
             OnSelect: =Navigate(scrStand)
@@ -30,9 +32,11 @@ Screens:
           Control: Label@2.5.1
           Properties:
             AutoHeight: =true
+            Color: =nfColoreTesto
             FocusedBorderThickness: =1
+            FontWeight: =FontWeight.Bold
             Height: =42
-            Size: =21
+            Size: =nfDimTitolo
             TabIndex: =1
             Text: ="Contratto " & gblContratto.id_contratto & " – stand " & gblContratto.codice_stand
             Width: =650
@@ -42,9 +46,11 @@ Screens:
           Control: Label@2.5.1
           Properties:
             AutoHeight: =true
+            Color: =nfAccentoContratti
             FocusedBorderThickness: =1
+            FontWeight: =FontWeight.Bold
             Height: =42
-            Size: =21
+            Size: =nfDimTitoloRiquadro
             TabIndex: =1
             Text: =Upper(gblContratto.stato)
             Width: =305
@@ -53,8 +59,16 @@ Screens:
       - lblContrDati:
           Control: Label@2.5.1
           Properties:
+            BorderColor: =nfAccentoContratti
+            BorderThickness: =nfSpessoreBordo
+            Color: =nfColoreTesto
+            Fill: =nfColoreSuperficie
             Height: =319
-            Size: =21
+            PaddingBottom: =16
+            PaddingLeft: =16
+            PaddingRight: =16
+            PaddingTop: =16
+            Size: =nfDimTesto
             Text: |-
               ="Espositore: " & LookUp(colEspositori, id_espositore = gblContratto.id_espositore).ragione_sociale & Char(10) &
               "Edizione: " & gblContratto.id_edizione & Char(10) &
@@ -71,7 +85,8 @@ Screens:
           Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
           Properties:
             AccessibleLabel: ="1"
-            Height: =304
+            Fill: =nfColoreSuperficie
+            Height: =260
             Items: =Sort(Filter('arcade.riga_contratto', id_contratto = gblIdContratto), riga)
             TabIndex: =1
             TemplateSize: =100
@@ -83,7 +98,7 @@ Screens:
                 Control: Label@2.5.1
                 Properties:
                   BorderColor: =RGBA(0, 0, 0, 1)
-                  Color: =RGBA(50, 49, 48, 1)
+                  Color: =nfColoreTesto
                   FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                   Height: =Self.Size * 1.8
                   OnSelect: =Select(Parent)
@@ -91,7 +106,7 @@ Screens:
                   PaddingLeft: =0
                   PaddingRight: =0
                   PaddingTop: =0
-                  Size: =14
+                  Size: =nfDimTesto
                   Text: =ThisItem.descrizione
                   VerticalAlign: =VerticalAlign.Top
                   Width: =Parent.TemplateWidth - 173
@@ -100,6 +115,7 @@ Screens:
                 Control: Label@2.5.1
                 Properties:
                   BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =nfColoreTestoSecondario
                   FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                   Height: =Self.Size * 1.8
                   OnSelect: =Select(Parent)
@@ -117,7 +133,7 @@ Screens:
             - Separator3:
                 Control: Rectangle@2.3.0
                 Properties:
-                  Fill: =RGBA(255, 255, 255, 3)
+                  Fill: =nfColoreSfondo
                   Height: =8
                   OnSelect: =Select(Parent)
                   Width: =Parent.TemplateWidth
@@ -125,7 +141,7 @@ Screens:
             - Rectangle2:
                 Control: Rectangle@2.3.0
                 Properties:
-                  Fill: =App.Theme.Colors.Darker30
+                  Fill: =nfAccentoContratti
                   Height: =Parent.TemplateHeight - Separator3.Height
                   OnSelect: =Select(Parent)
                   Visible: =ThisItem.IsSelected
@@ -134,6 +150,7 @@ Screens:
                 Control: Label@2.5.1
                 Properties:
                   BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =nfColoreTestoSecondario
                   FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                   Height: =Self.Size * 1.8
                   OnSelect: =Select(Parent)
@@ -152,6 +169,7 @@ Screens:
                 Control: Label@2.5.1
                 Properties:
                   BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =nfColoreTestoSecondario
                   FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                   Height: =Self.Size * 1.8
                   OnSelect: =Select(Parent)
@@ -170,9 +188,10 @@ Screens:
           Control: Label@2.5.1
           Properties:
             AutoHeight: =true
-            Size: =11
+            Color: =nfColoreTestoSecondario
+            Size: =nfDimTesto
             Text: |-
-              ="Imponibile: " & Text(gblContratto.imponibile_listino_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
+              ="Listino: " & Text(gblContratto.imponibile_listino_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
             Width: =321
             X: =63
             Y: =459
@@ -180,8 +199,9 @@ Screens:
           Control: Label@2.5.1
           Properties:
             AutoHeight: =true
+            Color: =nfColoreTestoSecondario
             FocusedBorderThickness: =1
-            Size: =11
+            Size: =nfDimTesto
             TabIndex: =1
             Text: |-
               ="Sconto: " & Text(gblContratto.sconto_pct * 100, "[$-en-US]0.0", "it-IT") & "%"
@@ -192,8 +212,9 @@ Screens:
           Control: Label@2.5.1
           Properties:
             AutoHeight: =true
+            Color: =nfColoreTestoSecondario
             FocusedBorderThickness: =1
-            Size: =11
+            Size: =nfDimTesto
             TabIndex: =1
             Text: |-
               ="Imponibile: " & Text(gblContratto.imponibile_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
@@ -204,8 +225,9 @@ Screens:
           Control: Label@2.5.1
           Properties:
             AutoHeight: =true
+            Color: =nfColoreTestoSecondario
             FocusedBorderThickness: =1
-            Size: =11
+            Size: =nfDimTesto
             TabIndex: =1
             Text: |-
               ="IVA: " & If(IsBlank(gblContratto.aliquota_iva),
@@ -219,8 +241,10 @@ Screens:
           Control: Label@2.5.1
           Properties:
             AutoHeight: =true
+            Color: =nfColoreTesto
             FocusedBorderThickness: =1
-            Size: =11
+            FontWeight: =FontWeight.Bold
+            Size: =nfDimTitoloRiquadro
             TabIndex: =1
             Text: |-
               ="Totale: " & If(IsBlank(gblContratto.aliquota_iva), "—",
@@ -234,19 +258,20 @@ Screens:
           Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
           Properties:
             AccessibleLabel: ="1"
+            Fill: =nfColoreSuperficie
             Height: =388
             Items: =Sort(Filter('arcade.pagamento', id_contratto = gblIdContratto), tipo)
             TabIndex: =1
             TemplateSize: =197
-            Width: =709
-            X: =633
+            Width: =712
+            X: =630
             Y: =364
           Children:
             - lblPagTipo:
                 Control: Label@2.5.1
                 Properties:
                   BorderColor: =RGBA(0, 0, 0, 1)
-                  Color: =RGBA(50, 49, 48, 1)
+                  Color: =nfColoreTesto
                   FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                   Height: =Self.Size * 1.8
                   OnSelect: =Select(Parent)
@@ -254,7 +279,7 @@ Screens:
                   PaddingLeft: =0
                   PaddingRight: =0
                   PaddingTop: =0
-                  Size: =14
+                  Size: =nfDimTesto
                   Text: |-
                     ="Tipo: " & ThisItem.tipo
                   VerticalAlign: =VerticalAlign.Top
@@ -264,7 +289,7 @@ Screens:
             - Separator4:
                 Control: Rectangle@2.3.0
                 Properties:
-                  Fill: =RGBA(255, 255, 255, 1)
+                  Fill: =nfColoreSfondo
                   Height: =8
                   OnSelect: =Select(Parent)
                   Width: =Parent.TemplateWidth
@@ -273,7 +298,7 @@ Screens:
                 Control: Label@2.5.1
                 Properties:
                   BorderColor: =RGBA(0, 0, 0, 1)
-                  Color: =RGBA(50, 49, 48, 1)
+                  Color: =nfColoreTesto
                   FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                   Height: =Self.Size * 1.8
                   OnSelect: =Select(Parent)
@@ -281,7 +306,7 @@ Screens:
                   PaddingLeft: =0
                   PaddingRight: =0
                   PaddingTop: =0
-                  Size: =14
+                  Size: =nfDimTesto
                   Text: |-
                     ="Importo: " & Text(ThisItem.importo, "[$-en-US]#,##0.00", "it-IT") & " €"
                   VerticalAlign: =VerticalAlign.Top
@@ -292,7 +317,7 @@ Screens:
                 Control: Label@2.5.1
                 Properties:
                   BorderColor: =RGBA(0, 0, 0, 1)
-                  Color: =RGBA(50, 49, 48, 1)
+                  Color: =nfColoreTestoSecondario
                   FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                   Height: =Self.Size * 1.8
                   OnSelect: =Select(Parent)
@@ -300,7 +325,7 @@ Screens:
                   PaddingLeft: =0
                   PaddingRight: =0
                   PaddingTop: =0
-                  Size: =14
+                  Size: =nfDimTesto
                   Text: |-
                     ="Scadenza: " & Text(ThisItem.scadenza, "dd/mm/yyyy")
                   VerticalAlign: =VerticalAlign.Top
@@ -311,7 +336,7 @@ Screens:
                 Control: Label@2.5.1
                 Properties:
                   BorderColor: =RGBA(0, 0, 0, 1)
-                  Color: =RGBA(50, 49, 48, 1)
+                  Color: =nfColoreTestoSecondario
                   FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                   Height: =Self.Size * 1.8
                   OnSelect: =Select(Parent)
@@ -319,7 +344,7 @@ Screens:
                   PaddingLeft: =0
                   PaddingRight: =0
                   PaddingTop: =0
-                  Size: =14
+                  Size: =nfDimTesto
                   Text: |-
                     ="Stato Pagamento: " & If(IsBlank(ThisItem.pagato_il), "Non incassato",
                                              "Incassato il " & Text(ThisItem.pagato_il, "dd/mm/yyyy") &
@@ -332,14 +357,14 @@ Screens:
                 Control: Label@2.5.1
                 Properties:
                   BorderColor: =RGBA(0, 0, 0, 1)
-                  Color: =RGBA(50, 49, 48, 1)
+                  Color: =nfColoreTestoSuAccento
                   Fill: |-
                     =Switch(true,
-                      ThisItem.annullato, ColorValue("#9E9E9E"),
-                      IsBlank(ThisItem.pagato_il) && ThisItem.scadenza < Today(), ColorValue("#C62828"),
-                      IsBlank(ThisItem.pagato_il), ColorValue("#9E9E9E"),
-                      ThisItem.pagato_il > ThisItem.scadenza, ColorValue("#EF6C00"),
-                      ColorValue("#2E7D32"))
+                      ThisItem.annullato, nfPagNeutro,
+                      IsBlank(ThisItem.pagato_il) && ThisItem.scadenza < Today(), nfPagScaduto,
+                      IsBlank(ThisItem.pagato_il), nfPagNeutro,
+                      ThisItem.pagato_il > ThisItem.scadenza, nfPagRitardo,
+                      nfPagRegolare)
                   FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                   Height: =Self.Size * 1.8
                   OnSelect: =Select(Parent)
@@ -347,7 +372,7 @@ Screens:
                   PaddingLeft: =0
                   PaddingRight: =0
                   PaddingTop: =0
-                  Size: =14
+                  Size: =nfDimTesto
                   Text: |-
                     =Upper(Substitute(
                       If(ThisItem.annullato, "annullato",
@@ -356,6 +381,6 @@ Screens:
                          ThisItem.pagato_il > ThisItem.scadenza, "pagato_in_ritardo",
                          "pagato_nei_termini"), "_", " "))
                   VerticalAlign: =VerticalAlign.Top
-                  Width: =130
+                  Width: =200
                   X: =92
                   Y: =138

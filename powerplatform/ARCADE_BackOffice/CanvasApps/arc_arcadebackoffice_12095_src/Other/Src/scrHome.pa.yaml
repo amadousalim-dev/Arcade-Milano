@@ -7,4 +7,383 @@
 # For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
 # ************************************************************************************************
 Screens:
-  scrHome: {}
+  scrHome:
+    Properties:
+      Fill: =nfColoreSfondo
+    Children:
+      - conHomeRoot:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =nfColoreSfondo
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =24
+            LayoutOverflowY: =LayoutOverflow.Scroll
+            PaddingBottom: =32
+            PaddingLeft: =32
+            PaddingRight: =32
+            PaddingTop: =32
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Width: =Parent.Width
+          Children:
+            - conHomeHeader:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =nfColoreSuperficie
+                  FillPortions: =0
+                  Height: =112
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =20
+                  PaddingBottom: =16
+                  PaddingRight: =24
+                  PaddingTop: =16
+                  RadiusBottomLeft: =nfRaggio
+                  RadiusBottomRight: =nfRaggio
+                  RadiusTopLeft: =nfRaggio
+                  RadiusTopRight: =nfRaggio
+                Children:
+                  - conHomeAccento:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =nfAccentoPrimario
+                        FillPortions: =0
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutMinWidth: =8
+                        RadiusBottomLeft: =0
+                        RadiusTopLeft: =0
+                        Width: =8
+                  - conHomeTitoli:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =4
+                        LayoutJustifyContent: =LayoutJustifyContent.Center
+                        LayoutMinHeight: =80
+                      Children:
+                        - lblHomeTitolo:
+                            Control: Label@2.5.1
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              Color: =nfColoreTesto
+                              FontWeight: =FontWeight.Bold
+                              Height: =44
+                              PaddingLeft: =0
+                              Role: =TextRole.Heading1
+                              Size: =nfDimTitolo
+                              Text: ="ARCADE Milano – Back-office commerciale"
+                        - lblHomeSottotitolo:
+                            Control: Label@2.5.1
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              Color: =nfColoreTestoSecondario
+                              Height: =28
+                              PaddingLeft: =0
+                              Size: =nfDimSottotitolo
+                              Text: ="Edizione 2026 · 18–20 dicembre · 3 padiglioni"
+            - conHomeRiquadri:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =24
+                  LayoutMinHeight: =384
+                Children:
+                  - conHomeRiga1:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutGap: =24
+                        LayoutMinHeight: =180
+                      Children:
+                        - conHomeStand:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              BorderColor: =nfAccentoStand
+                              BorderThickness: =nfSpessoreBordo
+                              DropShadow: =DropShadow.None
+                              Fill: =nfColoreSuperficie
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
+                              LayoutMinHeight: =180
+                              LayoutMinWidth: =280
+                              PaddingBottom: =20
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =nfRaggio
+                              RadiusBottomRight: =nfRaggio
+                              RadiusTopLeft: =nfRaggio
+                              RadiusTopRight: =nfRaggio
+                            Children:
+                              - icoHomeStand:
+                                  Control: Classic/Icon@2.5.0
+                                  Properties:
+                                    Color: =nfAccentoStand
+                                    Height: =44
+                                    Icon: =Icon.Shop
+                                    LayoutMinHeight: =44
+                                    LayoutMinWidth: =44
+                                    Width: =44
+                              - lblHomeStandTit:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AlignInContainer: =AlignInContainer.Stretch
+                                    Color: =nfColoreTesto
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =36
+                                    PaddingLeft: =0
+                                    Role: =TextRole.Heading2
+                                    Size: =nfDimTitoloRiquadro
+                                    Text: ="Stand"
+                              - lblHomeStandDesc:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AlignInContainer: =AlignInContainer.Stretch
+                                    Color: =nfColoreTestoSecondario
+                                    FillPortions: =1
+                                    LayoutMinHeight: =28
+                                    PaddingLeft: =0
+                                    Size: =nfDimTesto
+                                    Text: ="Disponibilità e stato degli stand per padiglione"
+                                    VerticalAlign: =VerticalAlign.Top
+                              - btnHomeStand:
+                                  Control: ModernButton@1.0.0
+                                  Properties:
+                                    AccessibleLabel: ="Apri Stand"
+                                    BasePaletteColor: =nfAccentoStand
+                                    Color: =nfColoreTestoSuAccento
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =44
+                                    Layout: =ButtonLayout.TextOnly
+                                    LayoutMinHeight: =44
+                                    LayoutMinWidth: =140
+                                    OnSelect: =Navigate(scrStand)
+                                    Text: ="Apri ›"
+                                    Width: =140
+                        - conHomePreventivi:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              BorderColor: =nfAccentoPreventivi
+                              BorderThickness: =nfSpessoreBordo
+                              DropShadow: =DropShadow.None
+                              Fill: =nfColoreSuperficie
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
+                              LayoutMinHeight: =180
+                              LayoutMinWidth: =280
+                              PaddingBottom: =20
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =nfRaggio
+                              RadiusBottomRight: =nfRaggio
+                              RadiusTopLeft: =nfRaggio
+                              RadiusTopRight: =nfRaggio
+                            Children:
+                              - icoHomePreventivi:
+                                  Control: Classic/Icon@2.5.0
+                                  Properties:
+                                    Color: =nfAccentoPreventivi
+                                    Height: =44
+                                    Icon: =Icon.DetailList
+                                    LayoutMinHeight: =44
+                                    LayoutMinWidth: =44
+                                    Width: =44
+                              - lblHomePreventiviTit:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AlignInContainer: =AlignInContainer.Stretch
+                                    Color: =nfColoreTesto
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =36
+                                    PaddingLeft: =0
+                                    Role: =TextRole.Heading2
+                                    Size: =nfDimTitoloRiquadro
+                                    Text: ="Preventivi"
+                              - lblHomePreventiviDesc:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AlignInContainer: =AlignInContainer.Stretch
+                                    Color: =nfColoreTestoSecondario
+                                    FillPortions: =1
+                                    LayoutMinHeight: =28
+                                    PaddingLeft: =0
+                                    Size: =nfDimTesto
+                                    Text: ="Elenco dei preventivi con stato e scadenze"
+                                    VerticalAlign: =VerticalAlign.Top
+                              - btnHomePreventivi:
+                                  Control: ModernButton@1.0.0
+                                  Properties:
+                                    AccessibleLabel: ="Apri Preventivi"
+                                    BasePaletteColor: =nfAccentoPreventivi
+                                    Color: =nfColoreTestoSuAccento
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =44
+                                    Layout: =ButtonLayout.TextOnly
+                                    LayoutMinHeight: =44
+                                    LayoutMinWidth: =140
+                                    OnSelect: =Navigate(scrPreventivi)
+                                    Text: ="Apri ›"
+                                    Width: =140
+                  - conHomeRiga2:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutGap: =24
+                        LayoutMinHeight: =180
+                      Children:
+                        - conHomeNuovoPrev:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              BorderColor: =nfAccentoNuovoPrev
+                              BorderThickness: =nfSpessoreBordo
+                              DropShadow: =DropShadow.None
+                              Fill: =nfColoreSuperficie
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
+                              LayoutMinHeight: =180
+                              LayoutMinWidth: =280
+                              PaddingBottom: =20
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =nfRaggio
+                              RadiusBottomRight: =nfRaggio
+                              RadiusTopLeft: =nfRaggio
+                              RadiusTopRight: =nfRaggio
+                            Children:
+                              - icoHomeNuovoPrev:
+                                  Control: Classic/Icon@2.5.0
+                                  Properties:
+                                    Color: =nfAccentoNuovoPrev
+                                    Height: =44
+                                    Icon: =Icon.AddDocument
+                                    LayoutMinHeight: =44
+                                    LayoutMinWidth: =44
+                                    Width: =44
+                              - lblHomeNuovoPrevTit:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AlignInContainer: =AlignInContainer.Stretch
+                                    Color: =nfColoreTesto
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =36
+                                    PaddingLeft: =0
+                                    Role: =TextRole.Heading2
+                                    Size: =nfDimTitoloRiquadro
+                                    Text: ="Nuovo preventivo"
+                              - lblHomeNuovoPrevDesc:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AlignInContainer: =AlignInContainer.Stretch
+                                    Color: =nfColoreTestoSecondario
+                                    FillPortions: =1
+                                    LayoutMinHeight: =28
+                                    PaddingLeft: =0
+                                    Size: =nfDimTesto
+                                    Text: ="Scegli uno stand libero per creare un preventivo"
+                                    VerticalAlign: =VerticalAlign.Top
+                              - btnHomeNuovoPrev:
+                                  Control: ModernButton@1.0.0
+                                  Properties:
+                                    AccessibleLabel: ="Apri Nuovo preventivo"
+                                    BasePaletteColor: =nfAccentoNuovoPrev
+                                    Color: =nfColoreTestoSuAccento
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =44
+                                    Layout: =ButtonLayout.TextOnly
+                                    LayoutMinHeight: =44
+                                    LayoutMinWidth: =140
+                                    OnSelect: =Navigate(scrStand)
+                                    Text: ="Apri ›"
+                                    Width: =140
+                        - conHomeContratti:
+                            Control: GroupContainer@1.5.0
+                            Variant: AutoLayout
+                            Properties:
+                              BorderColor: =nfAccentoContratti
+                              BorderThickness: =nfSpessoreBordo
+                              DropShadow: =DropShadow.None
+                              Fill: =nfColoreSuperficie
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
+                              LayoutMinHeight: =180
+                              LayoutMinWidth: =280
+                              PaddingBottom: =20
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =nfRaggio
+                              RadiusBottomRight: =nfRaggio
+                              RadiusTopLeft: =nfRaggio
+                              RadiusTopRight: =nfRaggio
+                            Children:
+                              - icoHomeContratti:
+                                  Control: Classic/Icon@2.5.0
+                                  Properties:
+                                    Color: =nfAccentoContratti
+                                    Height: =44
+                                    Icon: =Icon.DocumentWithContent
+                                    LayoutMinHeight: =44
+                                    LayoutMinWidth: =44
+                                    Width: =44
+                              - lblHomeContrattiTit:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AlignInContainer: =AlignInContainer.Stretch
+                                    Color: =nfColoreTesto
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =36
+                                    PaddingLeft: =0
+                                    Role: =TextRole.Heading2
+                                    Size: =nfDimTitoloRiquadro
+                                    Text: ="Contratti"
+                              - lblHomeContrattiDesc:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AlignInContainer: =AlignInContainer.Stretch
+                                    Color: =nfColoreTestoSecondario
+                                    FillPortions: =1
+                                    LayoutMinHeight: =28
+                                    PaddingLeft: =0
+                                    Size: =nfDimTesto
+                                    Text: ="Apri un contratto dall'elenco dei preventivi firmati"
+                                    VerticalAlign: =VerticalAlign.Top
+                              - btnHomeContratti:
+                                  Control: ModernButton@1.0.0
+                                  Properties:
+                                    AccessibleLabel: ="Apri Contratti"
+                                    BasePaletteColor: =nfAccentoContratti
+                                    Color: =nfColoreTestoSuAccento
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =44
+                                    Layout: =ButtonLayout.TextOnly
+                                    LayoutMinHeight: =44
+                                    LayoutMinWidth: =140
+                                    OnSelect: =Navigate(scrPreventivi)
+                                    Text: ="Apri ›"
+                                    Width: =140

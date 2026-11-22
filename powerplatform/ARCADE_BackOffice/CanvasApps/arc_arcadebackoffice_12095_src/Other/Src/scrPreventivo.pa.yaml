@@ -9,8 +9,10 @@
 Screens:
   scrPreventivo:
     Properties:
+      Fill: =nfColoreSfondo
       OnVisible: |-
-        =ClearCollect(colListinoVend, Filter('arcade.listino', id_edizione = EdizioneSel.id_edizione));
+        =If(IsEmpty(colEspositori),
+           ClearCollect(colEspositori, Sort('arcade.espositore', ragione_sociale)));ClearCollect(colListinoVend, Filter('arcade.listino', id_edizione = EdizioneSel.id_edizione));
         If(IsBlank(gblIdPreventivo),
           // NUOVO: righe automatiche dal listino
           With({
@@ -33,10 +35,10 @@ Screens:
                   importo_eur: imp, automatica: true })))
           );
           Reset(txtSconto); Reset(cmbEspositore);
-          Set(gblStato, "bozza"),
+          Set(gblStato, "bozza"); Set(gblPreventivo, Blank());
           // ESISTENTE: righe e testata dal database
           With({ p: LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo) },
-            Set(gblStato, p.stato);
+            Set(gblStato, p.stato); Set(gblPreventivo, p);
             ClearCollect(colRighe,
               AddColumns(Filter('arcade.riga_preventivo', id_preventivo = gblIdPreventivo),
                 automatica, StartsWith(codice_voce, "SPAZIO") || StartsWith(codice_voce, "MAGG"))))
@@ -44,7 +46,8 @@ Screens:
           Today() <= EdizioneSel.scadenza_prelazione &&
           !IsBlank(LookUp('arcade.contratto', id_edizione = EdizioneSel.id_edizione - 1 &&
              id_espositore = cmbEspositore.Selected.id_espositore && stato = "attivo")));
-        Select(btnRicalcola)
+        Select(btnRicalcola);
+        Select(btnCaricaImpegni)
     Children:
       - btnRicalcola:
           Control: ModernButton@1.0.0
@@ -68,6 +71,7 @@ Screens:
           Control: Classic/Icon@2.5.0
           Properties:
             AccessibleLabel: ="1"
+            Color: =nfColoreTesto
             Height: =61
             Icon: =Icon.BackArrow
             OnSelect: =Back()
@@ -79,8 +83,10 @@ Screens:
           Control: Label@2.5.1
           Properties:
             AutoHeight: =true
+            Color: =nfColoreTesto
+            FontWeight: =FontWeight.Bold
             Height: =42
-            Size: =21
+            Size: =nfDimTitolo
             Text: |-
               =If(IsBlank(gblIdPreventivo), "Nuovo preventivo", "Preventivo n. " & gblIdPreventivo) &
               " – stand " & gblStand.codice_stand
@@ -90,6 +96,9 @@ Screens:
       - lblStatoPrev:
           Control: Label@2.5.1
           Properties:
+            Color: =nfAccentoPreventivi
+            FontWeight: =FontWeight.Bold
+            Size: =nfDimSottotitolo
             Text: =Upper(Substitute(gblStato, "_", " "))
             X: =1055
             Y: =5
@@ -97,6 +106,9 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            BorderColor: =nfAccentoPreventivi
+            BorderThickness: =nfSpessoreBordo
+            Fill: =nfColoreSuperficie
             Height: =632
             LayoutAlignItems: =LayoutAlignItems.Center
             LayoutDirection: =LayoutDirection.Vertical
@@ -105,41 +117,58 @@ Screens:
             PaddingLeft: =8
             PaddingRight: =8
             PaddingTop: =8
+            RadiusBottomLeft: =nfRaggio
+            RadiusBottomRight: =nfRaggio
+            RadiusTopLeft: =nfRaggio
+            RadiusTopRight: =nfRaggio
             Width: =476
             Y: =75
           Children:
             - cmbEspositore:
-                Control: Classic/ComboBox@2.4.0
+                Control: ModernCombobox@1.1.2
                 Properties:
                   AccessibleLabel: ="1"
                   DefaultSelectedItems: |-
                     =If(gblStand.stato = "in_prelazione",
-                         // stand in prelazione: solo l'espositore dell'anno prima
-                         Filter('arcade.espositore', id_espositore = gblStand.id_espositore_rif),
-                         !IsBlank(gblIdPreventivo),
-                         // preventivo esistente: l'espositore salvato
-                         Filter('arcade.espositore', id_espositore =
-                           LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).id_espositore))
-                  DisplayFields: =["ragione_sociale"]
+                       // stand in prelazione: solo l'espositore dell'anno prima
+                       Filter(colEspositori, id_espositore = gblStand.id_espositore_rif),
+                       !IsBlank(gblPreventivo),
+                       // preventivo esistente: l'espositore salvato
+                       Filter(colEspositori, id_espositore = gblPreventivo.id_espositore))
                   DisplayMode: |-
                     =If(gblStato = "bozza" && gblStand.stato <> "in_prelazione",
                                      DisplayMode.Edit, DisplayMode.View)
                   InputTextPlaceholder: ="Seleziona espositore"
+                  ItemDisplayText: =ThisItem.ragione_sociale
                   Items: =colEspositori
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
                   OnChange: =Select(btnRicalcola)
-                  SearchFields: =["ragione_sociale"]
                   SelectMultiple: =false
             - lblStandInfo:
                 Control: Label@2.5.1
                 Properties:
+                  AutoHeight: =true
+                  Color: =nfColoreTesto
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
+                  Size: =nfDimTesto
                   Text: |-
                     ="Stand " & gblStand.codice_stand & " · " & gblStand.codice_padiglione & Char(10) &
                     gblStand.mq & " m² · " & gblStand.posizione
                   Width: =300
+            - lblDidSconto:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =nfColoreTestoSecondario
+                  FontWeight: =FontWeight.Semibold
+                  Height: =24
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  PaddingLeft: =0
+                  Size: =nfDimTesto
+                  Text: ="Sconto sul listino (%)"
+                  Width: =txtSconto.Width
             - txtSconto:
                 Control: ModernTextInput@1.1.3
                 Properties:
@@ -155,7 +184,7 @@ Screens:
             - lblAvvisoSconto:
                 Control: Label@2.5.1
                 Properties:
-                  Color: =If(!gblTot.valido, Color.Red, Color.DarkOrange)
+                  Color: =If(!gblTot.valido, nfColoreErrore, nfColoreAttenzione)
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
                   Text: |-
@@ -167,80 +196,129 @@ Screens:
                 Control: Label@2.5.1
                 Properties:
                   AutoHeight: =true
+                  Color: =nfAccentoContratti
+                  FontWeight: =FontWeight.Semibold
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
                   Text: |-
                     ="Rinnovo entro la prelazione: spetta lo sconto fedeltà del 5%"
-                  Visible: |+
+                  Visible: |
                     =gblFedelta
                   Width: =200
       - conRighe:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
-            Height: =609
+            Fill: =nfColoreSuperficie
+            Height: =649
             LayoutAlignItems: =LayoutAlignItems.Center
             LayoutDirection: =LayoutDirection.Vertical
             PaddingBottom: =8
             PaddingLeft: =8
             PaddingRight: =8
             PaddingTop: =8
+            RadiusBottomLeft: =nfRaggio
+            RadiusBottomRight: =nfRaggio
+            RadiusTopLeft: =nfRaggio
+            RadiusTopRight: =nfRaggio
             Width: =890
             X: =476
-            Y: =98
+            Y: =58
           Children:
+            - conIntestRighe:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  FillPortions: =0
+                  Height: =32
+                  LayoutMinHeight: =32
+                Children:
+                  - Label7:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =nfColoreTestoSecondario
+                        FontWeight: =FontWeight.Semibold
+                        Height: =32
+                        PaddingLeft: =0
+                        PaddingRight: =0
+                        Size: =nfDimTesto
+                        Text: ="Descrizione"
+                        Width: =Parent.Width - 462
+                        X: =16
+                  - lblIntQta:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Color: =nfColoreTestoSecondario
+                        FontWeight: =FontWeight.Semibold
+                        Height: =32
+                        PaddingLeft: =0
+                        PaddingRight: =0
+                        Size: =nfDimTesto
+                        Text: ="Q.tà"
+                        Width: =100
+                        X: =Parent.Width - 446
+                  - lblIntPrezzo:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Right
+                        Color: =nfColoreTestoSecondario
+                        FontWeight: =FontWeight.Semibold
+                        Height: =32
+                        PaddingLeft: =0
+                        PaddingRight: =0
+                        Size: =nfDimTesto
+                        Text: ="Prezzo unitario"
+                        Width: =140
+                        X: =Parent.Width - 346
+                  - lblIntImporto:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Right
+                        Color: =nfColoreTestoSecondario
+                        FontWeight: =FontWeight.Semibold
+                        Height: =32
+                        PaddingLeft: =0
+                        PaddingRight: =0
+                        Size: =nfDimTesto
+                        Text: ="Importo"
+                        X: =Parent.Width - 206
             - Gallery1:
                 Control: Gallery@2.15.0
                 Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                 Properties:
                   AccessibleLabel: ="1"
+                  Fill: =nfColoreSuperficie
                   Items: =Sort(colRighe, riga)
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
                   TabIndex: =1
-                  TemplateSize: =120
+                  TemplateSize: =60
                 Children:
                   - lblRigaDescr:
                       Control: Label@2.5.1
                       Properties:
                         BorderColor: =RGBA(0, 0, 0, 1)
-                        Color: =RGBA(50, 49, 48, 1)
+                        Color: =nfColoreTesto
                         FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                         Height: =Self.Size * 1.8
-                        OnSelect: =Select(Parent)
+                        OnSelect: =
                         PaddingBottom: =0
                         PaddingLeft: =0
                         PaddingRight: =0
                         PaddingTop: =0
-                        Size: =14
+                        Size: =nfDimTesto
                         Text: =ThisItem.descrizione
                         VerticalAlign: =VerticalAlign.Top
-                        Width: =89
-                  - NextArrow2:
-                      Control: Classic/Icon@2.5.0
-                      Properties:
-                        AccessibleLabel: =Self.Tooltip
-                        BorderColor: =RGBA(0, 0, 0, 1)
-                        Color: =RGBA(166, 166, 166, 1)
-                        DisabledBorderColor: =RGBA(56, 56, 56, 1)
-                        DisabledColor: =RGBA(119, 119, 119, 1)
-                        Height: =50
-                        Icon: =Icon.ChevronRight
-                        OnSelect: =Select(Parent)
-                        PaddingBottom: =16
-                        PaddingLeft: =16
-                        PaddingRight: =16
-                        PaddingTop: =16
-                        Tooltip: ="Visualizza dettagli elementi"
-                        Width: =50
-                        X: =Parent.TemplateWidth - Self.Width - 12
-                        Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
+                        Width: =Parent.TemplateWidth - 462
+                        X: =16
+                        Y: =(Parent.TemplateHeight - Separator2.Height - Self.Height) / 2
                   - lblRigaQta:
                       Control: Label@2.5.1
                       Properties:
                         Align: =Align.Center
                         BorderColor: =RGBA(0, 0, 0, 1)
-                        Color: =RGBA(50, 49, 48, 1)
+                        Color: =nfColoreTestoSecondario
                         FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                         Height: =Self.Size * 1.8
                         OnSelect: =Select(Parent)
@@ -248,17 +326,18 @@ Screens:
                         PaddingLeft: =0
                         PaddingRight: =0
                         PaddingTop: =0
-                        Size: =14
+                        Size: =nfDimTesto
                         Text: =ThisItem.quantita
                         VerticalAlign: =VerticalAlign.Top
-                        Width: =48
-                        X: =89
+                        Width: =100
+                        X: =Parent.TemplateWidth - 446
+                        Y: =(Parent.TemplateHeight - Separator2.Height - Self.Height) / 2
                   - lblRigaPrezzo:
                       Control: Label@2.5.1
                       Properties:
-                        Align: =Align.Center
+                        Align: =Align.Right
                         BorderColor: =RGBA(0, 0, 0, 1)
-                        Color: =RGBA(50, 49, 48, 1)
+                        Color: =nfColoreTestoSecondario
                         FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                         Height: =Self.Size * 1.8
                         OnSelect: =Select(Parent)
@@ -266,17 +345,18 @@ Screens:
                         PaddingLeft: =0
                         PaddingRight: =0
                         PaddingTop: =0
-                        Size: =14
+                        Size: =nfDimTesto
                         Text: =Text(ThisItem.prezzo_unitario, "[$-en-US]#,##0.00", "it-IT")
                         VerticalAlign: =VerticalAlign.Top
-                        Width: =129
-                        X: =137
+                        Width: =140
+                        X: =Parent.TemplateWidth - 346
+                        Y: =(Parent.TemplateHeight - Separator2.Height - Self.Height) / 2
                   - Separator2:
                       Control: Rectangle@2.3.0
                       Properties:
-                        Fill: =RGBA(255, 255, 255, 1)
+                        Fill: =nfColoreSfondo
                         Height: =8
-                        OnSelect: =Select(Parent)
+                        OnSelect: =
                         Width: =Parent.TemplateWidth
                         Y: =Parent.TemplateHeight - Self.Height
                   - lblRigaPrezzo_1:
@@ -284,7 +364,7 @@ Screens:
                       Properties:
                         Align: =Align.Right
                         BorderColor: =RGBA(0, 0, 0, 1)
-                        Color: =RGBA(50, 49, 48, 1)
+                        Color: =nfColoreTesto
                         FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                         Height: =Self.Size * 1.8
                         OnSelect: =Select(Parent)
@@ -292,28 +372,30 @@ Screens:
                         PaddingLeft: =0
                         PaddingRight: =0
                         PaddingTop: =0
-                        Size: =14
+                        Size: =nfDimTesto
                         Text: =Text(ThisItem.importo_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
                         VerticalAlign: =VerticalAlign.Top
-                        Width: =129
-                        X: =266
+                        X: =Parent.TemplateWidth - 206
+                        Y: =(Parent.TemplateHeight - Separator2.Height - Self.Height) / 2
                   - icoElimina:
                       Control: Classic/Icon@2.5.0
                       Properties:
                         AccessibleLabel: ="1"
+                        Color: =nfColoreErrore
                         Height: =20
                         Icon: =Icon.Trash
                         OnSelect: =Remove(colRighe, ThisItem); Select(btnRicalcola)
                         TabIndex: =1
                         Visible: =!ThisItem.automatica && gblStato = "bozza"
                         Width: =20
-                        X: =774
-                        Y: =10
+                        X: =Parent.TemplateWidth - 44
+                        Y: =(Parent.TemplateHeight - Separator2.Height - Self.Height) / 2
             - Container5:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
-                  Height: =150
+                  FillPortions: =0
+                  Height: =64
                   LayoutAlignItems: =LayoutAlignItems.Center
                   LayoutDirection: =LayoutDirection.Horizontal
                   LayoutGap: =20
@@ -325,14 +407,13 @@ Screens:
                   PaddingTop: =8
                 Children:
                   - cmbVoce:
-                      Control: Classic/ComboBox@2.4.0
+                      Control: ModernCombobox@1.1.2
                       Properties:
-                        AccessibleLabel: ="1"
-                        DisplayFields: =["descrizione"]
+                        InputTextPlaceholder: ="Scegli un extra o una sponsorizzazione"
+                        ItemDisplayText: =ThisItem.descrizione
                         Items: =Filter(colListinoVend, tipo_voce in ["extra", "sponsorizzazione"])
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
-                        SearchFields: =["descrizione"]
                         SelectMultiple: =false
                   - txtQuantita:
                       Control: ModernTextInput@1.1.3
@@ -345,26 +426,26 @@ Screens:
                       Control: ModernButton@1.0.0
                       Properties:
                         AccessibleLabel: ="1"
+                        BasePaletteColor: =nfAccentoPreventivi
+                        Color: =nfColoreTestoSuAccento
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
                         OnSelect: |-
                           =With({
                             v: cmbVoce.Selected,
-                            q: Value(txtQuantita.Text),
-                            // pacchetti già venduti nei contratti attivi 2026
-                            venduti: Sum(Filter('arcade.riga_contratto',
-                                       codice_voce = cmbVoce.Selected.codice_voce &&
-                                       id_contratto in Filter('arcade.contratto',
-                                         id_edizione = EdizioneSel.id_edizione && stato = "attivo").id_contratto),
-                                     quantita)
+                            q: Value(txtQuantita.Text)
                           },
                             If(
                               IsBlank(v) || q <= 0,
                                 Notify("Scegli una voce e una quantità maggiore di zero", NotificationType.Error),
                               !IsBlank(v.codice_padiglione_vincolo) && v.codice_padiglione_vincolo <> gblStand.codice_padiglione,
                                 Notify(v.descrizione & " è riservata al padiglione " & v.codice_padiglione_vincolo, NotificationType.Error),
-                              v.tipo_voce = "sponsorizzazione" && v.quantita_disponibile - venduti < q,
-                                Notify("Sponsorizzazione esaurita", NotificationType.Error),
+                              // sponsorizzazione: disponibili (già calcolati da btnCaricaImpegni)
+                              // meno quelle già messe in questo preventivo
+                              v.tipo_voce = "sponsorizzazione" &&
+                                LookUp(colSponsorOccupati, codice_voce = v.codice_voce).disponibili
+                                  - Sum(Filter(colRighe, codice_voce = v.codice_voce), quantita) < q,
+                                Notify("Sponsorizzazione esaurita o già impegnata in un altro preventivo", NotificationType.Error),
                               Collect(colRighe, {
                                 riga: Max(colRighe, riga) + 1, codice_voce: v.codice_voce, descrizione: v.descrizione,
                                 quantita: q, prezzo_unitario: v.prezzo_unitario,
@@ -378,7 +459,9 @@ Screens:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
-                  LayoutAlignItems: =LayoutAlignItems.Center
+                  FillPortions: =0
+                  Height: =216
+                  LayoutAlignItems: =LayoutAlignItems.End
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
@@ -390,39 +473,66 @@ Screens:
                   - lblImpListino:
                       Control: Label@2.5.1
                       Properties:
+                        Align: =Align.Right
+                        Color: =nfColoreTestoSecondario
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
-                        Text: =Text(gblTot.listino, "[$-en-US]#,##0.00", "it-IT") & " €"
+                        Size: =nfDimTesto
+                        Text: |-
+                          ="Listino: " & Text(gblTot.listino, "[$-en-US]#,##0.00", "it-IT") & " €"
+                        Width: =320
                         X: =148
                         Y: =16
                   - lblScontoEur:
                       Control: Label@2.5.1
                       Properties:
+                        Align: =Align.Right
+                        Color: =nfColoreTestoSecondario
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
-                        Text: ="-" & Text(gblTot.listino - gblTot.imponibile, "[$-en-US]#,##0.00", "it-IT") & " €"
+                        Size: =nfDimTesto
+                        Text: |-
+                          ="Sconto (" & Text(gblTot.sconto * 100, "[$-en-US]0.0", "it-IT") & "%): -" & Text(gblTot.listino - gblTot.imponibile, "[$-en-US]#,##0.00", "it-IT") & " €"
+                        Width: =320
                   - lblImponibile:
                       Control: Label@2.5.1
                       Properties:
+                        Align: =Align.Right
+                        Color: =nfColoreTestoSecondario
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
-                        Text: =Text(gblTot.imponibile, "[$-en-US]#,##0.00", "it-IT") & " €"
+                        Size: =nfDimTesto
+                        Text: |-
+                          ="Imponibile: " & Text(gblTot.imponibile, "[$-en-US]#,##0.00", "it-IT") & " €"
+                        Width: =320
                   - lblIva:
                       Control: Label@2.5.1
                       Properties:
+                        Align: =Align.Right
+                        Color: =nfColoreTestoSecondario
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
-                        Text: =Text(gblTot.iva, "[$-en-US]#,##0.00", "it-IT") & " €"
+                        Size: =nfDimTesto
+                        Text: |-
+                          ="IVA " & Text(AliquotaIvaStd * 100, "[$-en-US]0", "it-IT") & "%: " & Text(gblTot.iva, "[$-en-US]#,##0.00", "it-IT") & " €"
+                        Width: =320
                   - lblTotale:
                       Control: Label@2.5.1
                       Properties:
+                        Align: =Align.Right
+                        Color: =nfColoreTesto
+                        FontWeight: =FontWeight.Bold
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
-                        Text: =Text(gblTot.totale, "[$-en-US]#,##0.00", "it-IT") & " €"
+                        Size: =nfDimTitoloRiquadro
+                        Text: |-
+                          ="Totale: " & Text(gblTot.totale, "[$-en-US]#,##0.00", "it-IT") & " €"
+                        Width: =320
       - conAzioni:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
+            Fill: =nfColoreSuperficie
             Height: =58
             LayoutAlignItems: =LayoutAlignItems.Center
             LayoutDirection: =LayoutDirection.Horizontal
@@ -439,6 +549,8 @@ Screens:
                 Control: ModernButton@1.0.0
                 Properties:
                   AccessibleLabel: ="1"
+                  BasePaletteColor: =nfAccentoNuovoPrev
+                  Color: =nfColoreTestoSuAccento
                   DisplayMode: |-
                     =If(gblStato = "bozza" && gblTot.valido && !IsBlank(cmbEspositore.Selected),
                          DisplayMode.Edit, DisplayMode.Disabled)
@@ -473,6 +585,8 @@ Screens:
                               descrizione: r.descrizione, quantita: r.quantita,
                               prezzo_unitario: r.prezzo_unitario, importo_eur: r.importo_eur })));
                         Set(gblIdPreventivo, idP);
+                        Set(gblPreventivo, LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo));
+                        Set(gblStato, gblPreventivo.stato);
                         Notify("Bozza salvata", NotificationType.Success),
 
                         // in caso di errore: prima si rimette a posto, poi si avvisa
@@ -481,19 +595,40 @@ Screens:
                           RemoveIf('arcade.preventivo', id_preventivo = idP));
                         Notify("Salvataggio non riuscito: " & FirstError.Message, NotificationType.Error)
                       )
-                    )
+                    ); Select(btnCaricaImpegni)
                   Text: ="Salva Bozza"
             - btnInvia:
                 Control: ModernButton@1.0.0
                 Properties:
                   AccessibleLabel: ="1"
-                  DisplayMode: |+
+                  BasePaletteColor: =nfAccentoPreventivi
+                  Color: =nfColoreTestoSuAccento
+                  DisplayMode: |
                     =If(gblStato = "bozza" && !IsBlank(gblIdPreventivo),
                          DisplayMode.Edit, DisplayMode.Disabled)
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
                   OnSelect: |-
                     =Refresh('arcade.preventivo'); Refresh('arcade.contratto');
+                    With({
+                      attivi: Filter('arcade.contratto', id_edizione = EdizioneSel.id_edizione && stato = "attivo"),
+                      aperti: Filter('arcade.preventivo', id_edizione = EdizioneSel.id_edizione &&
+                                id_preventivo <> gblIdPreventivo &&
+                                (stato = "in_approvazione" || (stato = "inviato" && valido_fino >= Today())))
+                    },
+                      If(
+                        // c'è almeno una sponsorizzazione del preventivo che non è più disponibile?
+                        CountRows(Filter(colRighe As r,
+                          StartsWith(r.codice_voce, "SP-") &&
+                          LookUp(colListinoVend, codice_voce = r.codice_voce).quantita_disponibile
+                            - Sum(Filter('arcade.riga_contratto', codice_voce = r.codice_voce &&
+                                    id_contratto in attivi.id_contratto), quantita)
+                            - Sum(Filter('arcade.riga_preventivo', codice_voce = r.codice_voce &&
+                                    id_preventivo in aperti.id_preventivo), quantita)
+                            < r.quantita)) > 0,
+
+                        Notify("Una sponsorizzazione del preventivo non è più disponibile: toglila prima di inviare",
+                               NotificationType.Error),
                     With({ p: LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo) },
                       If(
                         // lo stand nel frattempo è stato opzionato o venduto?
@@ -512,19 +647,22 @@ Screens:
                             // sconto fino al 10%: inviato e valido 30 giorni
                             Patch('arcade.preventivo', p, { stato: "inviato", inviato_il: Now(),
                               valido_fino: DateAdd(Today(), GiorniValidita, TimeUnit.Days) }));
-                          Set(gblStato, LookUp('arcade.preventivo', id_preventivo = p.id_preventivo).stato);
+                          Set(gblPreventivo, LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo));
+                          Set(gblStato, gblPreventivo.stato);
                           Notify("Preventivo " & Substitute(gblStato, "_", " "), NotificationType.Success),
 
                           // errore: di solito l'indice univoco del database ha rifiutato
                           Notify("Lo stand è già opzionato da un altro preventivo", NotificationType.Error)
                         )
                       )
-                    )
+                    ))); Select(btnCaricaImpegni)
                   Text: ="Invia"
             - btnPerso:
                 Control: ModernButton@1.0.0
                 Properties:
                   AccessibleLabel: ="1"
+                  BasePaletteColor: =nfStatoVenduto
+                  Color: =nfColoreTestoSuAccento
                   DisplayMode: =If(gblStato = "inviato", DisplayMode.Edit, DisplayMode.Disabled)
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
@@ -533,7 +671,8 @@ Screens:
                         Patch('arcade.preventivo',
                               LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo),
                               { stato: "perso" });
-                        Set(gblStato, "perso");
+                        Set(gblPreventivo, LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo));
+                        Set(gblStato, gblPreventivo.stato);
                         Notify("Preventivo segnato come perso: lo stand " & gblStand.codice_stand &
                                " torna libero", NotificationType.Information),
 
@@ -544,6 +683,8 @@ Screens:
                 Control: ModernButton@1.0.0
                 Properties:
                   AccessibleLabel: ="1"
+                  BasePaletteColor: =nfAccentoContratti
+                  Color: =nfColoreTestoSuAccento
                   DisplayMode: |-
                     =If(gblStato = "inviato" && Today() <= ChiusuraVendite &&
                          LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).valido_fino >= Today(),
@@ -610,22 +751,51 @@ Screens:
                       )
                     ))
                   Text: ="Firma"
-      - Label7:
+      - lblApprovato:
           Control: Label@2.5.1
           Properties:
-            Text: ="Descrizione | Q.tà | Prezzo unitario | Importo"
-            Width: =890
-            X: =476
-            Y: =58
-      - Label2:
-          Control: Label@2.5.1
-          Properties:
-            Height: =117
             Text: |-
-              ="stato: " & gblStato &
-              " | entro chiusura: " & (Today() <= ChiusuraVendite) &
-              " | valido fino: " & Text(LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).valido_fino, "dd/mm/yyyy") &
-              " | non scaduto: " & (LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).valido_fino >= Today())
-            Width: =311
-            X: =45
-            Y: =323
+              ="Sconto approvato il " & Text(gblPreventivo.approvato_il, "dd/mm/yyyy") &
+                If(IsBlank(gblPreventivo.approvato_da), "",
+                   " da " & LookUp('arcade.utente', id_utente = gblPreventivo.approvato_da).email)
+            Visible: =!IsBlank(gblPreventivo.approvato_il)
+            X: =651
+            Y: =564
+      - btnCaricaImpegni:
+          Control: ModernButton@1.0.0
+          Properties:
+            OnSelect: |-
+              =// contratti attivi dell'edizione e preventivi aperti (escluso quello corrente)
+              ClearCollect(colContrattiVend,
+                Filter('arcade.contratto', id_edizione = EdizioneSel.id_edizione && stato = "attivo"));
+              ClearCollect(colPrevAperti,
+                Filter('arcade.preventivo', id_edizione = EdizioneSel.id_edizione &&
+                  id_preventivo <> Coalesce(gblIdPreventivo, -1) &&
+                  (stato = "in_approvazione" || (stato = "inviato" && valido_fino >= Today()))));
+              // quantità già occupate per ogni sponsorizzazione
+              ClearCollect(colSponsorOccupati,
+                ForAll(Filter(colListinoVend, tipo_voce = "sponsorizzazione") As v,
+                  { codice_voce: v.codice_voce,
+                    disponibili: v.quantita_disponibile
+                      - Sum(Filter('arcade.riga_contratto', codice_voce = v.codice_voce &&
+                              id_contratto in colContrattiVend.id_contratto), quantita)
+                      - Sum(Filter('arcade.riga_preventivo', codice_voce = v.codice_voce &&
+                              id_preventivo in colPrevAperti.id_preventivo), quantita) }))
+            Visible: =false
+            X: =233
+            Y: =17
+      - lblDispSponsor:
+          Control: Label@2.5.1
+          Properties:
+            AutoHeight: =true
+            Color: |-
+              =If(LookUp(colSponsorOccupati, codice_voce = cmbVoce.Selected.codice_voce).disponibili <= 0,
+                         Color.Red, Color.DarkGreen)
+            Height: =35
+            Text: |-
+              =With({ d: LookUp(colSponsorOccupati, codice_voce = cmbVoce.Selected.codice_voce).disponibili },
+                If(d <= 0, "Esaurita", "Disponibili: " & d & " su " & cmbVoce.Selected.quantita_disponibile))
+            Visible: =cmbVoce.Selected.tipo_voce = "sponsorizzazione"
+            Width: =244
+            X: =496
+            Y: =476

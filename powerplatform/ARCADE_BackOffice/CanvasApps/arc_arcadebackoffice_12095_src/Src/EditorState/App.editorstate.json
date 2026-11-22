@@ -85,12 +85,12 @@
         {
           "Category": "OnDemandData",
           "PropertyName": "StartScreen",
-          "RuleProviderType": "User"
+          "RuleProviderType": "Unknown"
         },
         {
           "Category": "Formulas",
           "PropertyName": "Formulas",
-          "RuleProviderType": "User"
+          "RuleProviderType": "Unknown"
         }
       ],
       "StyleName": "",

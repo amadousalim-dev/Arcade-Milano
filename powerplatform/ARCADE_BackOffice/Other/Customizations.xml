@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ImportExportXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26111.129" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26111.00134">
+<ImportExportXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26112.137" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26112.00139">
   <Entities />
   <Roles />
   <Workflows />
@@ -12,10 +12,22 @@
   <CustomControls />
   <EntityDataProviders />
   <CanvasApps />
+  <Connectors />
   <connectionreferences>
     <connectionreference connectionreferencelogicalname="arc_sharedpostgresql_9d678">
       <connectionreferencedisplayname>PostgreSQL ARCADE_BackOffice-9d678</connectionreferencedisplayname>
       <connectorid>/providers/Microsoft.PowerApps/apis/shared_postgresql</connectorid>
+      <iscustomizable>1</iscustomizable>
+      <promptingbehavior>0</promptingbehavior>
+      <statecode>0</statecode>
+      <statuscode>1</statuscode>
+    </connectionreference>
+    <connectionreference connectionreferencelogicalname="cr37a_sharedmpet5farcade20supabase20rest5f7a398d02ce005cad_22ca6">
+      <connectionreferencedisplayname>ARCADE Supabase REST ARCADE_Supabase-22ca6</connectionreferencedisplayname>
+      <connectorid>/providers/Microsoft.PowerApps/apis/shared_mpet-5farcade-20supabase-20rest-5f130e0b49bf8ce5b0</connectorid>
+      <customconnectorid>
+        <connectorid>b717470f-a0c5-4e12-887e-4cd600a0deaf</connectorid>
+      </customconnectorid>
       <iscustomizable>1</iscustomizable>
       <promptingbehavior>0</promptingbehavior>
       <statecode>0</statecode>
