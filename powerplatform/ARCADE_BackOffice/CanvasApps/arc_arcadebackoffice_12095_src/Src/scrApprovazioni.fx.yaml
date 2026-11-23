@@ -251,7 +251,7 @@
                     VerticalAlign: =VerticalAlign.Top
                     Width: =Parent.TemplateWidth - 173
                     X: =103
-                    Y: =(Parent.TemplateHeight - (Self.Size * 1.8 + Subtitle5.Size * 1.8)) / 2
+                    Y: =16
                     ZIndex: =2
 
                 Subtitle5 As label:
@@ -307,6 +307,25 @@
                     Width: =4
                     ZIndex: =6
 
+                Subtitle5_1 As label:
+                    Color: =RGBA(0, 0, 0, 1)
+                    DisabledColor: =RGBA(166, 166, 166, 1)
+                    Font: =App.Theme.Font
+                    FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                    Height: =Self.Size * 1.8
+                    OnSelect: =Select(Parent)
+                    PaddingBottom: =0
+                    PaddingLeft: =0
+                    PaddingRight: =0
+                    PaddingTop: =0
+                    Size: =12
+                    Text: =ThisItem.importo_eur & " €"
+                    VerticalAlign: =VerticalAlign.Top
+                    Width: =Title5.Width
+                    X: =Title5.X
+                    Y: =62
+                    ZIndex: =7
+
             btnApprova As modernButton:
                 DisplayMode: |-
                     =If(!IsBlank(galApprovazioni.Selected) && Today() <= ChiusuraVendite,
@@ -329,13 +348,13 @@
                               approvato_il: Now(),
                               inviato_il: Now(),
                               valido_fino: DateAdd(Today(), GiorniValidita, TimeUnit.Days) });
-                          Remove(colInApprovazione, galApprovazioni.Selected);
+                          RemoveIf(colInApprovazione, id_preventivo = p.id_preventivo);
                           Notify("Preventivo n. " & p.id_preventivo & " approvato e inviato", NotificationType.Success),
                     
                           Notify("Approvazione non riuscita: " & FirstError.Message, NotificationType.Error)
                         )
                       )
-                    )
+                    ); Navigate(scrStand, ScreenTransition.Fade)
                 Size: =11
                 Text: ="Approva"
                 ZIndex: =2
@@ -349,13 +368,13 @@
                     =With({ p: LookUp('arcade.preventivo', id_preventivo = galApprovazioni.Selected.id_preventivo) },
                       IfError(
                         Patch('arcade.preventivo', p, { stato: "bozza" });
-                        Remove(colInApprovazione, galApprovazioni.Selected);
+                        RemoveIf(colInApprovazione, id_preventivo = p.id_preventivo);
                         Notify("Preventivo n. " & p.id_preventivo & " rimandato in bozza: lo stand torna libero",
                                NotificationType.Information),
                     
                         Notify("Operazione non riuscita: " & FirstError.Message, NotificationType.Error)
                       )
-                    )
+                    ); Navigate(scrStand, ScreenTransition.Fade)
                 Size: =11
                 Text: ="Rimanda in bozza"
                 ZIndex: =3

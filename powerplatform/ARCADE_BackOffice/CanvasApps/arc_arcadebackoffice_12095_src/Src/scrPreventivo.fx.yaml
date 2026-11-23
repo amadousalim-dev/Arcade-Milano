@@ -6,10 +6,15 @@ scrPreventivo As screen:
     Fill: =nfColoreSfondo
     LoadingSpinnerColor: =App.Theme.Colors.Primary
     OnVisible: |-
-        =If(IsEmpty(colEspositori),
-           ClearCollect(colEspositori, Sort('arcade.espositore', ragione_sociale)));ClearCollect(colListinoVend, Filter('arcade.listino', id_edizione = EdizioneSel.id_edizione));
+        =// listino dell'edizione delle vendite, colonne esplicite
+        ClearCollect(colListinoVend,
+          ShowColumns(Filter('arcade.listino', id_edizione = EdizioneSel.id_edizione),
+            codice_voce, descrizione, tipo_voce, unita, prezzo_unitario,
+            quantita_disponibile, codice_padiglione_vincolo));
+        
         If(IsBlank(gblIdPreventivo),
-          // NUOVO: righe automatiche dal listino
+        
+          // ===== NUOVO: righe automatiche dal listino =====
           With({
             area: LookUp(colListinoVend, codice_voce = "SPAZIO-" & gblStand.codice_padiglione),
             magg: LookUp(colListinoVend, codice_voce = "MAGG-" & Upper(gblStand.posizione))
@@ -17,30 +22,30 @@ scrPreventivo As screen:
             ClearCollect(colRighe, {
               riga: 1, codice_voce: area.codice_voce,
               descrizione: "Area espositiva " & gblStand.codice_stand,
-              quantita: gblStand.mq,                       // quantità = m² dello stand
+              quantita: gblStand.mq,
               prezzo_unitario: area.prezzo_unitario,
               importo_eur: Round(gblStand.mq * area.prezzo_unitario, 2),
               automatica: true });
-            // stand in linea: nessuna maggiorazione
             If(!IsBlank(magg),
               With({ imp: Round(First(colRighe).importo_eur * magg.prezzo_unitario, 2) },
                 Collect(colRighe, {
                   riga: 2, codice_voce: magg.codice_voce, descrizione: magg.descrizione,
-                  quantita: 1, prezzo_unitario: imp,       // importo calcolato, non la %
-                  importo_eur: imp, automatica: true })))
+                  quantita: 1, prezzo_unitario: imp, importo_eur: imp, automatica: true })))
           );
-          Reset(txtSconto); Reset(cmbEspositore);
-          Set(gblStato, "bozza"); Set(gblPreventivo, Blank());
-          // ESISTENTE: righe e testata dal database
+          Reset(txtSconto);
+          Reset(cmbEspositore);
+          Set(gblPreventivo, Blank());
+          Set(gblStato, "bozza"),
+        
+          // ===== ESISTENTE: testata e righe dal database =====
           With({ p: LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo) },
-            Set(gblStato, p.stato); Set(gblPreventivo, p);
+            Set(gblPreventivo, p);
+            Set(gblStato, p.stato);
             ClearCollect(colRighe,
               AddColumns(Filter('arcade.riga_preventivo', id_preventivo = gblIdPreventivo),
                 automatica, StartsWith(codice_voce, "SPAZIO") || StartsWith(codice_voce, "MAGG"))))
-        ); Set(gblFedelta,
-          Today() <= EdizioneSel.scadenza_prelazione &&
-          !IsBlank(LookUp('arcade.contratto', id_edizione = EdizioneSel.id_edizione - 1 &&
-             id_espositore = cmbEspositore.Selected.id_espositore && stato = "attivo")));
+        );
+        
         Select(btnRicalcola);
         Select(btnCaricaImpegni)
 
@@ -49,7 +54,15 @@ scrPreventivo As screen:
         BorderStyle: =""
         Font: =""
         OnSelect: |-
-            =With({ sc: Value(txtSconto.Text) / 100, listino: Sum(colRighe, importo_eur) },
+            =Set(gblFedelta,
+              !IsBlank(EdizioneSel.scadenza_prelazione) &&
+              Today() <= EdizioneSel.scadenza_prelazione &&
+              !IsBlank(cmbEspositore.Selected) &&
+              !IsBlank(LookUp('arcade.contratto',
+                 id_edizione = EdizioneSel.id_edizione - 1 &&
+                 id_espositore = cmbEspositore.Selected.id_espositore &&
+                 stato = "attivo")));
+            With({ sc: Value(txtSconto.Text) / 100, listino: Sum(colRighe, importo_eur) },
               With({ imp: Round(listino * (1 - sc), 2) },
                 Set(gblTot, {
                   listino: listino,
@@ -106,6 +119,7 @@ scrPreventivo As screen:
         FontWeight: =FontWeight.Bold
         Size: =nfDimSottotitolo
         Text: =Upper(Substitute(gblStato, "_", " "))
+        Width: =196
         X: =1055
         Y: =5
         ZIndex: =4
@@ -249,8 +263,7 @@ scrPreventivo As screen:
             Size: =13
             Text: |-
                 ="Rinnovo entro la prelazione: spetta lo sconto fedeltà del 5%"
-            Visible: |
-                =gblFedelta
+            Visible: =gblFedelta
             Width: =200
             ZIndex: =6
 
@@ -779,39 +792,41 @@ scrPreventivo As screen:
             LayoutMinWidth: =16
             OnSelect: |-
                 =Refresh('arcade.preventivo'); Refresh('arcade.contratto');
-                With({
-                  attivi: Filter('arcade.contratto', id_edizione = EdizioneSel.id_edizione && stato = "attivo"),
-                  aperti: Filter('arcade.preventivo', id_edizione = EdizioneSel.id_edizione &&
-                            id_preventivo <> gblIdPreventivo &&
-                            (stato = "in_approvazione" || (stato = "inviato" && valido_fino >= Today())))
-                },
-                  If(
-                    // c'è almeno una sponsorizzazione del preventivo che non è più disponibile?
-                    CountRows(Filter(colRighe As r,
-                      StartsWith(r.codice_voce, "SP-") &&
-                      LookUp(colListinoVend, codice_voce = r.codice_voce).quantita_disponibile
-                        - Sum(Filter('arcade.riga_contratto', codice_voce = r.codice_voce &&
-                                id_contratto in attivi.id_contratto), quantita)
-                        - Sum(Filter('arcade.riga_preventivo', codice_voce = r.codice_voce &&
-                                id_preventivo in aperti.id_preventivo), quantita)
-                        < r.quantita)) > 0,
                 
-                    Notify("Una sponsorizzazione del preventivo non è più disponibile: toglila prima di inviare",
-                           NotificationType.Error),
-                With({ p: LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo) },
-                  If(
-                    // lo stand nel frattempo è stato opzionato o venduto?
-                    !IsBlank(LookUp('arcade.contratto', id_edizione = p.id_edizione &&
-                               codice_stand = p.codice_stand && stato = "attivo")) ||
-                    !IsBlank(LookUp('arcade.preventivo', id_edizione = p.id_edizione &&
-                               codice_stand = p.codice_stand && id_preventivo <> p.id_preventivo &&
-                               (stato = "in_approvazione" || (stato = "inviato" && valido_fino >= Today())))),
-                      Notify("Lo stand non è più disponibile", NotificationType.Error),
+                // contratti attivi dell'edizione (filtro semplice: funziona)
+                ClearCollect(colInvAttivi,
+                  Filter('arcade.contratto', id_edizione = EdizioneSel.id_edizione && stato = "attivo"));
+                // preventivi dell'edizione: al database solo il filtro sull'edizione...
+                ClearCollect(colInvAperti,
+                  Filter('arcade.preventivo', id_edizione = EdizioneSel.id_edizione));
+                // ...poi nell'app tengo solo quelli aperti, escluso quello che sto inviando
+                RemoveIf(colInvAperti,
+                  !(stato = "in_approvazione" || (stato = "inviato" && valido_fino >= Today())) ||
+                  id_preventivo = gblIdPreventivo);
                 
+                If(
+                  // 1. c'è una sponsorizzazione del preventivo non più disponibile?
+                  CountRows(Filter(colRighe As r,
+                    StartsWith(r.codice_voce, "SP-") &&
+                    LookUp(colListinoVend, codice_voce = r.codice_voce).quantita_disponibile
+                      - Sum(Filter('arcade.riga_contratto', codice_voce = r.codice_voce &&
+                              id_contratto in colInvAttivi.id_contratto), quantita)
+                      - Sum(Filter('arcade.riga_preventivo', codice_voce = r.codice_voce &&
+                              id_preventivo in colInvAperti.id_preventivo), quantita)
+                      < r.quantita)) > 0,
+                  Notify("Una sponsorizzazione del preventivo non è più disponibile: toglila prima di inviare",
+                         NotificationType.Error),
+                
+                  // 2. lo stand nel frattempo è stato venduto o opzionato da un altro preventivo?
+                  !IsBlank(LookUp(colInvAttivi, codice_stand = gblStand.codice_stand)) ||
+                  !IsBlank(LookUp(colInvAperti, codice_stand = gblStand.codice_stand)),
+                  Notify("Lo stand non è più disponibile", NotificationType.Error),
+                
+                  // 3. tutto a posto: invio
+                  With({ p: LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo) },
                     IfError(
                       If(p.sconto_pct > SogliaApprovazione,
                         // sconto oltre il 10%: va al direttore commerciale
-                        // (aggiungere in_approvazione_dal: Now() quando la colonna esiste)
                         Patch('arcade.preventivo', p, { stato: "in_approvazione" }),
                         // sconto fino al 10%: inviato e valido 30 giorni
                         Patch('arcade.preventivo', p, { stato: "inviato", inviato_il: Now(),
@@ -824,7 +839,8 @@ scrPreventivo As screen:
                       Notify("Lo stand è già opzionato da un altro preventivo", NotificationType.Error)
                     )
                   )
-                ))); Select(btnCaricaImpegni)
+                );
+                Select(btnCaricaImpegni)
             Size: =0
             Text: ="Invia"
             ZIndex: =2
@@ -871,22 +887,77 @@ scrPreventivo As screen:
             LayoutMinHeight: =16
             LayoutMinWidth: =16
             OnSelect: |-
-                =// aggiorna la copia locale dei dati prima di calcolare numeri e controlli
+                =/*// aggiorna la copia locale dei dati prima di calcolare numeri e controlli
+                Refresh('arcade.contratto');; Refresh('arcade.riga_contratto');; Refresh('arcade.pagamento');;
+                With({
+                    p: LookUp('arcade.preventivo'; id_preventivo = gblIdPreventivo);
+                    idC: "C" & EdizioneSel.id_edizione & "-" & Text(
+                           Coalesce(Max(Filter('arcade.contratto'; id_edizione = EdizioneSel.id_edizione);
+                                        Value(Right(id_contratto; 4))); 0) + 1; "0000")
+                };
+                With({
+                    acconto: Round(p.imponibile_eur * 0,3; 2);
+                    tardi:   DateAdd(Today(); 15; TimeUnit.Days) > ScadenzaSaldo;
+                    idPag:   Coalesce(Max('arcade.pagamento'; id_pagamento); 0) + 1
+                };
+                  IfError(
+                    // ===================== RAMO "TUTTO BENE" =====================
+                    // A - testata del contratto
+                    Patch('arcade.contratto'; Defaults('arcade.contratto'); {
+                        id_contratto: idC; id_edizione: p.id_edizione; id_espositore: p.id_espositore;
+                        id_preventivo: p.id_preventivo; codice_stand: p.codice_stand;
+                        data_firma: Today();
+                        imponibile_listino_eur: p.imponibile_listino_eur;
+                        sconto_pct: p.sconto_pct; imponibile_eur: p.imponibile_eur;
+                        rinnovo: !IsBlank(LookUp('arcade.contratto'; id_edizione = p.id_edizione - 1 &&
+                                   id_espositore = p.id_espositore && stato = "attivo"));
+                        metodo_abbinamento: "id da sistema sorgente";
+                        aliquota_iva: p.aliquota_iva; stato: "attivo" });;
+                    // B - righe copiate dal preventivo
+                    ForAll(Filter('arcade.riga_preventivo'; id_preventivo = p.id_preventivo) As r;
+                      Patch('arcade.riga_contratto'; Defaults('arcade.riga_contratto'); {
+                        id_contratto: idC; riga: r.riga; codice_voce: r.codice_voce;
+                        descrizione: r.descrizione; quantita: r.quantita;
+                        prezzo_unitario: r.prezzo_unitario; importo_eur: r.importo_eur }));;
+                    // C - preventivo accettato
+                    Patch('arcade.preventivo'; p; { stato: "accettato" });;
+                    // D - PIANO B: pagamenti (da sostituire con il flusso di Matteo)
+                    Patch('arcade.pagamento'; Defaults('arcade.pagamento'); {
+                        id_pagamento: idPag; id_contratto: idC; tipo: "acconto";
+                        scadenza: If(tardi; DateAdd(EdizioneSel.data_inizio; -15; TimeUnit.Days);
+                                            DateAdd(Today(); 15; TimeUnit.Days));
+                        importo: acconto;
+                        data_dedotta: false; annullato: false });;
+                    Patch('arcade.pagamento'; Defaults('arcade.pagamento'); {
+                        id_pagamento: idPag + 1; id_contratto: idC; tipo: "saldo";
+                        scadenza: If(tardi; DateAdd(EdizioneSel.data_inizio; -15; TimeUnit.Days);
+                                            ScadenzaSaldo);
+                        importo: p.imponibile_eur - acconto;
+                        data_dedotta: false; annullato: false });;
+                    Set(gblIdContratto; idC);;
+                    Notify("Contratto " & idC & " firmato"; NotificationType.Success);;
+                    Navigate(scrContratto);
+                    // ===================== RAMO "ERRORE" =====================
+                    RemoveIf('arcade.pagamento'; id_contratto = idC);;
+                    RemoveIf('arcade.contratto'; id_contratto = idC);;
+                    Patch('arcade.preventivo'; LookUp('arcade.preventivo'; id_preventivo = p.id_preventivo);
+                          { stato: "inviato" });;
+                    Notify("Firma non riuscita: " & FirstError.Message; NotificationType.Error)
+                  )
+                ))*/
+                // aggiorna la copia locale dei dati prima di calcolare numeri e controlli
+                // aggiorna la copia locale dei dati prima di calcolare numeri e controlli
+                // aggiorna la copia locale dei dati prima di calcolare numeri e controlli
                 Refresh('arcade.contratto'); Refresh('arcade.riga_contratto'); Refresh('arcade.pagamento');
+                UpdateContext({ locFirmaOk: true, locEsitoTesto: "", locEsitoMsg: "" });
                 With({
                     p: LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo),
                     idC: "C" & EdizioneSel.id_edizione & "-" & Text(
                            Coalesce(Max(Filter('arcade.contratto', id_edizione = EdizioneSel.id_edizione),
                                         Value(Right(id_contratto, 4))), 0) + 1, "0000")
                 },
-                With({
-                    acconto: Round(p.imponibile_eur * 0.3, 2),
-                    tardi:   DateAdd(Today(), 15, TimeUnit.Days) > ScadenzaSaldo,
-                    idPag:   Coalesce(Max('arcade.pagamento', id_pagamento), 0) + 1
-                },
+                  // ---------- 1. contratto, righe, preventivo accettato ----------
                   IfError(
-                    // ===================== RAMO "TUTTO BENE" =====================
-                    // A - testata del contratto
                     Patch('arcade.contratto', Defaults('arcade.contratto'), {
                         id_contratto: idC, id_edizione: p.id_edizione, id_espositore: p.id_espositore,
                         id_preventivo: p.id_preventivo, codice_stand: p.codice_stand,
@@ -897,55 +968,60 @@ scrPreventivo As screen:
                                    id_espositore = p.id_espositore && stato = "attivo")),
                         metodo_abbinamento: "id da sistema sorgente",
                         aliquota_iva: p.aliquota_iva, stato: "attivo" });
-                    // B - righe copiate dal preventivo
                     ForAll(Filter('arcade.riga_preventivo', id_preventivo = p.id_preventivo) As r,
                       Patch('arcade.riga_contratto', Defaults('arcade.riga_contratto'), {
                         id_contratto: idC, riga: r.riga, codice_voce: r.codice_voce,
                         descrizione: r.descrizione, quantita: r.quantita,
                         prezzo_unitario: r.prezzo_unitario, importo_eur: r.importo_eur }));
-                    // C - preventivo accettato
                     Patch('arcade.preventivo', p, { stato: "accettato" });
-                    // D - PIANO B: pagamenti (da sostituire con il flusso di Matteo)
-                    Patch('arcade.pagamento', Defaults('arcade.pagamento'), {
-                        id_pagamento: idPag, id_contratto: idC, tipo: "acconto",
-                        scadenza: If(tardi, DateAdd(EdizioneSel.data_inizio, -15, TimeUnit.Days),
-                                            DateAdd(Today(), 15, TimeUnit.Days)),
-                        importo: acconto,
-                        data_dedotta: false, annullato: false });
-                    Patch('arcade.pagamento', Defaults('arcade.pagamento'), {
-                        id_pagamento: idPag + 1, id_contratto: idC, tipo: "saldo",
-                        scadenza: If(tardi, DateAdd(EdizioneSel.data_inizio, -15, TimeUnit.Days),
-                                            ScadenzaSaldo),
-                        importo: p.imponibile_eur - acconto,
-                        data_dedotta: false, annullato: false });
+                    true,
+                    UpdateContext({ locFirmaOk: false });
+                    Notify("Firma non riuscita: " & FirstError.Message, NotificationType.Error)
+                  );
+                  // ---------- 2. pagamenti dal flusso: l'esito si legge dalla risposta ----------
+                  If(locFirmaOk,
+                    Set(gblEsitoFlusso, Crea_pagamenti_alla_firma.Run(idC, Text(Today(), "yyyy-mm-dd")));
+                    // se la chiamata va in errore, IfError dà un testo di riserva invece dell'errore
+                    UpdateContext({
+                        locEsitoTesto: IfError(Coalesce(gblEsitoFlusso.esito, ""), "errore"),
+                        locEsitoMsg:   IfError(Coalesce(gblEsitoFlusso.messaggio, ""), "chiamata al flusso non riuscita") })
+                  );
+                  If(locFirmaOk && locEsitoTesto <> "ok",
+                    UpdateContext({ locFirmaOk: false });
+                    Notify("Pagamenti non creati: " & Coalesce(locEsitoMsg, "nessuna risposta dal flusso"), NotificationType.Error)
+                  );
+                  // ---------- 3. esito: vado al contratto oppure annullo tutto ----------
+                  If(locFirmaOk,
+                    Refresh('arcade.pagamento');
                     Set(gblIdContratto, idC);
                     Notify("Contratto " & idC & " firmato", NotificationType.Success);
                     Navigate(scrContratto),
-                    // ===================== RAMO "ERRORE" =====================
+                    // annullamento: le righe del contratto si cancellano da sole (ON DELETE CASCADE)
                     RemoveIf('arcade.pagamento', id_contratto = idC);
                     RemoveIf('arcade.contratto', id_contratto = idC);
                     Patch('arcade.preventivo', LookUp('arcade.preventivo', id_preventivo = p.id_preventivo),
-                          { stato: "inviato" });
-                    Notify("Firma non riuscita: " & FirstError.Message, NotificationType.Error)
+                          { stato: "inviato" })
                   )
-                ))
+                )
             Size: =0
             Text: ="Firma"
             ZIndex: =4
 
     lblApprovato As label:
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        Color: =Color.Green
         DisabledColor: =RGBA(166, 166, 166, 1)
         Font: =App.Theme.Font
+        Height: =68
         Size: =13
         Text: |-
             ="Sconto approvato il " & Text(gblPreventivo.approvato_il, "dd/mm/yyyy") &
               If(IsBlank(gblPreventivo.approvato_da), "",
                  " da " & LookUp('arcade.utente', id_utente = gblPreventivo.approvato_da).email)
         Visible: =!IsBlank(gblPreventivo.approvato_il)
-        X: =651
-        Y: =564
+        Width: =246
+        X: =87
+        Y: =598
         ZIndex: =9
 
     btnCaricaImpegni As modernButton:
@@ -953,10 +1029,13 @@ scrPreventivo As screen:
             =// contratti attivi dell'edizione e preventivi aperti (escluso quello corrente)
             ClearCollect(colContrattiVend,
               Filter('arcade.contratto', id_edizione = EdizioneSel.id_edizione && stato = "attivo"));
+            // 1. al database solo il filtro semplice sull'edizione
             ClearCollect(colPrevAperti,
-              Filter('arcade.preventivo', id_edizione = EdizioneSel.id_edizione &&
-                id_preventivo <> Coalesce(gblIdPreventivo, -1) &&
-                (stato = "in_approvazione" || (stato = "inviato" && valido_fino >= Today()))));
+              Filter('arcade.preventivo', id_edizione = EdizioneSel.id_edizione));
+            // 2. nell'app: tolgo quelli che non impegnano niente e quello che sto modificando
+            RemoveIf(colPrevAperti,
+              !(stato = "in_approvazione" || (stato = "inviato" && valido_fino >= Today())) ||
+              id_preventivo = gblIdPreventivo);
             // quantità già occupate per ogni sponsorizzazione
             ClearCollect(colSponsorOccupati,
               ForAll(Filter(colListinoVend, tipo_voce = "sponsorizzazione") As v,

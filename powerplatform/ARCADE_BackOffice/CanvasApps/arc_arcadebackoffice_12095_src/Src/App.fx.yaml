@@ -49,7 +49,9 @@ App As appinfo:
     OnStart: |-
         =ClearCollect(colEspositori, Sort('arcade.espositore', ragione_sociale));
         ClearCollect(colEdizioni, Sort('arcade.edizione', id_edizione, SortOrder.Descending));
-        Set(gblUtente, LookUp('arcade.utente', Lower(email) = Lower(User().Email)))
+        Set(gblUtente, LookUp('arcade.utente', Lower(email) = Lower(User().Email)));
+        // PROVVISORIO fino alla 2.3: tutti possono tutto
+        Set(gblPuo, { incassi: true, deroga: true, variazioni: true, approvare: true })
     StartScreen: =scrHome
     Theme: =PowerAppsTheme
 

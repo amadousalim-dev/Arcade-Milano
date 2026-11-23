@@ -522,7 +522,7 @@ Screens:
             Text: ="Preventivi"
             Visible: =drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
             Width: =145
-            X: =543
+            X: =486
             Y: =138
       - btnIndietroContr_2:
           Control: Classic/Icon@2.5.0
@@ -603,5 +603,18 @@ Screens:
                            id_edizione = EdizioneSel.id_edizione && stato = "in_approvazione")) & ")"
             Visible: =drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
             Width: =145
-            X: =887
-            Y: =135
+            X: =961
+            Y: =138
+      - btnContratti:
+          Control: ModernButton@1.0.0
+          Properties:
+            AccessibleLabel: ="1"
+            BasePaletteColor: =nfAccentoPreventivi
+            Color: =nfColoreTestoSuAccento
+            Height: =43
+            OnSelect: =Navigate(scrContratti)
+            Text: ="Contratti"
+            Visible: =drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
+            Width: =145
+            X: =710
+            Y: =138

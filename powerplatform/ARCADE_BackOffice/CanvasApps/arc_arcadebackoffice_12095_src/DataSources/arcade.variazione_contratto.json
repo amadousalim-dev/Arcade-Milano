@@ -1,0 +1,25 @@
+[
+  {
+    "ApiId": "/providers/microsoft.powerapps/apis/shared_postgresql",
+    "CdpRevision": {
+      "BaseUrl": "/",
+      "LastChangedTimeString": "2026-10-21T20:07:13.0100000Z",
+      "RevisionNumber": 1
+    },
+    "ConnectedDataSourceInfoNameMapping": {
+      "codice_stand_nuovo": "codice_stand_nuovo",
+      "codice_stand_precedente": "codice_stand_precedente",
+      "differenza_eur": "differenza_eur",
+      "id_contratto": "id_contratto",
+      "id_variazione": "id_variazione",
+      "richiesta_il": "richiesta_il",
+      "tipo": "tipo"
+    },
+    "DatasetName": "default",
+    "EncodeDataset": true,
+    "IsSampleData": false,
+    "IsWritable": true,
+    "Name": "arcade.variazione_contratto",
+    "Type": "ConnectedDataSourceInfo"
+  }
+]

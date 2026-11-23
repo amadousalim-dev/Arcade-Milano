@@ -610,7 +610,7 @@ scrStand As screen:
         Text: ="Preventivi"
         Visible: =drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
         Width: =145
-        X: =543
+        X: =486
         Y: =138
         ZIndex: =15
 
@@ -709,7 +709,23 @@ scrStand As screen:
                          id_edizione = EdizioneSel.id_edizione && stato = "in_approvazione")) & ")"
         Visible: =drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
         Width: =145
-        X: =887
-        Y: =135
+        X: =961
+        Y: =138
         ZIndex: =23
+
+    btnContratti As modernButton:
+        AccessibleLabel: ="1"
+        BasePaletteColor: =nfAccentoPreventivi
+        BorderStyle: =""
+        Color: =nfColoreTestoSuAccento
+        Font: =""
+        Height: =43
+        OnSelect: =Navigate(scrContratti)
+        Size: =0
+        Text: ="Contratti"
+        Visible: =drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
+        Width: =145
+        X: =710
+        Y: =138
+        ZIndex: =24
 

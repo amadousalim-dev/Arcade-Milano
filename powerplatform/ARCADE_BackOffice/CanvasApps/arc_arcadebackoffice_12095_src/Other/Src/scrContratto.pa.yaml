@@ -12,9 +12,11 @@ Screens:
       Fill: =nfColoreSfondo
       OnVisible: |-
         =Refresh('arcade.contratto'); Refresh('arcade.riga_contratto'); Refresh('arcade.pagamento');
-        Set(gblContratto, LookUp('arcade.contratto', id_contratto = gblIdContratto)); ClearCollect(colPagamenti,
+        Set(gblContratto, LookUp('arcade.contratto', id_contratto = gblIdContratto));
+        Set(gblApertura, LookUp(colEdizioni, id_edizione = gblContratto.id_edizione).data_inizio);
+        ClearCollect(colPagContratto,
           ShowColumns(Filter('arcade.pagamento', id_contratto = gblIdContratto),
-            id_pagamento, tipo, importo, scadenza, pagato_il, data_dedotta, annullato))
+            id_pagamento, id_contratto, tipo, importo, scadenza, pagato_il, data_dedotta, annullato))
     Children:
       - btnIndietroContr:
           Control: Classic/Icon@2.5.0
@@ -194,7 +196,7 @@ Screens:
               ="Listino: " & Text(gblContratto.imponibile_listino_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
             Width: =321
             X: =63
-            Y: =459
+            Y: =449
       - lblContrSconto:
           Control: Label@2.5.1
           Properties:
@@ -207,7 +209,7 @@ Screens:
               ="Sconto: " & Text(gblContratto.sconto_pct * 100, "[$-en-US]0.0", "it-IT") & "%"
             Width: =321
             X: =63
-            Y: =499
+            Y: =489
       - lblContrImponibile:
           Control: Label@2.5.1
           Properties:
@@ -220,7 +222,7 @@ Screens:
               ="Imponibile: " & Text(gblContratto.imponibile_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
             Width: =321
             X: =63
-            Y: =539
+            Y: =529
       - lblContrIva:
           Control: Label@2.5.1
           Properties:
@@ -236,7 +238,7 @@ Screens:
                         "[$-en-US]#,##0.00", "it-IT") & " €")
             Width: =321
             X: =63
-            Y: =579
+            Y: =569
       - ContrTotale:
           Control: Label@2.5.1
           Properties:
@@ -252,7 +254,7 @@ Screens:
                         "[$-en-US]#,##0.00", "it-IT") & " €")
             Width: =321
             X: =63
-            Y: =619
+            Y: =609
       - galPagamenti:
           Control: Gallery@2.15.0
           Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
@@ -260,12 +262,12 @@ Screens:
             AccessibleLabel: ="1"
             Fill: =nfColoreSuperficie
             Height: =388
-            Items: =Sort(Filter('arcade.pagamento', id_contratto = gblIdContratto), tipo)
+            Items: =Sort(colPagContratto, tipo)
             TabIndex: =1
             TemplateSize: =197
             Width: =712
             X: =630
-            Y: =364
+            Y: =361
           Children:
             - lblPagTipo:
                 Control: Label@2.5.1
@@ -350,7 +352,7 @@ Screens:
                                              "Incassato il " & Text(ThisItem.pagato_il, "dd/mm/yyyy") &
                                              If(ThisItem.data_dedotta, " (data dedotta)", ""))
                   VerticalAlign: =VerticalAlign.Top
-                  Width: =292
+                  Width: =353
                   X: =92
                   Y: =113
             - lblPagStato:
@@ -384,3 +386,201 @@ Screens:
                   Width: =200
                   X: =92
                   Y: =138
+            - dpIncasso:
+                Control: ModernDatePicker@1.0.2
+                Properties:
+                  DefaultDate: =Coalesce(ThisItem.pagato_il, Today())
+                  DisplayMode: =If(IsBlank(ThisItem.pagato_il), DisplayMode.Edit, DisplayMode.View)
+                  Visible: =gblPuo.incassi && !ThisItem.annullato
+                  X: =355
+                  Y: =31
+            - btnRegistraIncasso:
+                Control: ModernButton@1.0.0
+                Properties:
+                  DisplayMode: |-
+                    =If(IsBlank(ThisItem.pagato_il) &&
+                                     dpIncasso.SelectedDate <= Today() &&
+                                     dpIncasso.SelectedDate >= gblContratto.data_firma,
+                                     DisplayMode.Edit, DisplayMode.Disabled)
+                  OnSelect: |-
+                    =IfError(
+                      Patch('arcade.pagamento',
+                        LookUp('arcade.pagamento', id_pagamento = ThisItem.id_pagamento),
+                        { pagato_il: dpIncasso.SelectedDate });
+                      Patch(colPagContratto, LookUp(colPagContratto, id_pagamento = ThisItem.id_pagamento),
+                        { pagato_il: dpIncasso.SelectedDate });
+                      Notify(Proper(ThisItem.tipo) & " registrato come incassato il " &
+                             Text(dpIncasso.SelectedDate, "dd/mm/yyyy"), NotificationType.Success),
+
+                      Notify("Registrazione non riuscita: " & FirstError.Message, NotificationType.Error)
+                    )
+                  Text: ="Registra incasso"
+                  Visible: =gblPuo.incassi && !ThisItem.annullato
+                  Width: =140
+                  X: =517
+                  Y: =99
+            - btnCorreggiIncasso:
+                Control: ModernButton@1.0.0
+                Properties:
+                  OnSelect: |-
+                    =IfError(
+                      Patch('arcade.pagamento',
+                        LookUp('arcade.pagamento', id_pagamento = ThisItem.id_pagamento),
+                        { pagato_il: Blank() });
+                      Patch(colPagContratto, LookUp(colPagContratto, id_pagamento = ThisItem.id_pagamento),
+                        { pagato_il: Blank() });
+                      Notify("Incasso annullato: il pagamento torna da registrare", NotificationType.Information),
+
+                      Notify("Correzione non riuscita: " & FirstError.Message, NotificationType.Error)
+                    )
+                  Text: ="Correggi"
+                  Visible: =gblPuo.incassi && !IsBlank(ThisItem.pagato_il) && !ThisItem.data_dedotta
+                  Width: =140
+                  X: =517
+                  Y: =145
+      - lblConsegna:
+          Control: Label@2.5.1
+          Properties:
+            Color: |-
+              =If(StartsWith(Self.Text, "Stand NON"), Color.Red,
+                         StartsWith(Self.Text, "Contratto disdetto"), Color.Gray, Color.DarkGreen)
+            Text: |-
+              =With({ saldo: LookUp(colPagContratto, tipo = "saldo") },
+                If(gblContratto.stato = "disdetto", "Contratto disdetto: nessuna consegna",
+                   !IsBlank(saldo.pagato_il), "Stand consegnabile: saldo incassato",
+                   !IsBlank(gblContratto.deroga_allestimento_il),
+                     "Stand consegnabile con deroga del " &
+                     Text(gblContratto.deroga_allestimento_il, "dd/mm/yyyy"),
+                   "Stand NON consegnabile: saldo non incassato"))
+            Width: =366
+            X: =63
+            Y: =409
+      - btnDeroga:
+          Control: ModernButton@1.0.0
+          Properties:
+            Height: =45
+            OnSelect: |-
+              =IfError(
+                Patch('arcade.contratto',
+                  LookUp('arcade.contratto', id_contratto = gblIdContratto),
+                  { deroga_allestimento_il: Today(), deroga_allestimento_da: gblUtente.id_utente });
+                Set(gblContratto, LookUp('arcade.contratto', id_contratto = gblIdContratto));
+                Notify("Deroga registrata: lo stand può essere consegnato", NotificationType.Success),
+
+                Notify("Deroga non riuscita: " & FirstError.Message, NotificationType.Error)
+              )
+            Text: ="Concedi deroga all'allestimento"
+            Visible: |-
+              =gblPuo.deroga && gblContratto.stato = "attivo" &&
+                        IsBlank(gblContratto.deroga_allestimento_il) &&
+                        IsBlank(LookUp(colPagContratto, tipo = "saldo").pagato_il)
+            Width: =167
+            X: =35
+            Y: =665
+      - btnDisdetta:
+          Control: ModernButton@1.0.0
+          Properties:
+            Height: =45
+            OnSelect: |-
+              =UpdateContext({ locConfermaDisdetta: true })
+            Text: ="Registra disdetta"
+            Visible: =gblPuo.variazioni && gblContratto.stato = "attivo"
+            Width: =167
+            X: =237
+            Y: =661
+      - btnCambioStand:
+          Control: ModernButton@1.0.0
+          Properties:
+            DisplayMode: =If(Today() <= DateAdd(gblApertura, -60, TimeUnit.Days), DisplayMode.Edit, DisplayMode.Disabled)
+            Height: =45
+            OnSelect: |-
+              =UpdateContext({ locConfermaDisdetta: true })
+            Text: ="Cambio Stand"
+            Visible: =gblPuo.variazioni && gblContratto.stato = "attivo"
+            Width: =167
+            X: =445
+            Y: =661
+      - lblMotivoCambio:
+          Control: Label@2.5.1
+          Properties:
+            Color: =Color.White
+            Text: |-
+              ="Cambio stand non più possibile: termine scaduto il " &
+                        Text(DateAdd(gblApertura, -60, TimeUnit.Days), "dd/mm/yyyy")
+            Visible: =btnCambioStand.Visible && btnCambioStand.DisplayMode = DisplayMode.Disabled
+            Width: =578
+            X: =34
+            Y: =720
+      - rtgConfermaDisdetta:
+          Control: Rectangle@2.3.0
+          Properties:
+            Height: =156
+            Visible: =locConfermaDisdetta
+            Width: =630
+            Y: =612
+      - btnAnnullaDisdetta:
+          Control: ModernButton@1.0.0
+          Properties:
+            BorderColor: =Color.Black
+            BorderThickness: =1
+            Height: =34
+            OnSelect: |-
+              =UpdateContext({ locConfermaDisdetta: false })
+            Text: ="Annulla Disdetta"
+            Visible: =locConfermaDisdetta
+            Width: =148
+            X: =63
+            Y: =714
+      - btnConfermaDisdetta:
+          Control: ModernButton@1.0.0
+          Properties:
+            BorderColor: =Color.Black
+            BorderThickness: =1
+            Height: =34
+            OnSelect: |-
+              =With({ idVar: Max('arcade.variazione_contratto', id_variazione) + 1,
+                     entroTermine: Today() <= DateAdd(gblApertura, -90, TimeUnit.Days) },
+                IfError(
+                  Patch('arcade.variazione_contratto', Defaults('arcade.variazione_contratto'),
+                    { id_variazione: Coalesce(idVar, 1),
+                      id_contratto: gblIdContratto,
+                      tipo: "disdetta",
+                      richiesta_il: Today() });
+                  Patch('arcade.contratto', LookUp('arcade.contratto', id_contratto = gblIdContratto),
+                    { stato: "disdetto", disdetto_il: Today() });
+                  If(entroTermine,
+                    Patch('arcade.pagamento',
+                      LookUp('arcade.pagamento', id_contratto = gblIdContratto && tipo = "saldo"),
+                      { annullato: true }));
+                  Set(gblContratto, LookUp('arcade.contratto', id_contratto = gblIdContratto));
+                  UpdateContext({ locConfermaDisdetta: false });
+                  Notify("Disdetta registrata" & If(entroTermine, ": saldo annullato", ": il saldo resta dovuto"),
+                         NotificationType.Success),
+
+                  // rollback: tolgo la variazione inserita e rimetto il contratto attivo
+                  RemoveIf('arcade.variazione_contratto', id_variazione = Coalesce(idVar, 1));
+                  Patch('arcade.contratto', LookUp('arcade.contratto', id_contratto = gblIdContratto),
+                    { stato: "attivo", disdetto_il: Blank() });
+                  Notify("Disdetta non riuscita: " & FirstError.Message, NotificationType.Error)
+                )
+              )
+            Text: ="Conferma Disdetta"
+            Visible: =locConfermaDisdetta
+            Width: =148
+            X: =384
+            Y: =714
+      - lblConfDisdetta:
+          Control: Label@2.5.1
+          Properties:
+            AutoHeight: =true
+            FontWeight: =FontWeight.Bold
+            Text: |-
+              ="Disdetta del contratto " & gblIdContratto & ". " &
+                If(Today() <= DateAdd(gblApertura, -90, TimeUnit.Days),
+                   "Siamo entro i 90 giorni dall'apertura: il saldo verrà annullato.",
+                   "Siamo oltre il termine del " & Text(DateAdd(gblApertura, -90, TimeUnit.Days), "dd/mm/yyyy") &
+                   ": resta dovuto l'intero importo.")
+            Visible: =locConfermaDisdetta
+            Width: =356
+            X: =137
+            Y: =626
