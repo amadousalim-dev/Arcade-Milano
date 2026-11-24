@@ -54,6 +54,32 @@
 
 	<build>
 		<plugins>
+ <plugin>
+  <groupId>org.openapitools</groupId>
+  <artifactId>openapi-generator-maven-plugin</artifactId>
+  <version>7.21.0</version>
+  <executions>
+    <execution>
+      <goals><goal>generate</goal></goals>
+      <configuration>
+        <inputSpec>${project.basedir}/openapi.yaml</inputSpec>
+        <generatorName>spring</generatorName>
+        <apiPackage>it.arsdigital.arcadeapi.api</apiPackage>
+        <modelPackage>it.arsdigital.arcadeapi.model</modelPackage>
+        <configOptions>
+          <interfaceOnly>true</interfaceOnly>
+          <useTags>true</useTags>
+          <useSpringBoot4>true</useSpringBoot4>
+          <useJackson3>true</useJackson3>
+          <useBeanValidation>true</useBeanValidation>
+          <openApiNullable>false</openApiNullable>
+          <documentationProvider>none</documentationProvider>
+          <skipDefaultInterface>true</skipDefaultInterface>
+        </configOptions>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
