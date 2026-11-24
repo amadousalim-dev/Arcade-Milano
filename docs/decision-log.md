@@ -131,7 +131,7 @@ Decisioni prese durante lo sviluppo del back-office commerciale (task 1.7, 1.8, 
 #### D-15 – Script dei ruoli e permessi di `u_powerapps`
 - **Decisione:** lo script `arcade_ruoli_accesso.sql` è stato eseguito (utenti `u_api_backend`, `u_powerapps`, `u_powerbi`, `u_caricamento`, `u_privacy`). Per collegare l'app con `u_powerapps` serve aggiungere `DELETE` su `preventivo`, `contratto` e `pagamento`, usato solo dagli annullamenti (D-11).
 - **Motivo:** senza `DELETE` una firma fallita lascerebbe dati a metà.
-- **Chi:** gruppo BAD → BID. **Stato:** Da concordare.
+- **Chi:** gruppo BAD → BID. **Stato:** «Superata da B-01.
 
 #### D-16 – Flusso pagamenti v1 non integrabile
 - **Decisione:** la prima versione del flusso di Matteo non si integra; inviate le correzioni.
@@ -211,3 +211,23 @@ Decisioni prese durante lo sviluppo del back-office commerciale (task 1.7, 1.8, 
 ### Decisioni del cliente recepite nel back-office (11/11)
 
 Direttore commerciale ruolo distinto; sconto fedeltà 5% anche cambiando stand (prelazione solo sullo stesso stand); preventivo non approvato torna in bozza; chiusura vendite 15 giorni prima dell'apertura come parametro dell'edizione; firma tardiva: acconto e saldo entrambi 15 giorni prima dell'apertura; chi firma dopo il 19/10 non cambia stand e chi firma dopo il 19/09 e disdice deve l'intero importo; Indie Showcase solo P3 dal 2026; promemoria e primo sollecito inviati dalla piattaforma solo per l'edizione in corso.
+
+| Database e API | B- | Salim |
+## Database e API
+
+### 25 novembre 2026
+
+#### B-01 – DELETE per u_powerapps fino al SAL (risolve D-15)
+- **Decisione:** `u_powerapps` può cancellare su `preventivo`, `contratto` e `pagamento` fino al SAL 2. Il back-office passa da `postgres` a `u_powerapps` entro il 2/12. Dopo il SAL si toglie il permesso (`REVOKE DELETE`) e gli annullamenti passano a operazioni atomiche dell'API (`trasformaInContratto`, `registraPagamento`).
+- **Motivo:** l'annullamento manuale di una firma fallita (D-11) richiede di cancellare ciò che è stato scritto; senza il permesso lascerebbe dati a metà. Il collegamento come `postgres` aggira ogni protezione (D-14). Rischio accettato: per il SAL `u_powerapps` può cancellare anche contratti storici; l'app usa il permesso solo per gli annullamenti.
+- **Chi:** Salim (modello dati), con Vittorio per l'app. **Stato:** Applicata, temporanea. **Scadenza della sostituzione:** entro la presentazione finale dell'11/12.
+
+#### B-02 – Biglietti family: nessun contatto proposto
+- **Decisione (proposta):** l'app non propone il contatto a chi ha un biglietto di tipo family (5.321 biglietti nei dati, il 6,8%).
+- **Motivo:** un biglietto family vale per adulti e bambini; senza rete l'app non sa chi si presenta allo stand, e i minori vanno tutelati. Costo: gli espositori perdono quei contatti.
+- **Chi:** Salim. **Stato:** Proposta; domanda inviata al cliente tramite Vittorio.
+
+#### B-03 – Il filtro per espositore sta nell'API
+- **Decisione:** nel database ogni tabella ha una sola regola per riga (`p_arcade_utente`, condizione `true`) per `arcade_utente`, che include `arcade_api`. L'isolamento tra espositori non è nel database: il portale filtra nel codice per `id_espositore` preso dal token, con un test che prova a leggere i dati di un altro. Dopo il SAL si valutano regole per riga su un ruolo dedicato.
+- **Motivo:** requisito del brief («gli espositori non vedono i dati dei concorrenti»).
+- **Chi:** Salim. **Stato:** Applicata, provvisoria.
