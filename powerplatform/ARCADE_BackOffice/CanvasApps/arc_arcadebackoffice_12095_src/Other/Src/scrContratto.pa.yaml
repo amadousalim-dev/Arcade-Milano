@@ -21,11 +21,11 @@ Screens:
       - btnIndietroContr:
           Control: Classic/Icon@2.5.0
           Properties:
-            AccessibleLabel: ="1"
+            AccessibleLabel: ="Torna ai contratti"
             Color: =nfColoreTesto
             Height: =61
             Icon: =Icon.BackArrow
-            OnSelect: =Navigate(scrStand)
+            OnSelect: =Navigate(scrContratti)
             TabIndex: =1
             Width: =53
             X: =34
@@ -48,7 +48,7 @@ Screens:
           Control: Label@2.5.1
           Properties:
             AutoHeight: =true
-            Color: =nfAccentoContratti
+            Color: =If(gblContratto.stato = "disdetto", nfColoreNeutro, nfColoreOk)
             FocusedBorderThickness: =1
             FontWeight: =FontWeight.Bold
             Height: =42
@@ -162,7 +162,7 @@ Screens:
                   PaddingTop: =0
                   Size: =12
                   Text: |-
-                    ="Prezzo unitario: " & ThisItem.prezzo_unitario & " €"
+                    ="Prezzo unitario: " & Text(ThisItem.prezzo_unitario, "[$-en-US]#,##0.00", "it-IT") & " €"
                   VerticalAlign: =VerticalAlign.Top
                   Width: =Title1.Width
                   X: =103
@@ -181,7 +181,7 @@ Screens:
                   PaddingTop: =0
                   Size: =12
                   Text: |-
-                    ="Importo: " & ThisItem.importo_eur & " €"
+                    ="Importo: " & Text(ThisItem.importo_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
                   VerticalAlign: =VerticalAlign.Top
                   Width: =Title1.Width
                   X: =103
@@ -397,6 +397,8 @@ Screens:
             - btnRegistraIncasso:
                 Control: ModernButton@1.0.0
                 Properties:
+                  BasePaletteColor: =nfAccentoContratti
+                  Color: =nfColoreTestoSuAccento
                   DisplayMode: |-
                     =If(IsBlank(ThisItem.pagato_il) &&
                                      dpIncasso.SelectedDate <= Today() &&
@@ -422,6 +424,8 @@ Screens:
             - btnCorreggiIncasso:
                 Control: ModernButton@1.0.0
                 Properties:
+                  BasePaletteColor: =nfColoreNeutro
+                  Color: =nfColoreTestoSuAccento
                   OnSelect: |-
                     =IfError(
                       Patch('arcade.pagamento',
@@ -442,8 +446,11 @@ Screens:
           Control: Label@2.5.1
           Properties:
             Color: |-
-              =If(StartsWith(Self.Text, "Stand NON"), Color.Red,
-                         StartsWith(Self.Text, "Contratto disdetto"), Color.Gray, Color.DarkGreen)
+              =With({ saldo: LookUp(colPagContratto, tipo = "saldo") },
+                If(gblContratto.stato = "disdetto", nfColoreNeutro,
+                   !IsBlank(saldo.pagato_il), nfColoreOk,
+                   !IsBlank(gblContratto.deroga_allestimento_il), nfColoreOk,
+                   nfColoreErrore))
             Text: |-
               =With({ saldo: LookUp(colPagContratto, tipo = "saldo") },
                 If(gblContratto.stato = "disdetto", "Contratto disdetto: nessuna consegna",
@@ -458,6 +465,8 @@ Screens:
       - btnDeroga:
           Control: ModernButton@1.0.0
           Properties:
+            BasePaletteColor: =nfAccentoContratti
+            Color: =nfColoreTestoSuAccento
             Height: =45
             OnSelect: |-
               =IfError(
@@ -480,6 +489,8 @@ Screens:
       - btnDisdetta:
           Control: ModernButton@1.0.0
           Properties:
+            BasePaletteColor: =nfColoreErrore
+            Color: =nfColoreTestoSuAccento
             Height: =45
             OnSelect: |-
               =UpdateContext({ locConfermaDisdetta: true })
@@ -491,6 +502,8 @@ Screens:
       - btnCambioStand:
           Control: ModernButton@1.0.0
           Properties:
+            BasePaletteColor: =nfAccentoContratti
+            Color: =nfColoreTestoSuAccento
             DisplayMode: =If(Today() <= DateAdd(gblApertura, -60, TimeUnit.Days), DisplayMode.Edit, DisplayMode.Disabled)
             Height: =45
             OnSelect: |-
@@ -503,7 +516,7 @@ Screens:
       - lblMotivoCambio:
           Control: Label@2.5.1
           Properties:
-            Color: =Color.White
+            Color: =nfColoreTesto
             Text: |-
               ="Cambio stand non più possibile: termine scaduto il " &
                         Text(DateAdd(gblApertura, -60, TimeUnit.Days), "dd/mm/yyyy")
@@ -514,6 +527,9 @@ Screens:
       - rtgConfermaDisdetta:
           Control: Rectangle@2.3.0
           Properties:
+            BorderColor: =nfColoreAttenzione
+            BorderThickness: =nfSpessoreBordo
+            Fill: =nfColoreSuperficie
             Height: =156
             Visible: =locConfermaDisdetta
             Width: =630
@@ -521,8 +537,10 @@ Screens:
       - btnAnnullaDisdetta:
           Control: ModernButton@1.0.0
           Properties:
-            BorderColor: =Color.Black
+            BasePaletteColor: =nfColoreNeutro
+            BorderColor: =nfColoreTestoSuAccento
             BorderThickness: =1
+            Color: =nfColoreTestoSuAccento
             Height: =34
             OnSelect: |-
               =UpdateContext({ locConfermaDisdetta: false })
@@ -534,8 +552,10 @@ Screens:
       - btnConfermaDisdetta:
           Control: ModernButton@1.0.0
           Properties:
-            BorderColor: =Color.Black
+            BasePaletteColor: =nfColoreErrore
+            BorderColor: =nfColoreTestoSuAccento
             BorderThickness: =1
+            Color: =nfColoreTestoSuAccento
             Height: =34
             OnSelect: |-
               =With({ idVar: Max('arcade.variazione_contratto', id_variazione) + 1,
@@ -565,7 +585,7 @@ Screens:
                 )
               )
             Text: ="Conferma Disdetta"
-            Visible: =locConfermaDisdetta
+            Visible: =locConfermaDisdetta && gblPuo.variazioni
             Width: =148
             X: =384
             Y: =714
@@ -573,6 +593,7 @@ Screens:
           Control: Label@2.5.1
           Properties:
             AutoHeight: =true
+            Color: =nfColoreTesto
             FontWeight: =FontWeight.Bold
             Text: |-
               ="Disdetta del contratto " & gblIdContratto & ". " &

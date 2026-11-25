@@ -161,9 +161,7 @@ scrPreventivo As screen:
                    !IsBlank(gblPreventivo),
                    // preventivo esistente: l'espositore salvato
                    Filter(colEspositori, id_espositore = gblPreventivo.id_espositore))
-            DisplayMode: |-
-                =If(gblStato = "bozza" && gblStand.stato <> "in_prelazione",
-                                 DisplayMode.Edit, DisplayMode.View)
+            DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
             Font: =""
             InputTextPlaceholder: ="Seleziona espositore"
             ItemDisplayText: =ThisItem.ragione_sociale
@@ -219,7 +217,7 @@ scrPreventivo As screen:
             Default: |-
                 =If(IsBlank(gblIdPreventivo), "0",
                               Text(LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).sconto_pct * 100))
-            DisplayMode: =If(gblStato = "bozza", DisplayMode.Edit, DisplayMode.View)
+            DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
             Font: =""
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
@@ -483,6 +481,7 @@ scrPreventivo As screen:
                 Color: =nfColoreErrore
                 DisabledBorderColor: =RGBA(166, 166, 166, 1)
                 DisabledColor: =RGBA(244, 244, 244, 1)
+                DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
                 Height: =20
                 Icon: =Icon.Trash
                 OnSelect: =Remove(colRighe, ThisItem); Select(btnRicalcola)
@@ -521,6 +520,7 @@ scrPreventivo As screen:
             cmbVoce As modernCombobox:
                 Appearance: =Appearance.FilledDarker
                 BorderStyle: =""
+                DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
                 Font: =""
                 InputTextPlaceholder: ="Scegli un extra o una sponsorizzazione"
                 ItemDisplayText: =ThisItem.descrizione
@@ -539,6 +539,7 @@ scrPreventivo As screen:
                 Appearance: =Appearance.FilledDarker
                 BorderStyle: =""
                 Default: =If(cmbVoce.Selected.unita = "m²", gblStand.mq, 1)
+                DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
                 Font: =""
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
@@ -555,6 +556,7 @@ scrPreventivo As screen:
                 BasePaletteColor: =nfAccentoPreventivi
                 BorderStyle: =""
                 Color: =nfColoreTestoSuAccento
+                DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
                 Font: =""
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
@@ -726,7 +728,7 @@ scrPreventivo As screen:
             BorderStyle: =""
             Color: =nfColoreTestoSuAccento
             DisplayMode: |-
-                =If(gblStato = "bozza" && gblTot.valido && !IsBlank(cmbEspositore.Selected),
+                =If(gblPuo.preventivi && gblStato = "bozza" && gblTot.valido && !IsBlank(cmbEspositore.Selected),
                      DisplayMode.Edit, DisplayMode.Disabled)
             Font: =""
             LayoutMaxHeight: =0
@@ -783,7 +785,7 @@ scrPreventivo As screen:
             BorderStyle: =""
             Color: =nfColoreTestoSuAccento
             DisplayMode: |
-                =If(gblStato = "bozza" && !IsBlank(gblIdPreventivo),
+                =If(gblPuo.preventivi && gblStato = "bozza" && !IsBlank(gblIdPreventivo),
                      DisplayMode.Edit, DisplayMode.Disabled)
             Font: =""
             LayoutMaxHeight: =0
@@ -850,7 +852,7 @@ scrPreventivo As screen:
             BasePaletteColor: =nfStatoVenduto
             BorderStyle: =""
             Color: =nfColoreTestoSuAccento
-            DisplayMode: =If(gblStato = "inviato", DisplayMode.Edit, DisplayMode.Disabled)
+            DisplayMode: =If(gblPuo.preventivi && gblStato = "inviato", DisplayMode.Edit, DisplayMode.Disabled)
             Font: =""
             LayoutMaxHeight: =0
             LayoutMaxWidth: =0
@@ -878,7 +880,7 @@ scrPreventivo As screen:
             BorderStyle: =""
             Color: =nfColoreTestoSuAccento
             DisplayMode: |-
-                =If(gblStato = "inviato" && Today() <= ChiusuraVendite &&
+                =If(gblPuo.firmare && gblStato = "inviato" && Today() <= ChiusuraVendite &&
                      LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).valido_fino >= Today(),
                      DisplayMode.Edit, DisplayMode.Disabled)
             Font: =""
@@ -921,7 +923,7 @@ scrPreventivo As screen:
                         prezzo_unitario: r.prezzo_unitario; importo_eur: r.importo_eur }));;
                     // C - preventivo accettato
                     Patch('arcade.preventivo'; p; { stato: "accettato" });;
-                    // D - PIANO B: pagamenti (da sostituire con il flusso di Matteo)
+                    // D - PIANO B: pagamenti (da sostituire con il flusso 1.9)
                     Patch('arcade.pagamento'; Defaults('arcade.pagamento'); {
                         id_pagamento: idPag; id_contratto: idC; tipo: "acconto";
                         scadenza: If(tardi; DateAdd(EdizioneSel.data_inizio; -15; TimeUnit.Days);
@@ -1009,7 +1011,7 @@ scrPreventivo As screen:
 
     lblApprovato As label:
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =Color.Green
+        Color: =nfColoreOk
         DisabledColor: =RGBA(166, 166, 166, 1)
         Font: =App.Theme.Font
         Height: =68
@@ -1017,7 +1019,7 @@ scrPreventivo As screen:
         Text: |-
             ="Sconto approvato il " & Text(gblPreventivo.approvato_il, "dd/mm/yyyy") &
               If(IsBlank(gblPreventivo.approvato_da), "",
-                 " da " & LookUp('arcade.utente', id_utente = gblPreventivo.approvato_da).email)
+                 " da " & LookUp('arcade.utente', id_utente = gblPreventivo.approvato_da).id_utente)
         Visible: =!IsBlank(gblPreventivo.approvato_il)
         Width: =246
         X: =87
@@ -1025,6 +1027,8 @@ scrPreventivo As screen:
         ZIndex: =9
 
     btnCaricaImpegni As modernButton:
+        BorderStyle: =""
+        Font: =""
         OnSelect: |-
             =// contratti attivi dell'edizione e preventivi aperti (escluso quello corrente)
             ClearCollect(colContrattiVend,
@@ -1045,6 +1049,7 @@ scrPreventivo As screen:
                             id_contratto in colContrattiVend.id_contratto), quantita)
                     - Sum(Filter('arcade.riga_preventivo', codice_voce = v.codice_voce &&
                             id_preventivo in colPrevAperti.id_preventivo), quantita) }))
+        Size: =0
         Text: ="Pulsante"
         Visible: =false
         X: =233
@@ -1056,7 +1061,7 @@ scrPreventivo As screen:
         BorderColor: =App.Theme.Colors.Darker40
         Color: |-
             =If(LookUp(colSponsorOccupati, codice_voce = cmbVoce.Selected.codice_voce).disponibili <= 0,
-                       Color.Red, Color.DarkGreen)
+                       nfColoreErrore, nfColoreOk)
         DisabledColor: =RGBA(166, 166, 166, 1)
         Font: =App.Theme.Font
         Height: =35

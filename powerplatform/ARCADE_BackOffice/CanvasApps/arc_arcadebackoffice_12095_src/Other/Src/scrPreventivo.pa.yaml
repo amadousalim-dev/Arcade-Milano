@@ -149,9 +149,7 @@ Screens:
                        !IsBlank(gblPreventivo),
                        // preventivo esistente: l'espositore salvato
                        Filter(colEspositori, id_espositore = gblPreventivo.id_espositore))
-                  DisplayMode: |-
-                    =If(gblStato = "bozza" && gblStand.stato <> "in_prelazione",
-                                     DisplayMode.Edit, DisplayMode.View)
+                  DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
                   InputTextPlaceholder: ="Seleziona espositore"
                   ItemDisplayText: =ThisItem.ragione_sociale
                   Items: =colEspositori
@@ -190,7 +188,7 @@ Screens:
                   Default: |-
                     =If(IsBlank(gblIdPreventivo), "0",
                                   Text(LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).sconto_pct * 100))
-                  DisplayMode: =If(gblStato = "bozza", DisplayMode.Edit, DisplayMode.View)
+                  DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
                   OnChange: =Select(btnRicalcola)
@@ -395,6 +393,7 @@ Screens:
                       Properties:
                         AccessibleLabel: ="1"
                         Color: =nfColoreErrore
+                        DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
                         Height: =20
                         Icon: =Icon.Trash
                         OnSelect: =Remove(colRighe, ThisItem); Select(btnRicalcola)
@@ -422,6 +421,7 @@ Screens:
                   - cmbVoce:
                       Control: ModernCombobox@1.1.2
                       Properties:
+                        DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
                         InputTextPlaceholder: ="Scegli un extra o una sponsorizzazione"
                         ItemDisplayText: =ThisItem.descrizione
                         Items: =Filter(colListinoVend, tipo_voce in ["extra", "sponsorizzazione"])
@@ -433,6 +433,7 @@ Screens:
                       Properties:
                         AccessibleLabel: ="1"
                         Default: =If(cmbVoce.Selected.unita = "m²", gblStand.mq, 1)
+                        DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
                   - btnAggiungiRiga:
@@ -441,6 +442,7 @@ Screens:
                         AccessibleLabel: ="1"
                         BasePaletteColor: =nfAccentoPreventivi
                         Color: =nfColoreTestoSuAccento
+                        DisplayMode: =If(gblPuo.preventivi, DisplayMode.Edit, DisplayMode.Disabled)
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
                         OnSelect: |-
@@ -565,7 +567,7 @@ Screens:
                   BasePaletteColor: =nfAccentoNuovoPrev
                   Color: =nfColoreTestoSuAccento
                   DisplayMode: |-
-                    =If(gblStato = "bozza" && gblTot.valido && !IsBlank(cmbEspositore.Selected),
+                    =If(gblPuo.preventivi && gblStato = "bozza" && gblTot.valido && !IsBlank(cmbEspositore.Selected),
                          DisplayMode.Edit, DisplayMode.Disabled)
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
@@ -617,7 +619,7 @@ Screens:
                   BasePaletteColor: =nfAccentoPreventivi
                   Color: =nfColoreTestoSuAccento
                   DisplayMode: |
-                    =If(gblStato = "bozza" && !IsBlank(gblIdPreventivo),
+                    =If(gblPuo.preventivi && gblStato = "bozza" && !IsBlank(gblIdPreventivo),
                          DisplayMode.Edit, DisplayMode.Disabled)
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
@@ -679,7 +681,7 @@ Screens:
                   AccessibleLabel: ="1"
                   BasePaletteColor: =nfStatoVenduto
                   Color: =nfColoreTestoSuAccento
-                  DisplayMode: =If(gblStato = "inviato", DisplayMode.Edit, DisplayMode.Disabled)
+                  DisplayMode: =If(gblPuo.preventivi && gblStato = "inviato", DisplayMode.Edit, DisplayMode.Disabled)
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
                   OnSelect: |-
@@ -702,7 +704,7 @@ Screens:
                   BasePaletteColor: =nfAccentoContratti
                   Color: =nfColoreTestoSuAccento
                   DisplayMode: |-
-                    =If(gblStato = "inviato" && Today() <= ChiusuraVendite &&
+                    =If(gblPuo.firmare && gblStato = "inviato" && Today() <= ChiusuraVendite &&
                          LookUp('arcade.preventivo', id_preventivo = gblIdPreventivo).valido_fino >= Today(),
                          DisplayMode.Edit, DisplayMode.Disabled)
                   LayoutMinHeight: =16
@@ -742,7 +744,7 @@ Screens:
                             prezzo_unitario: r.prezzo_unitario; importo_eur: r.importo_eur }));;
                         // C - preventivo accettato
                         Patch('arcade.preventivo'; p; { stato: "accettato" });;
-                        // D - PIANO B: pagamenti (da sostituire con il flusso di Matteo)
+                        // D - PIANO B: pagamenti (da sostituire con il flusso 1.9)
                         Patch('arcade.pagamento'; Defaults('arcade.pagamento'); {
                             id_pagamento: idPag; id_contratto: idC; tipo: "acconto";
                             scadenza: If(tardi; DateAdd(EdizioneSel.data_inizio; -15; TimeUnit.Days);
@@ -828,12 +830,12 @@ Screens:
       - lblApprovato:
           Control: Label@2.5.1
           Properties:
-            Color: =Color.Green
+            Color: =nfColoreOk
             Height: =68
             Text: |-
               ="Sconto approvato il " & Text(gblPreventivo.approvato_il, "dd/mm/yyyy") &
                 If(IsBlank(gblPreventivo.approvato_da), "",
-                   " da " & LookUp('arcade.utente', id_utente = gblPreventivo.approvato_da).email)
+                   " da " & LookUp('arcade.utente', id_utente = gblPreventivo.approvato_da).id_utente)
             Visible: =!IsBlank(gblPreventivo.approvato_il)
             Width: =246
             X: =87
@@ -870,7 +872,7 @@ Screens:
             AutoHeight: =true
             Color: |-
               =If(LookUp(colSponsorOccupati, codice_voce = cmbVoce.Selected.codice_voce).disponibili <= 0,
-                         Color.Red, Color.DarkGreen)
+                         nfColoreErrore, nfColoreOk)
             Height: =35
             Text: |-
               =With({ d: LookUp(colSponsorOccupati, codice_voce = cmbVoce.Selected.codice_voce).disponibili },

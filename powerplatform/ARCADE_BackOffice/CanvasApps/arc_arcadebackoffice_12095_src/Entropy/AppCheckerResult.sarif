@@ -24,7 +24,7 @@
                 },
                 "region": {
                   "charLength": 12,
-                  "charOffset": 201,
+                  "charOffset": 50,
                   "snippet": {
                     "text": "Lower(email)"
                   }
@@ -64,7 +64,167 @@
                 },
                 "region": {
                   "charLength": 1,
-                  "charOffset": 214,
+                  "charOffset": 63,
+                  "snippet": {
+                    "text": "="
+                  }
+                }
+              },
+              "properties": {
+                "member": "OnStart",
+                "module": "App",
+                "type": "App"
+              }
+            }
+          ],
+          "message": {
+            "arguments": [
+              "LookUp"
+            ],
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "app-SuggestRemoteExecutionHint",
+          "ruleIndex": 0
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "App.OnStart"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "App.OnStart",
+                  "relativeAddress": 0
+                },
+                "region": {
+                  "charLength": 12,
+                  "charOffset": 129,
+                  "snippet": {
+                    "text": "Lower(email)"
+                  }
+                }
+              },
+              "properties": {
+                "member": "OnStart",
+                "module": "App",
+                "type": "App"
+              }
+            }
+          ],
+          "message": {
+            "arguments": [
+              "Lower"
+            ],
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "app-SuggestRemoteExecutionHint",
+          "ruleIndex": 0
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "App.OnStart"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "App.OnStart",
+                  "relativeAddress": 0
+                },
+                "region": {
+                  "charLength": 1,
+                  "charOffset": 142,
+                  "snippet": {
+                    "text": "="
+                  }
+                }
+              },
+              "properties": {
+                "member": "OnStart",
+                "module": "App",
+                "type": "App"
+              }
+            }
+          ],
+          "message": {
+            "arguments": [
+              "LookUp"
+            ],
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "app-SuggestRemoteExecutionHint",
+          "ruleIndex": 0
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "App.OnStart"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "App.OnStart",
+                  "relativeAddress": 0
+                },
+                "region": {
+                  "charLength": 12,
+                  "charOffset": 371,
+                  "snippet": {
+                    "text": "Lower(email)"
+                  }
+                }
+              },
+              "properties": {
+                "member": "OnStart",
+                "module": "App",
+                "type": "App"
+              }
+            }
+          ],
+          "message": {
+            "arguments": [
+              "Lower"
+            ],
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "app-SuggestRemoteExecutionHint",
+          "ruleIndex": 0
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "App.OnStart"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "App.OnStart",
+                  "relativeAddress": 0
+                },
+                "region": {
+                  "charLength": 1,
+                  "charOffset": 384,
                   "snippet": {
                     "text": "="
                   }
@@ -103,10 +263,10 @@
                   "relativeAddress": 0
                 },
                 "region": {
-                  "charLength": 120,
+                  "charLength": 119,
                   "charOffset": 19,
                   "snippet": {
-                    "text": "CountRows(Filter('arcade.preventivo';\r\n             id_edizione = EdizioneSel.id_edizione && stato = \"in_approvazione\"))"
+                    "text": "CountRows(Filter('arcade.preventivo';\n             id_edizione = EdizioneSel.id_edizione && stato = \"in_approvazione\"))"
                   }
                 }
               },
@@ -144,7 +304,7 @@
                 },
                 "region": {
                   "charLength": 12,
-                  "charOffset": 470,
+                  "charOffset": 551,
                   "snippet": {
                     "text": ".id_edizione"
                   }
@@ -184,7 +344,7 @@
                 },
                 "region": {
                   "charLength": 2,
-                  "charOffset": 465,
+                  "charOffset": 546,
                   "snippet": {
                     "text": "<="
                   }
@@ -224,7 +384,7 @@
                 },
                 "region": {
                   "charLength": 12,
-                  "charOffset": 633,
+                  "charOffset": 714,
                   "snippet": {
                     "text": ".id_edizione"
                   }
@@ -264,7 +424,7 @@
                 },
                 "region": {
                   "charLength": 1,
-                  "charOffset": 629,
+                  "charOffset": 710,
                   "snippet": {
                     "text": "="
                   }
@@ -304,7 +464,7 @@
                 },
                 "region": {
                   "charLength": 2,
-                  "charOffset": 646,
+                  "charOffset": 727,
                   "snippet": {
                     "text": "&&"
                   }
@@ -344,7 +504,7 @@
                 },
                 "region": {
                   "charLength": 12,
-                  "charOffset": 814,
+                  "charOffset": 895,
                   "snippet": {
                     "text": ".id_edizione"
                   }
@@ -384,7 +544,7 @@
                 },
                 "region": {
                   "charLength": 1,
-                  "charOffset": 810,
+                  "charOffset": 891,
                   "snippet": {
                     "text": "="
                   }
@@ -424,7 +584,7 @@
                 },
                 "region": {
                   "charLength": 2,
-                  "charOffset": 827,
+                  "charOffset": 908,
                   "snippet": {
                     "text": "&&"
                   }
@@ -464,7 +624,7 @@
                 },
                 "region": {
                   "charLength": 12,
-                  "charOffset": 1059,
+                  "charOffset": 1140,
                   "snippet": {
                     "text": ".id_edizione"
                   }
@@ -504,7 +664,7 @@
                 },
                 "region": {
                   "charLength": 1,
-                  "charOffset": 1072,
+                  "charOffset": 1153,
                   "snippet": {
                     "text": "-"
                   }
@@ -544,7 +704,7 @@
                 },
                 "region": {
                   "charLength": 1,
-                  "charOffset": 1055,
+                  "charOffset": 1136,
                   "snippet": {
                     "text": "="
                   }
@@ -584,7 +744,7 @@
                 },
                 "region": {
                   "charLength": 2,
-                  "charOffset": 1076,
+                  "charOffset": 1157,
                   "snippet": {
                     "text": "&&"
                   }
@@ -624,7 +784,7 @@
                 },
                 "region": {
                   "charLength": 12,
-                  "charOffset": 1168,
+                  "charOffset": 1249,
                   "snippet": {
                     "text": ".id_edizione"
                   }
@@ -664,7 +824,7 @@
                 },
                 "region": {
                   "charLength": 1,
-                  "charOffset": 1164,
+                  "charOffset": 1245,
                   "snippet": {
                     "text": "="
                   }
@@ -704,7 +864,7 @@
                 },
                 "region": {
                   "charLength": 2,
-                  "charOffset": 937,
+                  "charOffset": 921,
                   "snippet": {
                     "text": "in"
                   }
@@ -744,7 +904,7 @@
                 },
                 "region": {
                   "charLength": 2,
-                  "charOffset": 904,
+                  "charOffset": 889,
                   "snippet": {
                     "text": "&&"
                   }
@@ -784,7 +944,7 @@
                 },
                 "region": {
                   "charLength": 2,
-                  "charOffset": 1092,
+                  "charOffset": 1074,
                   "snippet": {
                     "text": "in"
                   }
@@ -824,7 +984,7 @@
                 },
                 "region": {
                   "charLength": 2,
-                  "charOffset": 1058,
+                  "charOffset": 1041,
                   "snippet": {
                     "text": "&&"
                   }
@@ -1024,7 +1184,7 @@
                 },
                 "region": {
                   "charLength": 125,
-                  "charOffset": 3751,
+                  "charOffset": 3745,
                   "snippet": {
                     "text": "Max(Filter('arcade.contratto'; id_edizione = EdizioneSel.id_edizione);\n                        Value(Right(id_contratto; 4)))"
                   }
@@ -1064,7 +1224,7 @@
                 },
                 "region": {
                   "charLength": 12,
-                  "charOffset": 4419,
+                  "charOffset": 4413,
                   "snippet": {
                     "text": ".id_edizione"
                   }
@@ -1104,7 +1264,7 @@
                 },
                 "region": {
                   "charLength": 1,
-                  "charOffset": 4432,
+                  "charOffset": 4426,
                   "snippet": {
                     "text": "-"
                   }
@@ -1144,7 +1304,7 @@
                 },
                 "region": {
                   "charLength": 1,
-                  "charOffset": 4416,
+                  "charOffset": 4410,
                   "snippet": {
                     "text": "="
                   }
@@ -1184,7 +1344,7 @@
                 },
                 "region": {
                   "charLength": 2,
-                  "charOffset": 4436,
+                  "charOffset": 4430,
                   "snippet": {
                     "text": "&&"
                   }
@@ -1224,7 +1384,7 @@
                 },
                 "region": {
                   "charLength": 2,
-                  "charOffset": 4490,
+                  "charOffset": 4484,
                   "snippet": {
                     "text": "&&"
                   }
@@ -1264,7 +1424,7 @@
                 },
                 "region": {
                   "charLength": 14,
-                  "charOffset": 4687,
+                  "charOffset": 4681,
                   "snippet": {
                     "text": ".id_preventivo"
                   }
@@ -1304,7 +1464,7 @@
                 },
                 "region": {
                   "charLength": 1,
-                  "charOffset": 4684,
+                  "charOffset": 4678,
                   "snippet": {
                     "text": "="
                   }
@@ -1344,7 +1504,7 @@
                 },
                 "region": {
                   "charLength": 14,
-                  "charOffset": 6414,
+                  "charOffset": 6408,
                   "snippet": {
                     "text": ".id_preventivo"
                   }
@@ -1384,7 +1544,7 @@
                 },
                 "region": {
                   "charLength": 1,
-                  "charOffset": 6411,
+                  "charOffset": 6405,
                   "snippet": {
                     "text": "="
                   }
@@ -1424,7 +1584,7 @@
                 },
                 "region": {
                   "charLength": 18,
-                  "charOffset": 1123,
+                  "charOffset": 1103,
                   "snippet": {
                     "text": "Coalesce(idVar; 1)"
                   }
@@ -1464,7 +1624,7 @@
                 },
                 "region": {
                   "charLength": 1,
-                  "charOffset": 1121,
+                  "charOffset": 1101,
                   "snippet": {
                     "text": "="
                   }
@@ -2317,6 +2477,126 @@
                 "member": "TabIndex",
                 "module": "scrHome",
                 "type": "scrHome.conHomeRoot.conHomeRiquadri.conHomeRiga2.conHomeContratti.lblHomeContrattiDesc"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrHome.conNonAutorizzato.Label2.FocusedBorderThickness"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrHome.conNonAutorizzato.Label2.FocusedBorderThickness",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "FocusedBorderThickness",
+                "module": "scrHome",
+                "type": "scrHome.conNonAutorizzato.Label2"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrHome.conNonAutorizzato.Label2.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrHome.conNonAutorizzato.Label2.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrHome",
+                "type": "scrHome.conNonAutorizzato.Label2"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrHome.conNonAutorizzato.Label4.FocusedBorderThickness"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrHome.conNonAutorizzato.Label4.FocusedBorderThickness",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "FocusedBorderThickness",
+                "module": "scrHome",
+                "type": "scrHome.conNonAutorizzato.Label4"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrHome.conNonAutorizzato.Label4.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrHome.conNonAutorizzato.Label4.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrHome",
+                "type": "scrHome.conNonAutorizzato.Label4"
               }
             }
           ],
@@ -3984,6 +4264,66 @@
             {
               "logicalLocations": [
                 {
+                  "fullyQualifiedName": "scrPreventivo.lblApprovato.FocusedBorderThickness"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrPreventivo.lblApprovato.FocusedBorderThickness",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "FocusedBorderThickness",
+                "module": "scrPreventivo",
+                "type": "scrPreventivo.lblApprovato"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrPreventivo.lblApprovato.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrPreventivo.lblApprovato.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrPreventivo",
+                "type": "scrPreventivo.lblApprovato"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
                   "fullyQualifiedName": "scrContratto.btnIndietroContr.TabIndex"
                 }
               ],
@@ -4284,6 +4624,66 @@
             {
               "logicalLocations": [
                 {
+                  "fullyQualifiedName": "scrContratto.lblConsegna.FocusedBorderThickness"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrContratto.lblConsegna.FocusedBorderThickness",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "FocusedBorderThickness",
+                "module": "scrContratto",
+                "type": "scrContratto.lblConsegna"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrContratto.lblConsegna.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrContratto.lblConsegna.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrContratto",
+                "type": "scrContratto.lblConsegna"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
                   "fullyQualifiedName": "scrContratto.lblContrListino.FocusedBorderThickness"
                 }
               ],
@@ -4464,19 +4864,19 @@
             {
               "logicalLocations": [
                 {
-                  "fullyQualifiedName": "scrContratto.btnDeroga.AccessibleLabel"
+                  "fullyQualifiedName": "scrContratto.rtgConfermaDisdetta.AccessibleLabel"
                 }
               ],
               "physicalLocation": {
                 "address": {
-                  "fullyQualifiedName": "scrContratto.btnDeroga.AccessibleLabel",
+                  "fullyQualifiedName": "scrContratto.rtgConfermaDisdetta.AccessibleLabel",
                   "relativeAddress": 0
                 }
               },
               "properties": {
                 "member": "AccessibleLabel",
                 "module": "scrContratto",
-                "type": "scrContratto.btnDeroga"
+                "type": "scrContratto.rtgConfermaDisdetta"
               }
             }
           ],
@@ -4488,6 +4888,96 @@
           },
           "ruleId": "acc-AccessibleLabelNeeded",
           "ruleIndex": 6
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrContratto.rtgConfermaDisdetta.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrContratto.rtgConfermaDisdetta.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrContratto",
+                "type": "scrContratto.rtgConfermaDisdetta"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrContratto.lblConfDisdetta.FocusedBorderThickness"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrContratto.lblConfDisdetta.FocusedBorderThickness",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "FocusedBorderThickness",
+                "module": "scrContratto",
+                "type": "scrContratto.lblConfDisdetta"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrContratto.lblConfDisdetta.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrContratto.lblConfDisdetta.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrContratto",
+                "type": "scrContratto.lblConfDisdetta"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
         },
         {
           "locations": [
@@ -4518,6 +5008,186 @@
           },
           "ruleId": "acc-AccessibleLabelNeeded",
           "ruleIndex": 6
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrContratto.btnCambioStand.AccessibleLabel"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrContratto.btnCambioStand.AccessibleLabel",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "AccessibleLabel",
+                "module": "scrContratto",
+                "type": "scrContratto.btnCambioStand"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-AccessibleLabelNeeded",
+          "ruleIndex": 6
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrContratto.btnDeroga.AccessibleLabel"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrContratto.btnDeroga.AccessibleLabel",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "AccessibleLabel",
+                "module": "scrContratto",
+                "type": "scrContratto.btnDeroga"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-AccessibleLabelNeeded",
+          "ruleIndex": 6
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrContratto.btnAnnullaDisdetta.AccessibleLabel"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrContratto.btnAnnullaDisdetta.AccessibleLabel",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "AccessibleLabel",
+                "module": "scrContratto",
+                "type": "scrContratto.btnAnnullaDisdetta"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-AccessibleLabelNeeded",
+          "ruleIndex": 6
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrContratto.btnConfermaDisdetta.AccessibleLabel"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrContratto.btnConfermaDisdetta.AccessibleLabel",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "AccessibleLabel",
+                "module": "scrContratto",
+                "type": "scrContratto.btnConfermaDisdetta"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-AccessibleLabelNeeded",
+          "ruleIndex": 6
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrContratto.lblMotivoCambio.FocusedBorderThickness"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrContratto.lblMotivoCambio.FocusedBorderThickness",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "FocusedBorderThickness",
+                "module": "scrContratto",
+                "type": "scrContratto.lblMotivoCambio"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrContratto.lblMotivoCambio.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrContratto.lblMotivoCambio.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrContratto",
+                "type": "scrContratto.lblMotivoCambio"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
         },
         {
           "locations": [
@@ -4644,6 +5314,126 @@
             {
               "logicalLocations": [
                 {
+                  "fullyQualifiedName": "scrListino.RectQuickActionBar1.AccessibleLabel"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrListino.RectQuickActionBar1.AccessibleLabel",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "AccessibleLabel",
+                "module": "scrListino",
+                "type": "scrListino.RectQuickActionBar1"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-AccessibleLabelNeeded",
+          "ruleIndex": 6
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrListino.RectQuickActionBar1.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrListino.RectQuickActionBar1.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrListino",
+                "type": "scrListino.RectQuickActionBar1"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrListino.Title2.FocusedBorderThickness"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrListino.Title2.FocusedBorderThickness",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "FocusedBorderThickness",
+                "module": "scrListino",
+                "type": "scrListino.Title2"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrListino.Title2.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrListino.Title2.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrListino",
+                "type": "scrListino.Title2"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
                   "fullyQualifiedName": "scrListino.drpTipoVoce.AccessibleLabel"
                 }
               ],
@@ -4734,19 +5524,19 @@
             {
               "logicalLocations": [
                 {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.LeftContainer1.galApprovazioni.AccessibleLabel"
+                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.HeaderContainerAppr.lblTitoloApprovazioni.FocusedBorderThickness"
                 }
               ],
               "physicalLocation": {
                 "address": {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.LeftContainer1.galApprovazioni.AccessibleLabel",
+                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.HeaderContainerAppr.lblTitoloApprovazioni.FocusedBorderThickness",
                   "relativeAddress": 0
                 }
               },
               "properties": {
-                "member": "AccessibleLabel",
+                "member": "FocusedBorderThickness",
                 "module": "scrApprovazioni",
-                "type": "scrApprovazioni.ScreenContainer2.LeftContainer1.galApprovazioni"
+                "type": "scrApprovazioni.ScreenContainer2.HeaderContainerAppr.lblTitoloApprovazioni"
               }
             }
           ],
@@ -4756,27 +5546,27 @@
           "properties": {
             "level": "Medium"
           },
-          "ruleId": "acc-AccessibleLabelNeeded",
-          "ruleIndex": 6
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
         },
         {
           "locations": [
             {
               "logicalLocations": [
                 {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.LeftContainer1.galApprovazioni.TabIndex"
+                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.HeaderContainerAppr.lblTitoloApprovazioni.TabIndex"
                 }
               ],
               "physicalLocation": {
                 "address": {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.LeftContainer1.galApprovazioni.TabIndex",
+                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.HeaderContainerAppr.lblTitoloApprovazioni.TabIndex",
                   "relativeAddress": 0
                 }
               },
               "properties": {
                 "member": "TabIndex",
                 "module": "scrApprovazioni",
-                "type": "scrApprovazioni.ScreenContainer2.LeftContainer1.galApprovazioni"
+                "type": "scrApprovazioni.ScreenContainer2.HeaderContainerAppr.lblTitoloApprovazioni"
               }
             }
           ],
@@ -4794,19 +5584,49 @@
             {
               "logicalLocations": [
                 {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.RightContainer1.galAppRighe.AccessibleLabel"
+                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.HeaderContainerAppr.btnIndietroAppr.TabIndex"
                 }
               ],
               "physicalLocation": {
                 "address": {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.RightContainer1.galAppRighe.AccessibleLabel",
+                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.HeaderContainerAppr.btnIndietroAppr.TabIndex",
                   "relativeAddress": 0
                 }
               },
               "properties": {
-                "member": "AccessibleLabel",
+                "member": "TabIndex",
                 "module": "scrApprovazioni",
-                "type": "scrApprovazioni.ScreenContainer2.RightContainer1.galAppRighe"
+                "type": "scrApprovazioni.ScreenContainer2.HeaderContainerAppr.btnIndietroAppr"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Low"
+          },
+          "ruleId": "acc-TabOrderShouldBeChecked",
+          "ruleIndex": 7
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrApprovazioni.conSoloDirettore.lblAccessoApprNegato.FocusedBorderThickness"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrApprovazioni.conSoloDirettore.lblAccessoApprNegato.FocusedBorderThickness",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "FocusedBorderThickness",
+                "module": "scrApprovazioni",
+                "type": "scrApprovazioni.conSoloDirettore.lblAccessoApprNegato"
               }
             }
           ],
@@ -4816,27 +5636,27 @@
           "properties": {
             "level": "Medium"
           },
-          "ruleId": "acc-AccessibleLabelNeeded",
-          "ruleIndex": 6
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
         },
         {
           "locations": [
             {
               "logicalLocations": [
                 {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.RightContainer1.galAppRighe.TabIndex"
+                  "fullyQualifiedName": "scrApprovazioni.conSoloDirettore.lblAccessoApprNegato.TabIndex"
                 }
               ],
               "physicalLocation": {
                 "address": {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.RightContainer1.galAppRighe.TabIndex",
+                  "fullyQualifiedName": "scrApprovazioni.conSoloDirettore.lblAccessoApprNegato.TabIndex",
                   "relativeAddress": 0
                 }
               },
               "properties": {
                 "member": "TabIndex",
                 "module": "scrApprovazioni",
-                "type": "scrApprovazioni.ScreenContainer2.RightContainer1.galAppRighe"
+                "type": "scrApprovazioni.conSoloDirettore.lblAccessoApprNegato"
               }
             }
           ],
@@ -4854,49 +5674,19 @@
             {
               "logicalLocations": [
                 {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.RightContainer1.btnApprova.AccessibleLabel"
+                  "fullyQualifiedName": "scrApprovazioni.conSoloDirettore.btnTornaaStanddaAppr.AccessibleLabel"
                 }
               ],
               "physicalLocation": {
                 "address": {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.RightContainer1.btnApprova.AccessibleLabel",
+                  "fullyQualifiedName": "scrApprovazioni.conSoloDirettore.btnTornaaStanddaAppr.AccessibleLabel",
                   "relativeAddress": 0
                 }
               },
               "properties": {
                 "member": "AccessibleLabel",
                 "module": "scrApprovazioni",
-                "type": "scrApprovazioni.ScreenContainer2.RightContainer1.btnApprova"
-              }
-            }
-          ],
-          "message": {
-            "id": "issue"
-          },
-          "properties": {
-            "level": "Medium"
-          },
-          "ruleId": "acc-AccessibleLabelNeeded",
-          "ruleIndex": 6
-        },
-        {
-          "locations": [
-            {
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.RightContainer1.btnRimanda.AccessibleLabel"
-                }
-              ],
-              "physicalLocation": {
-                "address": {
-                  "fullyQualifiedName": "scrApprovazioni.ScreenContainer2.RightContainer1.btnRimanda.AccessibleLabel",
-                  "relativeAddress": 0
-                }
-              },
-              "properties": {
-                "member": "AccessibleLabel",
-                "module": "scrApprovazioni",
-                "type": "scrApprovazioni.ScreenContainer2.RightContainer1.btnRimanda"
+                "type": "scrApprovazioni.conSoloDirettore.btnTornaaStanddaAppr"
               }
             }
           ],
@@ -5214,19 +6004,19 @@
             {
               "logicalLocations": [
                 {
-                  "fullyQualifiedName": "scrContratto.btnAnnullaDisdetta.AccessibleLabel"
+                  "fullyQualifiedName": "scrListino.btnIndietroListino.TabIndex"
                 }
               ],
               "physicalLocation": {
                 "address": {
-                  "fullyQualifiedName": "scrContratto.btnAnnullaDisdetta.AccessibleLabel",
+                  "fullyQualifiedName": "scrListino.btnIndietroListino.TabIndex",
                   "relativeAddress": 0
                 }
               },
               "properties": {
-                "member": "AccessibleLabel",
-                "module": "scrContratto",
-                "type": "scrContratto.btnAnnullaDisdetta"
+                "member": "TabIndex",
+                "module": "scrListino",
+                "type": "scrListino.btnIndietroListino"
               }
             }
           ],
@@ -5234,29 +6024,29 @@
             "id": "issue"
           },
           "properties": {
-            "level": "Medium"
+            "level": "Low"
           },
-          "ruleId": "acc-AccessibleLabelNeeded",
-          "ruleIndex": 6
+          "ruleId": "acc-TabOrderShouldBeChecked",
+          "ruleIndex": 7
         },
         {
           "locations": [
             {
               "logicalLocations": [
                 {
-                  "fullyQualifiedName": "scrContratto.btnConfermaDisdetta.AccessibleLabel"
+                  "fullyQualifiedName": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevEsp.FocusedBorderThickness"
                 }
               ],
               "physicalLocation": {
                 "address": {
-                  "fullyQualifiedName": "scrContratto.btnConfermaDisdetta.AccessibleLabel",
+                  "fullyQualifiedName": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevEsp.FocusedBorderThickness",
                   "relativeAddress": 0
                 }
               },
               "properties": {
-                "member": "AccessibleLabel",
-                "module": "scrContratto",
-                "type": "scrContratto.btnConfermaDisdetta"
+                "member": "FocusedBorderThickness",
+                "module": "scrPreventivi",
+                "type": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevEsp"
               }
             }
           ],
@@ -5266,27 +6056,27 @@
           "properties": {
             "level": "Medium"
           },
-          "ruleId": "acc-AccessibleLabelNeeded",
-          "ruleIndex": 6
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
         },
         {
           "locations": [
             {
               "logicalLocations": [
                 {
-                  "fullyQualifiedName": "scrContratto.btnCambioStand.AccessibleLabel"
+                  "fullyQualifiedName": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevEsp.TabIndex"
                 }
               ],
               "physicalLocation": {
                 "address": {
-                  "fullyQualifiedName": "scrContratto.btnCambioStand.AccessibleLabel",
+                  "fullyQualifiedName": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevEsp.TabIndex",
                   "relativeAddress": 0
                 }
               },
               "properties": {
-                "member": "AccessibleLabel",
-                "module": "scrContratto",
-                "type": "scrContratto.btnCambioStand"
+                "member": "TabIndex",
+                "module": "scrPreventivi",
+                "type": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevEsp"
               }
             }
           ],
@@ -5296,8 +6086,158 @@
           "properties": {
             "level": "Medium"
           },
-          "ruleId": "acc-AccessibleLabelNeeded",
-          "ruleIndex": 6
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevStato.FocusedBorderThickness"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevStato.FocusedBorderThickness",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "FocusedBorderThickness",
+                "module": "scrPreventivi",
+                "type": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevStato"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevStato.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevStato.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrPreventivi",
+                "type": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.lblPrevStato"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.NextArrow5.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.NextArrow5.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrPreventivi",
+                "type": "scrPreventivi.ScreenContainer1.MainContainer1.galPreventivi.NextArrow5"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrStand.galStand.lblposizione.FocusedBorderThickness"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrStand.galStand.lblposizione.FocusedBorderThickness",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "FocusedBorderThickness",
+                "module": "scrStand",
+                "type": "scrStand.galStand.lblposizione"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-FocusBorderShouldBeVisible",
+          "ruleIndex": 4
+        },
+        {
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "scrStand.galStand.lblposizione.TabIndex"
+                }
+              ],
+              "physicalLocation": {
+                "address": {
+                  "fullyQualifiedName": "scrStand.galStand.lblposizione.TabIndex",
+                  "relativeAddress": 0
+                }
+              },
+              "properties": {
+                "member": "TabIndex",
+                "module": "scrStand",
+                "type": "scrStand.galStand.lblposizione"
+              }
+            }
+          ],
+          "message": {
+            "id": "issue"
+          },
+          "properties": {
+            "level": "Medium"
+          },
+          "ruleId": "acc-TabIndexShouldBeDefinedForInteractiveControl",
+          "ruleIndex": 5
         },
         {
           "locations": [

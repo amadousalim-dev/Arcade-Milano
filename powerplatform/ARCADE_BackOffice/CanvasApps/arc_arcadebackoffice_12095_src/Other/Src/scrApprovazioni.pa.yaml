@@ -9,6 +9,7 @@
 Screens:
   scrApprovazioni:
     Properties:
+      Fill: =nfColoreSfondo
       OnVisible: |-
         =Refresh('arcade.preventivo');
         ClearCollect(colInApprovazione,
@@ -19,326 +20,444 @@ Screens:
           Control: GroupContainer@1.5.0
           Variant: AutoLayout
           Properties:
-            Fill: =RGBA(245, 245, 245, 1)
+            Fill: =nfColoreSfondo
             Height: =Parent.Height
             LayoutAlignItems: =LayoutAlignItems.Stretch
-            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutDirection: =LayoutDirection.Vertical
             LayoutGap: =16
-            LayoutWrap: =true
             PaddingBottom: =16
             PaddingLeft: =16
             PaddingRight: =16
             PaddingTop: =16
             Width: =Parent.Width
           Children:
-            - LeftContainer1:
+            - HeaderContainerAppr:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
-                  Fill: =RGBA(255, 255, 255, 1)
+                  Fill: =nfColoreSuperficie
+                  FillPortions: =0
+                  Height: =75
                   LayoutAlignItems: =LayoutAlignItems.Center
-                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =16
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
                   PaddingBottom: =8
                   PaddingLeft: =8
                   PaddingRight: =8
                   PaddingTop: =8
-                  RadiusBottomLeft: =8
-                  RadiusBottomRight: =8
-                  RadiusTopLeft: =8
-                  RadiusTopRight: =8
+                  RadiusBottomLeft: =nfRaggio
+                  RadiusBottomRight: =nfRaggio
+                  RadiusTopLeft: =nfRaggio
+                  RadiusTopRight: =nfRaggio
                 Children:
-                  - galApprovazioni:
-                      Control: Gallery@2.15.0
-                      Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                  - btnIndietroAppr:
+                      Control: Classic/Icon@2.5.0
                       Properties:
-                        Items: =SortByColumns(colInApprovazione, "id_preventivo", SortOrder.Ascending)
-                        LayoutMinHeight: =16
-                        LayoutMinWidth: =16
-                        TemplateSize: =200
-                      Children:
-                        - Image3:
-                            Control: Image@2.2.3
-                            Properties:
-                              Height: =72
-                              OnSelect: =Select(Parent)
-                              RadiusBottomLeft: =8
-                              RadiusBottomRight: =8
-                              RadiusTopLeft: =8
-                              RadiusTopRight: =8
-                              Width: =72
-                              X: =16
-                              Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
-                        - lblAppTitolo:
-                            Control: Label@2.5.1
-                            Properties:
-                              AutoHeight: =true
-                              BorderColor: =RGBA(0, 0, 0, 1)
-                              Color: =RGBA(50, 49, 48, 1)
-                              FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
-                              Height: =Self.Size * 1.8
-                              OnSelect: =Select(Parent)
-                              PaddingBottom: =0
-                              PaddingLeft: =0
-                              PaddingRight: =0
-                              PaddingTop: =0
-                              Size: =14
-                              Text: ="Preventivo n. " & ThisItem.id_preventivo & " – stand " & ThisItem.codice_stand
-                              VerticalAlign: =VerticalAlign.Top
-                              Width: =Parent.TemplateWidth - 173
-                              X: =111
-                              Y: =19
-                        - NextArrow3:
-                            Control: Classic/Icon@2.5.0
-                            Properties:
-                              AccessibleLabel: =Self.Tooltip
-                              BorderColor: =RGBA(0, 0, 0, 1)
-                              Color: =RGBA(166, 166, 166, 1)
-                              DisabledBorderColor: =RGBA(56, 56, 56, 1)
-                              DisabledColor: =RGBA(119, 119, 119, 1)
-                              Height: =50
-                              Icon: =Icon.ChevronRight
-                              OnSelect: =Select(Parent)
-                              PaddingBottom: =16
-                              PaddingLeft: =16
-                              PaddingRight: =16
-                              PaddingTop: =16
-                              Tooltip: ="Visualizza dettagli elementi"
-                              Width: =50
-                              X: =Parent.TemplateWidth - Self.Width - 12
-                              Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
-                        - Separator7:
-                            Control: Rectangle@2.3.0
-                            Properties:
-                              Fill: =RGBA(255, 255, 255, 1)
-                              Height: =8
-                              OnSelect: =Select(Parent)
-                              Width: =Parent.TemplateWidth
-                              Y: =Parent.TemplateHeight - Self.Height
-                        - Rectangle5:
-                            Control: Rectangle@2.3.0
-                            Properties:
-                              Fill: =App.Theme.Colors.Darker30
-                              Height: =Parent.TemplateHeight - Separator7.Height
-                              OnSelect: =Select(Parent)
-                              Visible: =ThisItem.IsSelected
-                              Width: =4
-                        - lblAppEsp:
-                            Control: Label@2.5.1
-                            Properties:
-                              AutoHeight: =true
-                              BorderColor: =RGBA(0, 0, 0, 1)
-                              Color: =RGBA(50, 49, 48, 1)
-                              FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
-                              Height: =Self.Size * 1.8
-                              OnSelect: =Select(Parent)
-                              PaddingBottom: =0
-                              PaddingLeft: =0
-                              PaddingRight: =0
-                              PaddingTop: =0
-                              Size: =14
-                              Text: =LookUp(colEspositori, id_espositore = ThisItem.id_espositore).ragione_sociale
-                              VerticalAlign: =VerticalAlign.Top
-                              Width: =Parent.TemplateWidth - 173
-                              X: =111
-                              Y: =75
-                        - lblAppImporti:
-                            Control: Label@2.5.1
-                            Properties:
-                              AutoHeight: =true
-                              BorderColor: =RGBA(0, 0, 0, 1)
-                              Color: =RGBA(50, 49, 48, 1)
-                              FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
-                              Height: =Self.Size * 1.8
-                              OnSelect: =Select(Parent)
-                              PaddingBottom: =0
-                              PaddingLeft: =0
-                              PaddingRight: =0
-                              PaddingTop: =0
-                              Size: =14
-                              Text: |-
-                                ="Listino: " & Text(ThisItem.imponibile_listino_eur, "[$-en-US]#,##0.00", "it-IT") & " €  ·  " &
-                                  "Sconto: " & Text(ThisItem.sconto_pct * 100, "[$-en-US]0.0", "it-IT") & "%  ·  " &
-                                  "Imponibile: " & Text(ThisItem.imponibile_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
-                              VerticalAlign: =VerticalAlign.Top
-                              Width: =Parent.TemplateWidth - 173
-                              X: =111
-                              Y: =136
-            - RightContainer1:
+                        AccessibleLabel: ="Torna agli stand"
+                        Color: =nfColoreTesto
+                        Height: =61
+                        Icon: =Icon.BackArrow
+                        OnSelect: =Navigate(scrStand)
+                        TabIndex: =1
+                        Width: =53
+                  - lblTitoloApprovazioni:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =nfColoreTesto
+                        FillPortions: =1
+                        FontWeight: =FontWeight.Bold
+                        Role: =TextRole.Heading1
+                        Size: =nfDimTitolo
+                        Text: ="Approvazioni sconti"
+            - conApprCorpo:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
                 Properties:
-                  Fill: =RGBA(255, 255, 255, 1)
-                  LayoutAlignItems: =LayoutAlignItems.Center
-                  LayoutDirection: =LayoutDirection.Vertical
-                  LayoutGap: =5
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =16
                   LayoutMinHeight: =16
                   LayoutMinWidth: =16
-                  PaddingBottom: =8
-                  PaddingLeft: =8
-                  PaddingRight: =8
-                  PaddingTop: =8
-                  RadiusBottomLeft: =8
-                  RadiusBottomRight: =8
-                  RadiusTopLeft: =8
-                  RadiusTopRight: =8
                 Children:
-                  - galAppRighe:
-                      Control: Gallery@2.15.0
-                      Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                  - LeftContainer1:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
                       Properties:
-                        Items: |-
-                          =Sort(Filter('arcade.riga_preventivo',
-                                                id_preventivo = galApprovazioni.Selected.id_preventivo), riga)
+                        BorderColor: =nfAccentoPreventivi
+                        BorderThickness: =nfSpessoreBordo
+                        Fill: =nfColoreSuperficie
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Vertical
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
+                        PaddingTop: =8
+                        RadiusBottomLeft: =nfRaggio
+                        RadiusBottomRight: =nfRaggio
+                        RadiusTopLeft: =nfRaggio
+                        RadiusTopRight: =nfRaggio
                       Children:
-                        - Image5:
-                            Control: Image@2.2.3
+                        - galApprovazioni:
+                            Control: Gallery@2.15.0
+                            Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                             Properties:
-                              Height: =72
-                              OnSelect: =Select(Parent)
-                              RadiusBottomLeft: =8
-                              RadiusBottomRight: =8
-                              RadiusTopLeft: =8
-                              RadiusTopRight: =8
-                              Width: =72
-                              X: =16
-                              Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
-                        - Title5:
-                            Control: Label@2.5.1
-                            Properties:
-                              BorderColor: =RGBA(0, 0, 0, 1)
-                              Color: =RGBA(50, 49, 48, 1)
-                              FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
-                              Height: =Self.Size * 1.8
-                              OnSelect: =Select(Parent)
-                              PaddingBottom: =0
-                              PaddingLeft: =0
-                              PaddingRight: =0
-                              PaddingTop: =0
-                              Size: =14
-                              Text: =ThisItem.codice_voce
-                              VerticalAlign: =VerticalAlign.Top
-                              Width: =Parent.TemplateWidth - 173
-                              X: =103
-                              Y: =16
-                        - Subtitle5:
-                            Control: Label@2.5.1
-                            Properties:
-                              BorderColor: =RGBA(0, 0, 0, 1)
-                              FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
-                              Height: =Self.Size * 1.8
-                              OnSelect: =Select(Parent)
-                              PaddingBottom: =0
-                              PaddingLeft: =0
-                              PaddingRight: =0
-                              PaddingTop: =0
-                              Size: =12
-                              Text: =ThisItem.descrizione
-                              VerticalAlign: =VerticalAlign.Top
-                              Width: =Title5.Width
-                              X: =Title5.X
-                              Y: =Title5.Y + Title5.Height
-                        - NextArrow4:
-                            Control: Classic/Icon@2.5.0
-                            Properties:
-                              AccessibleLabel: =Self.Tooltip
-                              BorderColor: =RGBA(0, 0, 0, 1)
-                              Color: =RGBA(166, 166, 166, 1)
-                              DisabledBorderColor: =RGBA(56, 56, 56, 1)
-                              DisabledColor: =RGBA(119, 119, 119, 1)
-                              Height: =50
-                              Icon: =Icon.ChevronRight
-                              OnSelect: =Select(Parent)
-                              PaddingBottom: =16
-                              PaddingLeft: =16
-                              PaddingRight: =16
-                              PaddingTop: =16
-                              Tooltip: ="Visualizza dettagli elementi"
-                              Width: =50
-                              X: =Parent.TemplateWidth - Self.Width - 12
-                              Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
-                        - Separator8:
-                            Control: Rectangle@2.3.0
-                            Properties:
-                              Fill: =RGBA(255, 255, 255, 1)
-                              Height: =8
-                              OnSelect: =Select(Parent)
-                              Width: =Parent.TemplateWidth
-                              Y: =Parent.TemplateHeight - Self.Height
-                        - Rectangle6:
-                            Control: Rectangle@2.3.0
-                            Properties:
-                              Fill: =App.Theme.Colors.Darker30
-                              Height: =Parent.TemplateHeight - Separator8.Height
-                              OnSelect: =Select(Parent)
-                              Visible: =ThisItem.IsSelected
-                              Width: =4
-                        - Subtitle5_1:
-                            Control: Label@2.5.1
-                            Properties:
-                              BorderColor: =RGBA(0, 0, 0, 1)
-                              FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
-                              Height: =Self.Size * 1.8
-                              OnSelect: =Select(Parent)
-                              PaddingBottom: =0
-                              PaddingLeft: =0
-                              PaddingRight: =0
-                              PaddingTop: =0
-                              Size: =12
-                              Text: =ThisItem.importo_eur & " €"
-                              VerticalAlign: =VerticalAlign.Top
-                              Width: =Title5.Width
-                              X: =Title5.X
-                              Y: =62
-                  - btnApprova:
-                      Control: ModernButton@1.0.0
+                              Fill: =nfColoreSuperficie
+                              Items: =SortByColumns(colInApprovazione, "id_preventivo", SortOrder.Ascending)
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =16
+                              TemplateSize: =200
+                            Children:
+                              - Image3:
+                                  Control: Image@2.2.3
+                                  Properties:
+                                    Height: =72
+                                    OnSelect: =Select(Parent)
+                                    RadiusBottomLeft: =8
+                                    RadiusBottomRight: =8
+                                    RadiusTopLeft: =8
+                                    RadiusTopRight: =8
+                                    Width: =72
+                                    X: =16
+                                    Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
+                              - lblAppTitolo:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AutoHeight: =true
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =nfColoreTesto
+                                    FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                                    Height: =Self.Size * 1.8
+                                    OnSelect: =Select(Parent)
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingRight: =0
+                                    PaddingTop: =0
+                                    Size: =nfDimTesto
+                                    Text: ="Preventivo n. " & ThisItem.id_preventivo & " – stand " & ThisItem.codice_stand
+                                    VerticalAlign: =VerticalAlign.Top
+                                    Width: =Parent.TemplateWidth - 173
+                                    X: =111
+                                    Y: =19
+                              - NextArrow3:
+                                  Control: Classic/Icon@2.5.0
+                                  Properties:
+                                    AccessibleLabel: =Self.Tooltip
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =nfColoreTestoSecondario
+                                    DisabledBorderColor: =RGBA(56, 56, 56, 1)
+                                    DisabledColor: =RGBA(119, 119, 119, 1)
+                                    Height: =50
+                                    Icon: =Icon.ChevronRight
+                                    OnSelect: =Select(Parent)
+                                    PaddingBottom: =16
+                                    PaddingLeft: =16
+                                    PaddingRight: =16
+                                    PaddingTop: =16
+                                    Tooltip: ="Visualizza dettagli elementi"
+                                    Width: =50
+                                    X: =Parent.TemplateWidth - Self.Width - 12
+                                    Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
+                              - Separator7:
+                                  Control: Rectangle@2.3.0
+                                  Properties:
+                                    Fill: =nfColoreSfondo
+                                    Height: =8
+                                    OnSelect: =Select(Parent)
+                                    Width: =Parent.TemplateWidth
+                                    Y: =Parent.TemplateHeight - Self.Height
+                              - Rectangle5:
+                                  Control: Rectangle@2.3.0
+                                  Properties:
+                                    Fill: =nfAccentoPreventivi
+                                    Height: =Parent.TemplateHeight - Separator7.Height
+                                    OnSelect: =Select(Parent)
+                                    Visible: =ThisItem.IsSelected
+                                    Width: =4
+                              - lblAppEsp:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AutoHeight: =true
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =nfColoreTesto
+                                    FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                                    Height: =Self.Size * 1.8
+                                    OnSelect: =Select(Parent)
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingRight: =0
+                                    PaddingTop: =0
+                                    Size: =nfDimTesto
+                                    Text: =LookUp(colEspositori, id_espositore = ThisItem.id_espositore).ragione_sociale
+                                    VerticalAlign: =VerticalAlign.Top
+                                    Width: =Parent.TemplateWidth - 173
+                                    X: =111
+                                    Y: =75
+                              - lblAppImporti:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    AutoHeight: =true
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =nfColoreTestoSecondario
+                                    FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                                    Height: =Self.Size * 1.8
+                                    OnSelect: =Select(Parent)
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingRight: =0
+                                    PaddingTop: =0
+                                    Size: =nfDimTesto
+                                    Text: |-
+                                      ="Listino: " & Text(ThisItem.imponibile_listino_eur, "[$-en-US]#,##0.00", "it-IT") & " €  ·  " &
+                                        "Sconto: " & Text(ThisItem.sconto_pct * 100, "[$-en-US]0.0", "it-IT") & "%  ·  " &
+                                        "Imponibile: " & Text(ThisItem.imponibile_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
+                                    VerticalAlign: =VerticalAlign.Top
+                                    Width: =Parent.TemplateWidth - 173
+                                    X: =111
+                                    Y: =136
+                  - RightContainer1:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
                       Properties:
-                        DisplayMode: |-
-                          =If(!IsBlank(galApprovazioni.Selected) && Today() <= ChiusuraVendite,
-                                           DisplayMode.Edit, DisplayMode.Disabled)
+                        Fill: =nfColoreSuperficie
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =5
                         LayoutMinHeight: =16
                         LayoutMinWidth: =16
-                        OnSelect: |-
-                          =Refresh('arcade.preventivo');
-                          With({ p: LookUp('arcade.preventivo', id_preventivo = galApprovazioni.Selected.id_preventivo) },
-                            // il preventivo nel frattempo è cambiato (rimandato, già approvato)?
-                            If(p.stato <> "in_approvazione",
-                              Notify("Il preventivo non è più in approvazione", NotificationType.Warning),
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
+                        PaddingTop: =8
+                        RadiusBottomLeft: =nfRaggio
+                        RadiusBottomRight: =nfRaggio
+                        RadiusTopLeft: =nfRaggio
+                        RadiusTopRight: =nfRaggio
+                      Children:
+                        - galAppRighe:
+                            Control: Gallery@2.15.0
+                            Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                            Properties:
+                              Fill: =nfColoreSuperficie
+                              Items: |-
+                                =Sort(Filter('arcade.riga_preventivo',
+                                                      id_preventivo = galApprovazioni.Selected.id_preventivo), riga)
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =16
+                            Children:
+                              - Image5:
+                                  Control: Image@2.2.3
+                                  Properties:
+                                    Height: =72
+                                    OnSelect: =Select(Parent)
+                                    RadiusBottomLeft: =8
+                                    RadiusBottomRight: =8
+                                    RadiusTopLeft: =8
+                                    RadiusTopRight: =8
+                                    Width: =72
+                                    X: =16
+                                    Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
+                              - Title5:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =nfColoreTesto
+                                    FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                                    Height: =Self.Size * 1.8
+                                    OnSelect: =Select(Parent)
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingRight: =0
+                                    PaddingTop: =0
+                                    Size: =nfDimTesto
+                                    Text: =ThisItem.codice_voce
+                                    VerticalAlign: =VerticalAlign.Top
+                                    Width: =Parent.TemplateWidth - 173
+                                    X: =103
+                                    Y: =16
+                              - Subtitle5:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =nfColoreTestoSecondario
+                                    FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                                    Height: =Self.Size * 1.8
+                                    OnSelect: =Select(Parent)
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingRight: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: =ThisItem.descrizione
+                                    VerticalAlign: =VerticalAlign.Top
+                                    Width: =Title5.Width
+                                    X: =Title5.X
+                                    Y: =Title5.Y + Title5.Height
+                              - NextArrow4:
+                                  Control: Classic/Icon@2.5.0
+                                  Properties:
+                                    AccessibleLabel: =Self.Tooltip
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =nfColoreTestoSecondario
+                                    DisabledBorderColor: =RGBA(56, 56, 56, 1)
+                                    DisabledColor: =RGBA(119, 119, 119, 1)
+                                    Height: =50
+                                    Icon: =Icon.ChevronRight
+                                    OnSelect: =Select(Parent)
+                                    PaddingBottom: =16
+                                    PaddingLeft: =16
+                                    PaddingRight: =16
+                                    PaddingTop: =16
+                                    Tooltip: ="Visualizza dettagli elementi"
+                                    Width: =50
+                                    X: =Parent.TemplateWidth - Self.Width - 12
+                                    Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
+                              - Separator8:
+                                  Control: Rectangle@2.3.0
+                                  Properties:
+                                    Fill: =nfColoreSfondo
+                                    Height: =8
+                                    OnSelect: =Select(Parent)
+                                    Width: =Parent.TemplateWidth
+                                    Y: =Parent.TemplateHeight - Self.Height
+                              - Rectangle6:
+                                  Control: Rectangle@2.3.0
+                                  Properties:
+                                    Fill: =nfAccentoPreventivi
+                                    Height: =Parent.TemplateHeight - Separator8.Height
+                                    OnSelect: =Select(Parent)
+                                    Visible: =ThisItem.IsSelected
+                                    Width: =4
+                              - Subtitle5_1:
+                                  Control: Label@2.5.1
+                                  Properties:
+                                    BorderColor: =RGBA(0, 0, 0, 1)
+                                    Color: =nfColoreTestoSecondario
+                                    FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
+                                    Height: =Self.Size * 1.8
+                                    OnSelect: =Select(Parent)
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingRight: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: =Text(ThisItem.importo_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
+                                    VerticalAlign: =VerticalAlign.Top
+                                    Width: =Title5.Width
+                                    X: =Title5.X
+                                    Y: =62
+                        - btnApprova:
+                            Control: ModernButton@1.0.0
+                            Properties:
+                              BasePaletteColor: =nfAccentoPreventivi
+                              Color: =nfColoreTestoSuAccento
+                              DisplayMode: |-
+                                =If(gblPuo.approvare && !IsBlank(galApprovazioni.Selected) && Today() <= ChiusuraVendite,
+                                                 DisplayMode.Edit, DisplayMode.Disabled)
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =16
+                              OnSelect: |-
+                                =Refresh('arcade.preventivo');
+                                UpdateContext({ locApprovaOk: true });
+                                With({ p: LookUp('arcade.preventivo', id_preventivo = galApprovazioni.Selected.id_preventivo) },
+                                  // il preventivo nel frattempo è cambiato (rimandato, già approvato)?
+                                  If(p.stato <> "in_approvazione",
+                                    UpdateContext({ locApprovaOk: false });
+                                    RemoveIf(colInApprovazione, id_preventivo = p.id_preventivo);
+                                    Notify("Il preventivo non è più in approvazione", NotificationType.Warning),
 
-                              IfError(
-                                Patch('arcade.preventivo', p, {
-                                    stato: "inviato",
-                                    approvato_da: gblUtente.id_utente,
-                                    approvato_il: Now(),
-                                    inviato_il: Now(),
-                                    valido_fino: DateAdd(Today(), GiorniValidita, TimeUnit.Days) });
-                                RemoveIf(colInApprovazione, id_preventivo = p.id_preventivo);
-                                Notify("Preventivo n. " & p.id_preventivo & " approvato e inviato", NotificationType.Success),
+                                    IfError(
+                                      Patch('arcade.preventivo', p, {
+                                          stato: "inviato",
+                                          approvato_da: gblUtente.id_utente,
+                                          approvato_il: Now(),
+                                          inviato_il: Now(),
+                                          valido_fino: DateAdd(Today(), GiorniValidita, TimeUnit.Days) });
+                                      true,
 
-                                Notify("Approvazione non riuscita: " & FirstError.Message, NotificationType.Error)
-                              )
-                            )
-                          ); Navigate(scrStand, ScreenTransition.Fade)
-                        Size: =11
-                        Text: ="Approva"
-                  - btnRimanda:
-                      Control: ModernButton@1.0.0
-                      Properties:
-                        LayoutMinHeight: =16
-                        LayoutMinWidth: =16
-                        OnSelect: |-
-                          =With({ p: LookUp('arcade.preventivo', id_preventivo = galApprovazioni.Selected.id_preventivo) },
-                            IfError(
-                              Patch('arcade.preventivo', p, { stato: "bozza" });
-                              RemoveIf(colInApprovazione, id_preventivo = p.id_preventivo);
-                              Notify("Preventivo n. " & p.id_preventivo & " rimandato in bozza: lo stand torna libero",
-                                     NotificationType.Information),
+                                      UpdateContext({ locApprovaOk: false });
+                                      Notify("Approvazione non riuscita: " & FirstError.Message, NotificationType.Error)
+                                    )
+                                  );
+                                  // esito: solo se l'approvazione è riuscita tolgo dall'elenco, avviso e torno agli stand
+                                  If(locApprovaOk,
+                                    RemoveIf(colInApprovazione, id_preventivo = p.id_preventivo);
+                                    Notify("Preventivo n. " & p.id_preventivo & " approvato e inviato", NotificationType.Success);
+                                    Navigate(scrStand, ScreenTransition.Fade)
+                                  )
+                                )
+                              Size: =nfDimTesto
+                              Text: ="Approva"
+                        - btnRimanda:
+                            Control: ModernButton@1.0.0
+                            Properties:
+                              BasePaletteColor: =nfColoreNeutro
+                              Color: =nfColoreTestoSuAccento
+                              DisplayMode: |-
+                                =If(IsBlank(galApprovazioni.Selected), DisplayMode.Disabled,
+                                   If(!gblPuo.approvare, DisplayMode.Disabled, DisplayMode.Edit))
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =16
+                              OnSelect: |-
+                                =UpdateContext({ locRimandaOk: true });
+                                With({ p: LookUp('arcade.preventivo', id_preventivo = galApprovazioni.Selected.id_preventivo) },
+                                  IfError(
+                                    Patch('arcade.preventivo', p, { stato: "bozza" });
+                                    true,
 
-                              Notify("Operazione non riuscita: " & FirstError.Message, NotificationType.Error)
-                            )
-                          ); Navigate(scrStand, ScreenTransition.Fade)
-                        Size: =11
-                        Text: ="Rimanda in bozza"
+                                    UpdateContext({ locRimandaOk: false });
+                                    Notify("Operazione non riuscita: " & FirstError.Message, NotificationType.Error)
+                                  );
+                                  // esito: solo se il rimando è riuscito tolgo dall'elenco, avviso e torno agli stand
+                                  If(locRimandaOk,
+                                    RemoveIf(colInApprovazione, id_preventivo = p.id_preventivo);
+                                    Notify("Preventivo n. " & p.id_preventivo & " rimandato in bozza: lo stand torna libero",
+                                           NotificationType.Information);
+                                    Navigate(scrStand, ScreenTransition.Fade)
+                                  )
+                                )
+                              Size: =nfDimTesto
+                              Text: ="Rimanda in bozza"
+      - conSoloDirettore:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =nfColoreSfondo
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =120
+            LayoutJustifyContent: =LayoutJustifyContent.Center
+            PaddingBottom: =8
+            PaddingLeft: =8
+            PaddingRight: =8
+            PaddingTop: =8
+            Visible: =!gblPuo.approvare
+            Width: =Parent.Width
+          Children:
+            - lblAccessoApprNegato:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  AutoHeight: =true
+                  Color: =nfColoreErrore
+                  FontWeight: =FontWeight.Bold
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  Size: =32
+                  Text: ="Le approvazioni sono riservate al direttore commerciale"
+                  Width: =900
+            - btnTornaaStanddaAppr:
+                Control: ModernButton@1.0.0
+                Properties:
+                  BasePaletteColor: =nfAccentoStand
+                  Color: =nfColoreTestoSuAccento
+                  Height: =50
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  OnSelect: =Navigate(scrStand)
+                  Text: ="Torna agli stand"
+                  Width: =200

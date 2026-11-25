@@ -1,8 +1,9 @@
-"scrListino As screen.'tabletLayout_HeaderAndGallery_ver3.0'":
+scrListino As screen:
+    ContentLanguage: =""
     CopilotContext: |-
         ={ ScreenName: Self.Name }
     CopilotPromptSuggestions: =[]
-    Fill: =Color.White
+    Fill: =nfColoreSfondo
     LoadingSpinnerColor: =App.Theme.Colors.Primary
     OnVisible: |-
         =ClearCollect(colListinoVista,
@@ -12,26 +13,30 @@
 
     RectQuickActionBar1 As rectangle:
         BorderColor: =App.Theme.Colors.Darker40
-        Fill: =App.Theme.Colors.Primary
+        Fill: =nfColoreSuperficie
         Height: =64
         Width: =Parent.Width
         ZIndex: =1
 
     Title2 As label:
         Align: =Align.Center
-        Color: =App.Theme.Colors.PrimaryForeground
+        Color: =nfColoreTesto
         DisabledColor: =RGBA(166, 166, 166, 1)
         Font: =App.Theme.Font
+        FontWeight: =FontWeight.Bold
         Height: =64
         PaddingRight: =10
-        Size: =18
-        Text: ="Nome app"
+        Size: =nfDimTitolo
+        Text: ="Listino prezzi · " & EdizioneSel.nome
         Width: =Parent.Width
         ZIndex: =2
 
     "galListino As gallery.'BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0'":
-        BorderColor: =App.Theme.Colors.Darker40
+        '#CopilotOverlayLabel': ="Filtro applicato"
+        BorderColor: =nfAccentoPrimario
+        BorderThickness: =nfSpessoreBordo
         DelayItemLoading: =true
+        Fill: =nfColoreSuperficie
         Height: =639
         Items: |-
             =SortByColumns(
@@ -48,7 +53,7 @@
 
         lblLisCodice As label:
             AutoHeight: =true
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTesto
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -58,34 +63,35 @@
             PaddingLeft: =0
             PaddingRight: =0
             PaddingTop: =0
+            Size: =nfDimTesto
             Text: =ThisItem.codice_voce
             VerticalAlign: =VerticalAlign.Top
             Width: =Parent.TemplateWidth - 173
             X: =86
             Y: =2
-            ZIndex: =2
+            ZIndex: =1
 
         Separator6 As rectangle:
             BorderColor: =App.Theme.Colors.Darker40
-            Fill: =RGBA(255, 255, 255, 1)
+            Fill: =nfColoreSfondo
             Height: =8
             OnSelect: =Select(Parent)
             Width: =Parent.TemplateWidth
             Y: =Parent.TemplateHeight - Self.Height
-            ZIndex: =5
+            ZIndex: =2
 
         Rectangle3 As rectangle:
             BorderColor: =App.Theme.Colors.Darker40
-            Fill: =App.Theme.Colors.Darker30
+            Fill: =nfAccentoPrimario
             Height: =Parent.TemplateHeight - Separator6.Height
             OnSelect: =Select(Parent)
             Visible: =ThisItem.IsSelected
             Width: =4
-            ZIndex: =6
+            ZIndex: =3
 
         lblLisDescr As label:
             AutoHeight: =true
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTesto
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -95,16 +101,17 @@
             PaddingLeft: =0
             PaddingRight: =0
             PaddingTop: =0
+            Size: =nfDimTesto
             Text: =ThisItem.descrizione
             VerticalAlign: =VerticalAlign.Top
             Width: =Parent.TemplateWidth - 173
             X: =86
             Y: =36
-            ZIndex: =7
+            ZIndex: =4
 
         lblLisTipo As label:
             AutoHeight: =true
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -114,16 +121,17 @@
             PaddingLeft: =0
             PaddingRight: =0
             PaddingTop: =0
+            Size: =nfDimTesto
             Text: =Proper(ThisItem.tipo_voce)
             VerticalAlign: =VerticalAlign.Top
             Width: =Parent.TemplateWidth - 173
             X: =86
             Y: =68
-            ZIndex: =8
+            ZIndex: =5
 
         lblLisPrezzo As label:
             AutoHeight: =true
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTesto
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -133,6 +141,7 @@
             PaddingLeft: =0
             PaddingRight: =0
             PaddingTop: =0
+            Size: =nfDimTesto
             Text: |-
                 =If(IsBlank(ThisItem.prezzo_unitario), "—",
                      ThisItem.tipo_voce = "maggiorazione" || ThisItem.unita = "%",
@@ -142,11 +151,11 @@
             Width: =Parent.TemplateWidth - 173
             X: =86
             Y: =106
-            ZIndex: =9
+            ZIndex: =6
 
         lblLisNote As label:
             AutoHeight: =true
-            Color: =RGBA(50, 49, 48, 1)
+            Color: =nfColoreTestoSecondario
             DisabledColor: =RGBA(166, 166, 166, 1)
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -156,6 +165,7 @@
             PaddingLeft: =0
             PaddingRight: =0
             PaddingTop: =0
+            Size: =nfDimTesto
             Text: |-
                 =If(!IsBlank(ThisItem.quantita_disponibile),
                        "Pacchetti per edizione: " & ThisItem.quantita_disponibile & "  ", "") &
@@ -166,16 +176,34 @@
             Width: =Parent.TemplateWidth - 173
             X: =86
             Y: =139
-            ZIndex: =10
+            ZIndex: =7
 
     drpTipoVoce As modernDropdown:
         Appearance: =Appearance.FilledDarker
+        BorderStyle: =""
         Default: |-
             ={Value: "Tutti"}
+        Font: =""
         ItemDisplayText: =ThisItem.Value
         Items: =["Tutti", "spazio", "maggiorazione", "extra", "sponsorizzazione", "condizione"]
+        Required: =false
         ValidationState: =ValidationState.None
         X: =54
         Y: =75
         ZIndex: =4
+
+    btnIndietroListino As icon:
+        AccessibleLabel: ="Torna alla home"
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =nfColoreTesto
+        DisabledBorderColor: =RGBA(166, 166, 166, 1)
+        DisabledColor: =RGBA(244, 244, 244, 1)
+        Height: =40
+        Icon: =Icon.BackArrow
+        OnSelect: =Navigate(scrHome)
+        TabIndex: =1
+        Width: =40
+        X: =13
+        Y: =12
+        ZIndex: =5
 
