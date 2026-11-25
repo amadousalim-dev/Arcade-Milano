@@ -46,12 +46,29 @@ App As appinfo:
         // Colori di avviso generici
         nfColoreErrore = RGBA(255, 82, 82, 1);       // rosso
         nfColoreAttenzione = RGBA(255, 152, 0, 1);   // arancione
+        // Colori di stato generici (stesso significato in tutte le schermate)
+        nfColoreOk = RGBA(61, 220, 132, 1);        // verde: ok, pagato, disponibile
+        nfColoreNeutro = RGBA(158, 158, 158, 1);   // grigio: neutro, disdetto, da pagare
     OnStart: |-
-        =ClearCollect(colEspositori, Sort('arcade.espositore', ragione_sociale));
+        =IfError(
+          Set(gblUtente, LookUp('arcade.utente', Lower(email) = Lower(User().Email))),
+          Set(gblUtente, LookUp('arcade.utente', Lower(email) = Lower(User().Email)))
+        );
+        ClearCollect(colEspositori, Sort('arcade.espositore', ragione_sociale));
         ClearCollect(colEdizioni, Sort('arcade.edizione', id_edizione, SortOrder.Descending));
         Set(gblUtente, LookUp('arcade.utente', Lower(email) = Lower(User().Email)));
-        // PROVVISORIO fino alla 2.3: tutti possono tutto
-        Set(gblPuo, { incassi: true, deroga: true, variazioni: true, approvare: true })
+        // ruolo dell'utente collegato; "nessuno" se l'e-mail non è nella tabella utente
+        Set(gblRuolo, Coalesce(gblUtente.ruolo, "nessuno"));
+        // matrice dei permessi: è l'unico punto da cambiare se cambiano le regole
+        Set(gblPuo, {
+            entrare:    gblRuolo in ["commerciale", "direttore_commerciale", "amministrazione"],
+            preventivi: gblRuolo in ["commerciale", "direttore_commerciale"],
+            approvare:  gblRuolo = "direttore_commerciale",
+            firmare:    gblRuolo in ["commerciale", "direttore_commerciale"],
+            incassi:    gblRuolo = "amministrazione",
+            deroga:     gblRuolo = "amministrazione",
+            variazioni: gblRuolo in ["direttore_commerciale", "amministrazione"]
+        })
     StartScreen: =scrHome
     Theme: =PowerAppsTheme
 

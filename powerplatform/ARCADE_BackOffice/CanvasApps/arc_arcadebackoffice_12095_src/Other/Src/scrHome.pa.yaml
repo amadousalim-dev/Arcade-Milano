@@ -93,6 +93,21 @@ Screens:
                               PaddingLeft: =0
                               Size: =nfDimSottotitolo
                               Text: ="Edizione 2026 · 18–20 dicembre · 3 padiglioni"
+                  - btnListino:
+                      Control: ModernButton@1.0.0
+                      Properties:
+                        AccessibleLabel: ="Apri il listino prezzi"
+                        AlignInContainer: =AlignInContainer.Center
+                        BasePaletteColor: =nfAccentoPrimario
+                        Color: =nfColoreTestoSuAccento
+                        FontWeight: =FontWeight.Semibold
+                        Height: =44
+                        Layout: =ButtonLayout.TextOnly
+                        LayoutMinHeight: =44
+                        LayoutMinWidth: =160
+                        OnSelect: =Navigate(scrListino)
+                        Text: ="Listino prezzi"
+                        Width: =160
             - conHomeRiquadri:
                 Control: GroupContainer@1.5.0
                 Variant: AutoLayout
@@ -371,7 +386,7 @@ Screens:
                                     LayoutMinHeight: =28
                                     PaddingLeft: =0
                                     Size: =nfDimTesto
-                                    Text: ="Apri un contratto dall'elenco dei preventivi firmati"
+                                    Text: ="Elenco dei contratti con pagamenti e crediti aperti"
                                     VerticalAlign: =VerticalAlign.Top
                               - btnHomeContratti:
                                   Control: ModernButton@1.0.0
@@ -387,3 +402,41 @@ Screens:
                                     OnSelect: =Navigate(scrContratti)
                                     Text: ="Apri ›"
                                     Width: =140
+      - conNonAutorizzato:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =nfColoreSfondo
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =40
+            LayoutJustifyContent: =LayoutJustifyContent.Center
+            PaddingBottom: =8
+            PaddingLeft: =8
+            PaddingRight: =8
+            PaddingTop: =8
+            Visible: =!gblPuo.entrare
+            Width: =Parent.Width
+          Children:
+            - Label2:
+                Control: Label@2.5.1
+                Properties:
+                  AutoHeight: =true
+                  Color: =nfColoreTesto
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  Size: =38
+                  Text: ="Accesso non autorizzato"
+                  Width: =600
+            - Label4:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  AutoHeight: =true
+                  Color: =nfColoreTestoSecondario
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  Size: =18
+                  Text: ="Il tuo account non è abilitato al back-office commerciale. Chiedi all'amministratore del sistema di aggiungerti con il ruolo corretto."
+                  Width: =750

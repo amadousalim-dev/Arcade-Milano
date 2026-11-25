@@ -14,14 +14,14 @@ scrContratto As screen:
             id_pagamento, id_contratto, tipo, importo, scadenza, pagato_il, data_dedotta, annullato))
 
     btnIndietroContr As icon:
-        AccessibleLabel: ="1"
+        AccessibleLabel: ="Torna ai contratti"
         BorderColor: =App.Theme.Colors.Darker40
         Color: =nfColoreTesto
         DisabledBorderColor: =RGBA(166, 166, 166, 1)
         DisabledColor: =RGBA(244, 244, 244, 1)
         Height: =61
         Icon: =Icon.BackArrow
-        OnSelect: =Navigate(scrStand)
+        OnSelect: =Navigate(scrContratti)
         TabIndex: =1
         Width: =53
         X: =34
@@ -48,7 +48,7 @@ scrContratto As screen:
     lblTitoloContr_1 As label:
         AutoHeight: =true
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =nfAccentoContratti
+        Color: =If(gblContratto.stato = "disdetto", nfColoreNeutro, nfColoreOk)
         DisabledColor: =RGBA(166, 166, 166, 1)
         FocusedBorderThickness: =1
         Font: =App.Theme.Font
@@ -175,7 +175,7 @@ scrContratto As screen:
             PaddingTop: =0
             Size: =12
             Text: |-
-                ="Prezzo unitario: " & ThisItem.prezzo_unitario & " €"
+                ="Prezzo unitario: " & Text(ThisItem.prezzo_unitario, "[$-en-US]#,##0.00", "it-IT") & " €"
             VerticalAlign: =VerticalAlign.Top
             Width: =Title1.Width
             X: =103
@@ -195,7 +195,7 @@ scrContratto As screen:
             PaddingTop: =0
             Size: =12
             Text: |-
-                ="Importo: " & ThisItem.importo_eur & " €"
+                ="Importo: " & Text(ThisItem.importo_eur, "[$-en-US]#,##0.00", "it-IT") & " €"
             VerticalAlign: =VerticalAlign.Top
             Width: =Title1.Width
             X: =103
@@ -439,11 +439,15 @@ scrContratto As screen:
             ZIndex: =7
 
         btnRegistraIncasso As modernButton:
+            BasePaletteColor: =nfAccentoContratti
+            BorderStyle: =""
+            Color: =nfColoreTestoSuAccento
             DisplayMode: |-
                 =If(IsBlank(ThisItem.pagato_il) &&
                                  dpIncasso.SelectedDate <= Today() &&
                                  dpIncasso.SelectedDate >= gblContratto.data_firma,
                                  DisplayMode.Edit, DisplayMode.Disabled)
+            Font: =""
             OnSelect: |-
                 =IfError(
                   Patch('arcade.pagamento',
@@ -456,6 +460,7 @@ scrContratto As screen:
                 
                   Notify("Registrazione non riuscita: " & FirstError.Message, NotificationType.Error)
                 )
+            Size: =0
             Text: ="Registra incasso"
             Visible: =gblPuo.incassi && !ThisItem.annullato
             Width: =140
@@ -464,7 +469,9 @@ scrContratto As screen:
             ZIndex: =8
 
         btnCorreggiIncasso As modernButton:
+            BasePaletteColor: =nfColoreNeutro
             BorderStyle: =""
+            Color: =nfColoreTestoSuAccento
             Font: =""
             OnSelect: |-
                 =IfError(
@@ -488,8 +495,11 @@ scrContratto As screen:
     lblConsegna As label:
         BorderColor: =App.Theme.Colors.Darker40
         Color: |-
-            =If(StartsWith(Self.Text, "Stand NON"), Color.Red,
-                       StartsWith(Self.Text, "Contratto disdetto"), Color.Gray, Color.DarkGreen)
+            =With({ saldo: LookUp(colPagContratto, tipo = "saldo") },
+              If(gblContratto.stato = "disdetto", nfColoreNeutro,
+                 !IsBlank(saldo.pagato_il), nfColoreOk,
+                 !IsBlank(gblContratto.deroga_allestimento_il), nfColoreOk,
+                 nfColoreErrore))
         DisabledColor: =RGBA(166, 166, 166, 1)
         Font: =App.Theme.Font
         Size: =13
@@ -507,6 +517,10 @@ scrContratto As screen:
         ZIndex: =12
 
     btnDeroga As modernButton:
+        BasePaletteColor: =nfAccentoContratti
+        BorderStyle: =""
+        Color: =nfColoreTestoSuAccento
+        Font: =""
         Height: =45
         OnSelect: |-
             =IfError(
@@ -518,6 +532,7 @@ scrContratto As screen:
             
               Notify("Deroga non riuscita: " & FirstError.Message, NotificationType.Error)
             )
+        Size: =0
         Text: ="Concedi deroga all'allestimento"
         Visible: |-
             =gblPuo.deroga && gblContratto.stato = "attivo" &&
@@ -529,7 +544,9 @@ scrContratto As screen:
         ZIndex: =13
 
     btnDisdetta As modernButton:
+        BasePaletteColor: =nfColoreErrore
         BorderStyle: =""
+        Color: =nfColoreTestoSuAccento
         Font: =""
         Height: =45
         OnSelect: |-
@@ -543,7 +560,9 @@ scrContratto As screen:
         ZIndex: =14
 
     btnCambioStand As modernButton:
+        BasePaletteColor: =nfAccentoContratti
         BorderStyle: =""
+        Color: =nfColoreTestoSuAccento
         DisplayMode: =If(Today() <= DateAdd(gblApertura, -60, TimeUnit.Days), DisplayMode.Edit, DisplayMode.Disabled)
         Font: =""
         Height: =45
@@ -559,7 +578,7 @@ scrContratto As screen:
 
     lblMotivoCambio As label:
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =Color.White
+        Color: =nfColoreTesto
         DisabledColor: =RGBA(166, 166, 166, 1)
         Font: =App.Theme.Font
         Size: =13
@@ -573,8 +592,9 @@ scrContratto As screen:
         ZIndex: =16
 
     rtgConfermaDisdetta As rectangle:
-        BorderColor: =App.Theme.Colors.Darker40
-        Fill: =App.Theme.Colors.Primary
+        BorderColor: =nfColoreAttenzione
+        BorderThickness: =nfSpessoreBordo
+        Fill: =nfColoreSuperficie
         Height: =156
         Visible: =locConfermaDisdetta
         Width: =630
@@ -582,11 +602,16 @@ scrContratto As screen:
         ZIndex: =17
 
     btnAnnullaDisdetta As modernButton:
-        BorderColor: =Color.Black
+        BasePaletteColor: =nfColoreNeutro
+        BorderColor: =nfColoreTestoSuAccento
+        BorderStyle: =""
         BorderThickness: =1
+        Color: =nfColoreTestoSuAccento
+        Font: =""
         Height: =34
         OnSelect: |-
             =UpdateContext({ locConfermaDisdetta: false })
+        Size: =0
         Text: ="Annulla Disdetta"
         Visible: =locConfermaDisdetta
         Width: =148
@@ -595,9 +620,11 @@ scrContratto As screen:
         ZIndex: =18
 
     btnConfermaDisdetta As modernButton:
-        BorderColor: =Color.Black
+        BasePaletteColor: =nfColoreErrore
+        BorderColor: =nfColoreTestoSuAccento
         BorderStyle: =""
         BorderThickness: =1
+        Color: =nfColoreTestoSuAccento
         Font: =""
         Height: =34
         OnSelect: |-
@@ -629,7 +656,7 @@ scrContratto As screen:
             )
         Size: =0
         Text: ="Conferma Disdetta"
-        Visible: =locConfermaDisdetta
+        Visible: =locConfermaDisdetta && gblPuo.variazioni
         Width: =148
         X: =384
         Y: =714
@@ -638,7 +665,7 @@ scrContratto As screen:
     lblConfDisdetta As label:
         AutoHeight: =true
         BorderColor: =App.Theme.Colors.Darker40
-        Color: =RGBA(0, 0, 0, 1)
+        Color: =nfColoreTesto
         DisabledColor: =RGBA(166, 166, 166, 1)
         Font: =App.Theme.Font
         FontWeight: =FontWeight.Bold

@@ -13,7 +13,7 @@ Screens:
       OnVisible: |-
         =If(IsEmpty(colEdizioni),
            ClearCollect(colEdizioni, Sort('arcade.edizione', id_edizione, SortOrder.Descending)));
-        Select(btnCalcolaStati)
+        If(gblPuo.entrare, Select(btnCalcolaStati))
     Children:
       - drpEdizione:
           Control: ModernDropdown@1.0.3
@@ -36,7 +36,8 @@ Screens:
                                  LookUp(colEdizioni, id_edizione = EdizioneSel.id_edizione),
                                  drpEdizione.Selected));
               With({ ed: gblEdVista },
-                Refresh('arcade.contratto'); Refresh('arcade.preventivo');
+                  IfError(Refresh('arcade.contratto'), Refresh('arcade.contratto'));
+                IfError(Refresh('arcade.preventivo'), Refresh('arcade.preventivo'));
                 // stand che esistono in quell'edizione (attivo_dal <= anno)
                 ClearCollect(colStandEd, Filter('arcade.stand', attivo_dal <= ed.id_edizione));
                 // contratti attivi dell'edizione: rendono lo stand "venduto"
@@ -249,25 +250,6 @@ Screens:
                   Width: =lblpadiglione.Width
                   X: =99
                   Y: =185
-            - NextArrow1:
-                Control: Classic/Icon@2.5.0
-                Properties:
-                  AccessibleLabel: =Self.Tooltip
-                  BorderColor: =RGBA(0, 0, 0, 1)
-                  Color: =nfColoreTestoSecondario
-                  DisabledBorderColor: =RGBA(56, 56, 56, 1)
-                  DisabledColor: =RGBA(119, 119, 119, 1)
-                  Height: =50
-                  Icon: =Icon.ChevronRight
-                  OnSelect: =Select(Parent)
-                  PaddingBottom: =16
-                  PaddingLeft: =16
-                  PaddingRight: =16
-                  PaddingTop: =16
-                  Tooltip: ="Visualizza dettagli elementi"
-                  Width: =50
-                  X: =Parent.TemplateWidth - Self.Width - 12
-                  Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
             - Separator1:
                 Control: Rectangle@2.3.0
                 Properties:
@@ -363,7 +345,7 @@ Screens:
                   Color: =nfColoreTestoSecondario
                   FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                   Height: =Self.Size * 1.8
-                  OnSelect: =Select(Parent)
+                  OnSelect: =galStand.Selected
                   PaddingBottom: =0
                   PaddingLeft: =0
                   PaddingRight: =0
@@ -491,7 +473,8 @@ Screens:
                                Set(gblIdPreventivo, If(false, 0));
                                Navigate(scrPreventivo)
                   Text: ="Nuovo Preventivo"
-            - btnNuovoPreventivo_1:
+                  Visible: =gblPuo.preventivi
+            - btnApriContratto:
                 Control: ModernButton@1.0.0
                 Properties:
                   AccessibleLabel: ="1"
@@ -601,7 +584,7 @@ Screens:
             Text: |-
               ="Approvazioni (" & CountRows(Filter('arcade.preventivo',
                            id_edizione = EdizioneSel.id_edizione && stato = "in_approvazione")) & ")"
-            Visible: =drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
+            Visible: =gblPuo.approvare && drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
             Width: =145
             X: =961
             Y: =138

@@ -8,7 +8,7 @@ scrStand As screen:
     OnVisible: |-
         =If(IsEmpty(colEdizioni),
            ClearCollect(colEdizioni, Sort('arcade.edizione', id_edizione, SortOrder.Descending)));
-        Select(btnCalcolaStati)
+        If(gblPuo.entrare, Select(btnCalcolaStati))
 
     drpEdizione As modernDropdown:
         AccessibleLabel: ="1"
@@ -36,7 +36,8 @@ scrStand As screen:
                                LookUp(colEdizioni, id_edizione = EdizioneSel.id_edizione),
                                drpEdizione.Selected));
             With({ ed: gblEdVista },
-              Refresh('arcade.contratto'); Refresh('arcade.preventivo');
+                IfError(Refresh('arcade.contratto'), Refresh('arcade.contratto'));
+              IfError(Refresh('arcade.preventivo'), Refresh('arcade.preventivo'));
               // stand che esistono in quell'edizione (attivo_dal <= anno)
               ClearCollect(colStandEd, Filter('arcade.stand', attivo_dal <= ed.id_edizione));
               // contratti attivi dell'edizione: rendono lo stand "venduto"
@@ -294,22 +295,6 @@ scrStand As screen:
             Y: =185
             ZIndex: =2
 
-        NextArrow1 As icon:
-            AccessibleLabel: =Self.Tooltip
-            Color: =nfColoreTestoSecondario
-            Height: =50
-            Icon: =Icon.ChevronRight
-            OnSelect: =Select(Parent)
-            PaddingBottom: =16
-            PaddingLeft: =16
-            PaddingRight: =16
-            PaddingTop: =16
-            Tooltip: ="Visualizza dettagli elementi"
-            Width: =50
-            X: =Parent.TemplateWidth - Self.Width - 12
-            Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
-            ZIndex: =3
-
         Separator1 As rectangle:
             BorderColor: =App.Theme.Colors.Darker40
             Fill: =nfColoreSfondo
@@ -317,7 +302,7 @@ scrStand As screen:
             OnSelect: =Select(Parent)
             Width: =Parent.TemplateWidth
             Y: =Parent.TemplateHeight - Self.Height
-            ZIndex: =4
+            ZIndex: =3
 
         Rectangle1 As rectangle:
             BorderColor: =App.Theme.Colors.Darker40
@@ -326,7 +311,7 @@ scrStand As screen:
             OnSelect: =Select(Parent)
             Visible: =ThisItem.IsSelected
             Width: =4
-            ZIndex: =5
+            ZIndex: =4
 
         lblpadiglione As label:
             Color: =nfColoreTestoSecondario
@@ -344,7 +329,7 @@ scrStand As screen:
             Width: =Parent.TemplateWidth - 173
             X: =99
             Y: =62
-            ZIndex: =6
+            ZIndex: =5
 
         lblcodicestand As label:
             Color: =nfColoreTesto
@@ -362,7 +347,7 @@ scrStand As screen:
             Width: =Parent.TemplateWidth - 173
             X: =99
             Y: =29
-            ZIndex: =7
+            ZIndex: =6
 
         lblmq As label:
             Color: =nfColoreTestoSecondario
@@ -381,7 +366,7 @@ scrStand As screen:
             Width: =lblpadiglione.Width
             X: =99
             Y: =95
-            ZIndex: =8
+            ZIndex: =7
 
         lblprezzolistino As label:
             Color: =nfColoreTestoSecondario
@@ -400,7 +385,7 @@ scrStand As screen:
             Width: =lblpadiglione.Width
             X: =99
             Y: =123
-            ZIndex: =9
+            ZIndex: =8
 
         lblposizione As label:
             Color: =nfColoreTestoSecondario
@@ -408,7 +393,7 @@ scrStand As screen:
             Font: =App.Theme.Font
             FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
             Height: =Self.Size * 1.8
-            OnSelect: =Select(Parent)
+            OnSelect: =galStand.Selected
             PaddingBottom: =0
             PaddingLeft: =0
             PaddingRight: =0
@@ -419,7 +404,7 @@ scrStand As screen:
             Width: =lblpadiglione.Width
             X: =99
             Y: =156
-            ZIndex: =10
+            ZIndex: =9
 
     conDettaglio As groupContainer.horizontalAutoLayoutContainer:
         BorderColor: =nfAccentoStand
@@ -571,9 +556,10 @@ scrStand As screen:
                            Navigate(scrPreventivo)
             Size: =0
             Text: ="Nuovo Preventivo"
+            Visible: =gblPuo.preventivi
             ZIndex: =6
 
-        btnNuovoPreventivo_1 As modernButton:
+        btnApriContratto As modernButton:
             AccessibleLabel: ="1"
             BasePaletteColor: =nfAccentoContratti
             BorderStyle: =""
@@ -707,7 +693,7 @@ scrStand As screen:
         Text: |-
             ="Approvazioni (" & CountRows(Filter('arcade.preventivo',
                          id_edizione = EdizioneSel.id_edizione && stato = "in_approvazione")) & ")"
-        Visible: =drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
+        Visible: =gblPuo.approvare && drpEdizione.Selected.id_edizione = EdizioneSel.id_edizione
         Width: =145
         X: =961
         Y: =138

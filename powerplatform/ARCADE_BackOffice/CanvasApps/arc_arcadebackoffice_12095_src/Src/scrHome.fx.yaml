@@ -65,7 +65,7 @@ scrHome As screen:
                 RadiusBottomRight: =4
                 RadiusTopRight: =4
                 Width: =8
-                ZIndex: =2
+                ZIndex: =1
 
             conHomeTitoli As groupContainer.horizontalAutoLayoutContainer:
                 LayoutDirection: =LayoutDirection.Vertical
@@ -84,7 +84,7 @@ scrHome As screen:
                 RadiusBottomRight: =4
                 RadiusTopLeft: =4
                 RadiusTopRight: =4
-                ZIndex: =3
+                ZIndex: =2
 
                 lblHomeTitolo As label:
                     AlignInContainer: =AlignInContainer.Stretch
@@ -115,6 +115,26 @@ scrHome As screen:
                     Size: =nfDimSottotitolo
                     Text: ="Edizione 2026 · 18–20 dicembre · 3 padiglioni"
                     ZIndex: =5
+
+            btnListino As modernButton:
+                AccessibleLabel: ="Apri il listino prezzi"
+                AlignInContainer: =AlignInContainer.Center
+                BasePaletteColor: =nfAccentoPrimario
+                BorderStyle: =""
+                Color: =nfColoreTestoSuAccento
+                Font: =""
+                FontWeight: =FontWeight.Semibold
+                Height: =44
+                Layout: =ButtonLayout.TextOnly
+                LayoutMaxHeight: =0
+                LayoutMaxWidth: =0
+                LayoutMinHeight: =44
+                LayoutMinWidth: =160
+                OnSelect: =Navigate(scrListino)
+                Size: =0
+                Text: ="Listino prezzi"
+                Width: =160
+                ZIndex: =3
 
         conHomeRiquadri As groupContainer.horizontalAutoLayoutContainer:
             LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -508,7 +528,7 @@ scrHome As screen:
                         LayoutMinHeight: =28
                         PaddingLeft: =0
                         Size: =nfDimTesto
-                        Text: ="Apri un contratto dall'elenco dei preventivi firmati"
+                        Text: ="Elenco dei contratti con pagamenti e crediti aperti"
                         VerticalAlign: =VerticalAlign.Top
                         ZIndex: =16
 
@@ -530,4 +550,60 @@ scrHome As screen:
                         Text: ="Apri ›"
                         Width: =140
                         ZIndex: =17
+
+    conNonAutorizzato As groupContainer.horizontalAutoLayoutContainer:
+        DropShadow: =DropShadow.Light
+        Fill: =nfColoreSfondo
+        Height: =Parent.Height
+        LayoutAlignItems: =LayoutAlignItems.Center
+        LayoutDirection: =LayoutDirection.Vertical
+        LayoutGap: =40
+        LayoutGridColumnMinWidth: =0
+        LayoutGridColumns: =6
+        LayoutGridRowMinHeight: =0
+        LayoutGridRows: =6
+        LayoutJustifyContent: =LayoutJustifyContent.Center
+        LayoutMode: =LayoutMode.Auto
+        PaddingBottom: =8
+        PaddingLeft: =8
+        PaddingRight: =8
+        PaddingTop: =8
+        RadiusBottomLeft: =4
+        RadiusBottomRight: =4
+        RadiusTopLeft: =4
+        RadiusTopRight: =4
+        Visible: =!gblPuo.entrare
+        Width: =Parent.Width
+        ZIndex: =4
+
+        Label2 As label:
+            AutoHeight: =true
+            BorderColor: =App.Theme.Colors.Darker40
+            Color: =nfColoreTesto
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            Size: =38
+            Text: ="Accesso non autorizzato"
+            Width: =600
+            ZIndex: =1
+
+        Label4 As label:
+            Align: =Align.Center
+            AutoHeight: =true
+            BorderColor: =App.Theme.Colors.Darker40
+            Color: =nfColoreTestoSecondario
+            DisabledColor: =RGBA(166, 166, 166, 1)
+            Font: =App.Theme.Font
+            LayoutMaxHeight: =0
+            LayoutMaxWidth: =0
+            LayoutMinHeight: =16
+            LayoutMinWidth: =16
+            Size: =18
+            Text: ="Il tuo account non è abilitato al back-office commerciale. Chiedi all'amministratore del sistema di aggiungerti con il ruolo corretto."
+            Width: =750
+            ZIndex: =2
 

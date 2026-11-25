@@ -61,7 +61,7 @@ scrContratti As screen:
             ZIndex: =1
 
             btnIndietroCont As icon:
-                AccessibleLabel: ="1"
+                AccessibleLabel: ="Torna alla home"
                 BorderColor: =App.Theme.Colors.Darker40
                 Color: =nfColoreTesto
                 DisabledBorderColor: =RGBA(166, 166, 166, 1)
@@ -70,7 +70,7 @@ scrContratti As screen:
                 Icon: =Icon.BackArrow
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
-                OnSelect: =Navigate(scrStand)
+                OnSelect: =Navigate(scrHome)
                 TabIndex: =1
                 Width: =53
                 X: =34
@@ -158,12 +158,15 @@ scrContratti As screen:
 
             txtCercaContr As modernTextInput:
                 Appearance: =Appearance.FilledDarker
+                BorderStyle: =""
                 FillPortions: =2
+                Font: =""
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
                 LayoutMinHeight: =16
                 LayoutMinWidth: =16
                 Placeholder: ="Cerca contratto..."
+                Required: =false
                 TriggerOutput: =TriggerOutput.Keypress
                 ValidationState: =ValidationState.None
                 ZIndex: =1
@@ -178,13 +181,13 @@ scrContratti As screen:
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
                 Role: =TextRole.Heading1
-                Size: =20
+                Size: =nfDimTitoloRiquadro
                 Text: =CountRows(colContratti) & " contratti"
                 ZIndex: =2
 
             lblContrCrediti As label:
                 BorderColor: =App.Theme.Colors.Darker40
-                Color: =If(Sum(colContratti, credito_aperto) > 0, Color.Red, Color.DarkGreen)
+                Color: =If(Sum(colContratti, credito_aperto) > 0, nfColoreErrore, nfColoreOk)
                 DisabledColor: =RGBA(166, 166, 166, 1)
                 FillPortions: =3
                 Font: =App.Theme.Font
@@ -192,14 +195,14 @@ scrContratti As screen:
                 LayoutMaxHeight: =0
                 LayoutMaxWidth: =0
                 Role: =TextRole.Heading1
-                Size: =20
+                Size: =nfDimTitoloRiquadro
                 Text: |-
                     ="Crediti aperti: " & Text(Sum(colContratti, credito_aperto), "[$-en-US]#,##0.00", "it-IT") &
                       " € su " & CountRows(Filter(colContratti, credito_aperto > 0)) & " contratti"
                 ZIndex: =3
 
         MainContainer1_1 As groupContainer.horizontalAutoLayoutContainer:
-            BorderColor: =nfAccentoPreventivi
+            BorderColor: =nfAccentoContratti
             BorderThickness: =nfSpessoreBordo
             DropShadow: =DropShadow.Light
             Fill: =nfColoreSuperficie
@@ -259,12 +262,12 @@ scrContratti As screen:
 
                 Rectangle4_1 As rectangle:
                     BorderColor: =App.Theme.Colors.Darker40
-                    Fill: =nfAccentoPreventivi
+                    Fill: =nfAccentoContratti
                     Height: =Parent.TemplateHeight - Separator5_1.Height
                     OnSelect: =Select(Parent)
                     Visible: =ThisItem.IsSelected
                     Width: =4
-                    ZIndex: =7
+                    ZIndex: =1
 
                 lblCtrTitolo As label:
                     AutoHeight: =true
@@ -286,7 +289,7 @@ scrContratti As screen:
                     Width: =Parent.TemplateWidth - 173
                     X: =57
                     Y: =6
-                    ZIndex: =8
+                    ZIndex: =2
 
                 lblCtrEsp As label:
                     AutoHeight: =true
@@ -306,7 +309,7 @@ scrContratti As screen:
                     Width: =1056
                     X: =57
                     Y: =47
-                    ZIndex: =10
+                    ZIndex: =3
 
                 NextArrow5_1 As icon:
                     AccessibleLabel: =Self.Tooltip
@@ -322,11 +325,11 @@ scrContratti As screen:
                     Width: =50
                     X: =Parent.TemplateWidth - Self.Width - 12
                     Y: =(Parent.TemplateHeight / 2) - (Self.Height / 2)
-                    ZIndex: =12
+                    ZIndex: =4
 
                 lblCtrImporti As label:
                     AutoHeight: =true
-                    Color: =If(ThisItem.credito_aperto > 0, Color.Red, Color.White)
+                    Color: =If(ThisItem.credito_aperto > 0, nfColoreErrore, nfColoreTesto)
                     DisabledColor: =RGBA(166, 166, 166, 1)
                     Font: =App.Theme.Font
                     FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
@@ -345,7 +348,7 @@ scrContratti As screen:
                     Width: =lblCtrTitolo.Width
                     X: =57
                     Y: =87
-                    ZIndex: =13
+                    ZIndex: =5
 
                 Separator5_1 As rectangle:
                     BorderColor: =App.Theme.Colors.Darker40
@@ -354,9 +357,11 @@ scrContratti As screen:
                     OnSelect: =Select(Parent)
                     Width: =Parent.TemplateWidth
                     Y: =Parent.TemplateHeight - Self.Height
-                    ZIndex: =16
+                    ZIndex: =6
 
     btnCaricaContratti As modernButton:
+        BorderStyle: =""
+        Font: =""
         OnSelect: |-
             =ClearCollect(colContratti,
               ForAll(Filter('arcade.contratto', id_edizione = drpEdizioneContr.Selected.id_edizione) As c,
@@ -374,6 +379,7 @@ scrContratti As screen:
                       (!IsBlank(LookUp(pag, tipo = "saldo").pagato_il) || !IsBlank(c.deroga_allestimento_il)),
                     saldo_pagato: !IsBlank(LookUp(pag, tipo = "saldo").pagato_il),
                     in_ritardo: CountRows(Filter(pag, !IsBlank(pagato_il) && pagato_il > scadenza)) > 0 })))
+        Size: =0
         Text: ="Pulsante"
         Visible: =false
         X: =420

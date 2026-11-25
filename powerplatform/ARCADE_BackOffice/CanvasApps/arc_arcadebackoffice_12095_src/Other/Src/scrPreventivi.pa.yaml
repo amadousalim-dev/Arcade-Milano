@@ -50,11 +50,11 @@ Screens:
                   - btnIndietroPrev:
                       Control: Classic/Icon@2.5.0
                       Properties:
-                        AccessibleLabel: ="1"
+                        AccessibleLabel: ="Torna alla home"
                         Color: =nfColoreTesto
                         Height: =61
                         Icon: =Icon.BackArrow
-                        OnSelect: =Navigate(scrStand)
+                        OnSelect: =Navigate(scrHome)
                         TabIndex: =1
                         Width: =53
                         X: =34
@@ -179,7 +179,10 @@ Screens:
                               DisabledColor: =RGBA(119, 119, 119, 1)
                               Height: =50
                               Icon: =Icon.ChevronRight
-                              OnSelect: =Select(Parent)
+                              OnSelect: |-
+                                =Set(gblIdPreventivo, ThisItem.id_preventivo);
+                                Set(gblStand, LookUp(colStatoStand, codice_stand = ThisItem.codice_stand));
+                                Navigate(scrPreventivo)
                               PaddingBottom: =16
                               PaddingLeft: =16
                               PaddingRight: =16
@@ -211,7 +214,10 @@ Screens:
                               Color: =nfColoreTestoSecondario
                               FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                               Height: =Self.Size * 1.8
-                              OnSelect: =Select(Parent)
+                              OnSelect: |-
+                                =Set(gblIdPreventivo, ThisItem.id_preventivo);
+                                Set(gblStand, LookUp(colStatoStand, codice_stand = ThisItem.codice_stand));
+                                Navigate(scrPreventivo)
                               PaddingBottom: =0
                               PaddingLeft: =0
                               PaddingRight: =0
@@ -249,7 +255,10 @@ Screens:
                               Color: =nfColoreTesto
                               FontWeight: =If(ThisItem.IsSelected, FontWeight.Semibold, FontWeight.Normal)
                               Height: =Self.Size * 1.8
-                              OnSelect: =Select(Parent)
+                              OnSelect: |-
+                                =Set(gblIdPreventivo, ThisItem.id_preventivo);
+                                Set(gblStand, LookUp(colStatoStand, codice_stand = ThisItem.codice_stand));
+                                Navigate(scrPreventivo)
                               PaddingBottom: =0
                               PaddingLeft: =0
                               PaddingRight: =0
