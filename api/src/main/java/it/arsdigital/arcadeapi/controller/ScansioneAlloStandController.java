@@ -7,10 +7,12 @@ import it.arsdigital.arcadeapi.model.InvioContatti;
 import it.arsdigital.arcadeapi.model.InvioScansioni;
 import it.arsdigital.arcadeapi.model.RisultatoContatti;
 import it.arsdigital.arcadeapi.model.RisultatoScansioni;
+import it.arsdigital.arcadeapi.repository.EsclusioniContattoRepository;
 import it.arsdigital.arcadeapi.repository.InformativaRepository;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +23,12 @@ import org.springframework.web.server.ResponseStatusException;
 public class ScansioneAlloStandController implements ScansioneAlloStandApi {
 
     private final InformativaRepository informativaRepository;
+    private final EsclusioniContattoRepository esclusioniRepository;
 
-    public ScansioneAlloStandController(InformativaRepository informativaRepository) {
+    public ScansioneAlloStandController(InformativaRepository informativaRepository,
+                                        EsclusioniContattoRepository esclusioniRepository) {
         this.informativaRepository = informativaRepository;
+        this.esclusioniRepository = esclusioniRepository;
     }
 
     @Override
@@ -37,7 +42,20 @@ public class ScansioneAlloStandController implements ScansioneAlloStandApi {
     @Override
     public ResponseEntity<EsclusioniContatto> leggiEsclusioniContatto(
             Integer idEdizione, OffsetDateTime da, LocalDate giorno) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        if (!esclusioniRepository.edizioneEsiste(idEdizione)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Edizione non trovata");
+        }
+        // Il momento si prende prima della query: un biglietto venduto mentre si legge
+        // rientra nella chiamata successiva (con "da" uguale a questo valore).
+        OffsetDateTime aggiornatoIl = OffsetDateTime.now();
+        List<String> codici = esclusioniRepository.codiciDaEscludere(idEdizione, da, giorno);
+
+        EsclusioniContatto risposta = new EsclusioniContatto();
+        risposta.setIdEdizione(idEdizione);
+        risposta.setAggiornatoIl(aggiornatoIl);
+        risposta.setCodici(codici);
+        risposta.setTotale(codici.size());
+        return ResponseEntity.ok(risposta);
     }
 
     @Override
