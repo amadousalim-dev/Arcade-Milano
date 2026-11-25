@@ -211,3 +211,5 @@ Decisioni prese durante lo sviluppo del back-office commerciale (task 1.7, 1.8, 
 ### Decisioni del cliente recepite nel back-office (11/11)
 
 Direttore commerciale ruolo distinto; sconto fedeltà 5% anche cambiando stand (prelazione solo sullo stesso stand); preventivo non approvato torna in bozza; chiusura vendite 15 giorni prima dell'apertura come parametro dell'edizione; firma tardiva: acconto e saldo entrambi 15 giorni prima dell'apertura; chi firma dopo il 19/10 non cambia stand e chi firma dopo il 19/09 e disdice deve l'intero importo; Indie Showcase solo P3 dal 2026; promemoria e primo sollecito inviati dalla piattaforma solo per l'edizione in corso.
+Informativa provvisoria bozza-0.1 inserita il 25/11. Il testo definitivo lo approva il cliente e si inserisce come versione 2, senza modificare la 1, perché i contatti già raccolti richiamano la versione mostrata.»
+Issue #31: commento con lo stato vero: GET /informativa/corrente provata contro il database, 3 operazioni della scansione ancora in 501.
