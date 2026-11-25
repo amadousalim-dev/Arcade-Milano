@@ -3,7 +3,6 @@
 Registro delle decisioni importanti del progetto, come previsto dalle regole del gruppo (sezione 5 e sezione 4, «Contratto dati»).
 
 **Come si usa**
-
 - Ogni decisione ha: **data, decisione, motivo, chi**. In più lo **stato**: Applicata, Proposta, Da concordare, Superata.
 - Le decisioni sono raggruppate per area. Ogni area ha un prefisso per gli id (il back-office usa `D-`); chi apre una nuova area sceglie un prefisso e lo aggiunge qui sotto.
 - Le *change request* sullo schema dati e sull'API (rinominare o eliminare dopo il congelamento del 30 ottobre) si registrano qui, con l'approvazione dei responsabili di entrambi i percorsi.
@@ -12,6 +11,7 @@ Registro delle decisioni importanti del progetto, come previsto dalle regole del
 | Area | Prefisso | Responsabile |
 |---|---|---|
 | Back-office Power Apps | `D-` | Vittorio |
+| Database e API | `B-` | Salim |
 
 ---
 
@@ -118,98 +118,143 @@ Decisioni prese durante lo sviluppo del back-office commerciale (task 1.7, 1.8, 
 
 ### 13 novembre 2026
 
-#### D-13 – Dati di riferimento caricati all'avvio
-- **Decisione:** `App.OnStart` carica `colEspositori` e `colEdizioni`; `App.StartScreen = scrStand`; protezione dalla divisione per zero nei contatori; edizione di riserva `gblEdVista` se il menu non è ancora pronto.
-- **Motivo:** all'avvio lo Studio calcola tutte le schermate e il connettore a volte risponde «record non trovato» su una tabella; 135 espositori e 3 edizioni cambiano raramente; meno richieste al database.
-- **Chi:** Vittorio. **Stato:** Applicata.
+Usa il codice con cautela.
 
-#### D-14 – Connessione come `postgres` per il SAL
-- **Decisione:** l'app si collega al database con l'utente `postgres` fino al SAL.
-- **Motivo:** la RLS è attiva su tutte le 22 tabelle (verificato); `postgres` è il proprietario e non è bloccato. Il passaggio a un utente con permessi limitati è previsto in 2.3 (vedi D-15).
-- **Chi:** Vittorio. **Stato:** Applicata, temporanea.
+D-13 – Dati di riferimento caricati all'avvio
 
-#### D-15 – Script dei ruoli e permessi di `u_powerapps`
-- **Decisione:** lo script `arcade_ruoli_accesso.sql` è stato eseguito (utenti `u_api_backend`, `u_powerapps`, `u_powerbi`, `u_caricamento`, `u_privacy`). Per collegare l'app con `u_powerapps` serve aggiungere `DELETE` su `preventivo`, `contratto` e `pagamento`, usato solo dagli annullamenti (D-11).
-- **Motivo:** senza `DELETE` una firma fallita lascerebbe dati a metà.
-- **Chi:** gruppo BAD → BID. **Stato:** Da concordare.
+• Decisione: App.OnStart carica colEspositori e colEdizioni; App.StartScreen = scrStand; protezione dalla divisione per zero nei contatori; edizione di riserva gblEdVista se il menu non è ancora pronto.
+• Motivo: all'avvio lo Studio calcola tutte le schermate e il connettore a volte risponde «record non trovato» su una tabella; 135 espositori e 3 edizioni cambiano raramente; meno richieste al database.
+• Chi: Vittorio. Stato: Applicata.
 
-#### D-16 – Flusso pagamenti v1 non integrabile
-- **Decisione:** la prima versione del flusso di Matteo non si integra; inviate le correzioni.
-- **Motivo:** cercava tabelle `arcade_*` nello schema `public` (inesistenti); usava la chiave publishable, che con la RLS attiva non legge né scrive; mancavano firma tardiva, arrotondamento, formato delle date, risposta `esito`/`messaggio` e risposta in caso di errore.
-- **Chi:** Vittorio, Matteo. **Stato:** Applicata.
+D-14 – Connessione come postgres per il SAL
 
-### 15 novembre 2026
+• Decisione: l'app si collega al database con l'utente postgres fino al SAL.
+• Motivo: la RLS è attiva su tutte le 22 tabelle (verificato); postgres è il proprietario e non è bloccato. Il passaggio a un utente con permessi limitati è previsto in 2.3 (vedi D-15).
+• Chi: Vittorio. Stato: Applicata, temporanea.
 
-- PR delle task 1.7 e 1.8 unita su `main` (Salim). Nessuna decisione nuova.
+D-15 – Script dei ruoli e permessi di u_powerapps
 
-### 16 novembre 2026
+• Decisione: lo script arcade_ruoli_accesso.sql è stato eseguito (utenti u_api_backend, u_powerapps, u_powerbi, u_caricamento, u_privacy). Per collegare l'app con u_powerapps serve aggiungere DELETE su preventivo, contratto e pagamento, usato solo dagli annullamenti (D-11).
+• Motivo: senza DELETE una firma fallita lascerebbe dati a metà.
+• Chi: gruppo BAD → BID. Stato: Superata da B-01.
 
-#### D-17 – Un solo metodo di generazione degli id per tabella
-- **Decisione:** in ogni tabella gli id li genera un solo sistema, sempre con lo stesso metodo: `preventivo` e righe → app («massimo + 1»); `contratto` → app (`C<anno>-NNNN`); `pagamento` → flusso (contatore del database).
-- **Motivo:** gli id scritti esplicitamente non fanno avanzare il contatore `IDENTITY`; chi poi usa il contatore riceve numeri già occupati («chiave duplicata»).
-- **Chi:** Vittorio. **Stato:** Applicata. Da concordare con il BID se il backend inserirà preventivi (servirebbe «massimo + 1» o un `setval` prima).
+D-16 – Flusso pagamenti v1 non integrabile
 
-#### D-18 – Pagamenti con il contatore; `setval` al passaggio
-- **Decisione:** il flusso inserisce i pagamenti via API REST senza indicare l'id; al passaggio dal piano B si riallinea una volta il contatore con `setval(pg_get_serial_sequence('arcade.pagamento','id_pagamento'), (select max(id_pagamento) from arcade.pagamento))`. Il piano B non si rimette come riserva.
-- **Motivo:** il piano B aveva inserito pagamenti con id scelti dall'app oltre il contatore.
-- **Chi:** Vittorio. **Stato:** Applicata.
+• Decisione: la prima versione del flusso di Matteo non si integra; inviate le correzioni.
+• Motivo: cercava tabelle arcade_* nello schema public (inesistenti); usava la chiave publishable, che con la RLS attiva non legge né scrive; mancavano firma tardiva, arrotondamento, formato delle date, risposta esito/messaggio e risposta in caso di errore.
+• Chi: Vittorio, Matteo. Stato: Applicata.
 
-### 18 novembre 2026
+15 novembre 2026
 
-#### D-19 – Pagamenti creati dal flusso «Crea pagamenti alla firma»
-- **Decisione:** la versione del 18/11 del flusso è approvata e sostituisce il piano B. `btnFirma` chiama `Crea_pagamenti_alla_firma.Run(idC; Text(Today(); "yyyy-mm-dd"))`; se `esito <> "ok"` genera un errore che fa annullare contratto e righe (niente contratti senza pagamenti).
-- **Motivo:** il flusso ora usa lo schema `arcade`, la regola della firma tardiva, l'arrotondamento al centesimo, le date `yyyy-MM-dd`, `data_dedotta` predefinito (`false`) e una risposta di errore che parte solo se l'inserimento fallisce. Le regole dei pagamenti stanno in un solo posto.
-- **Chi:** Matteo (flusso), Vittorio (integrazione). **Stato:** Applicata. Aperti: connessione «Invoker» (proposta: «Utenti solo esecuzione» con la connessione di Matteo) e quale chiave usa il connettore personalizzato.
+• PR delle task 1.7 e 1.8 unita su main (Salim). Nessuna decisione nuova.
 
-#### D-20 – Flussi generici `db_leggi`, `db_scrivi`, `db_aggiorna`, `db_eliminare` non integrati
-- **Decisione:** il back-office continua a usare il connettore PostgreSQL diretto.
-- **Motivo:** restituiscono l'input invece del risultato; `db_leggi` e `db_eliminare` non puntano allo schema `arcade`; accettano qualsiasi tabella e filtro con la chiave del connettore (rischio per privacy e ruoli); un filtro vuoto potrebbe cancellare una tabella; romperebbero D-17. Unico uso possibile: leggere le viste, dopo correzioni e con un elenco fisso.
-- **Chi:** Vittorio. **Stato:** Applicata. Suggerito a Matteo di concentrarsi su 2.4 e 2.5.
+16 novembre 2026
 
-#### D-21 – Tutto il BAD nello stesso ambiente
-- **Decisione (proposta):** flussi e app nello stesso ambiente («Ars Digital – Laboratorio») e nella stessa soluzione; i flussi restano di Matteo, che aggiunge Vittorio come comproprietario.
-- **Motivo:** un'app chiama solo flussi del suo ambiente; due copie dello stesso flusso divergono; le regole del gruppo vogliono un solo proprietario per file binario.
-- **Chi:** gruppo BAD. **Stato:** Proposta.
 
-### 19 novembre 2026
+D-17 – Un solo metodo di generazione degli id per tabella
 
-#### D-22 – Flussi portati nell'ambiente tramite soluzione
-- **Decisione:** il flusso di Matteo (ambiente predefinito ITS) si porta nell'ambiente del back-office con una soluzione esportata e importata, che deve contenere anche il connettore personalizzato «SUPABASE REST».
-- **Motivo:** l'import dei pacchetti legacy è disabilitato dall'amministratore («Crea in soluzioni Dataverse»); il riferimento di connessione da solo non basta; aggiungere il connettore alla soluzione è permesso solo al proprietario dell'API o all'amministratore dell'ambiente. In alternativa: ricreare connettore e flusso direttamente nell'ambiente del back-office.
-- **Chi:** Vittorio, Matteo. **Stato:** Applicata (in corso).
+• Decisione: in ogni tabella gli id li genera un solo sistema, sempre con lo stesso metodo: preventivo e righe → app («massimo + 1»); contratto → app (C<anno>-NNNN); pagamento → flusso (contatore del database).
+• Motivo: gli id scritti esplicitamente non fanno avanzare il contatore IDENTITY; chi poi usa il contatore riceve numeri già occupati («chiave duplicata»).
+• Chi: Vittorio. Stato: Applicata. Da concordare con il BID se il backend inserirà preventivi (servirebbe «massimo + 1» o un setval prima).
 
-#### D-23 – Approvare uno sconto equivale a inviare il preventivo
-- **Decisione:** in `scrApprovazioni`, «Approva» porta il preventivo da `in_approvazione` a `inviato`, con `approvato_da`, `approvato_il`, `inviato_il` e `valido_fino` = oggi + 30; «Rimanda in bozza» lo porta a `bozza` (confermato dal cliente) e libera lo stand.
-- **Motivo:** il commerciale aveva già inviato il preventivo, che attendeva solo il via libera; il flusso di invio e-mail (2.4) partirà dallo stesso passaggio.
-- **Chi:** Vittorio. **Stato:** Applicata (verificata: preventivo n. 3).
+D-18 – Pagamenti con il contatore; setval al passaggio
 
-#### D-24 – Utente corrente dalla tabella `utente`
-- **Decisione:** `App.OnStart` imposta `gblUtente = LookUp('arcade.utente'; Lower(email) = Lower(User().Email))`; serve per `approvato_da` e sarà la base dei permessi per ruolo (2.3). Le righe degli utenti si inseriscono dallo SQL Editor e non vanno nel repository.
-- **Motivo:** `approvato_da` è un riferimento alla tabella `utente`; l'app usa una sola connessione, quindi chi può fare cosa lo decide l'app.
-- **Chi:** Vittorio. **Stato:** Applicata.
+• Decisione: il flusso inserisce i pagamenti via API REST senza indicare l'id; al passaggio dal piano B si riallinea una volta il contatore con setval(pg_get_serial_sequence('arcade.pagamento','id_pagamento'), (select max(id_pagamento) from arcade.pagamento)). Il piano B non si rimette come riserva.
+• Motivo: il piano B aveva inserito pagamenti con id scelti dall'app oltre il contatore.
+• Chi: Vittorio. Stato: Applicata.
 
-#### D-25 – Disponibilità delle sponsorizzazioni
-- **Decisione:** disponibili = `quantita_disponibile` − venduti nei contratti attivi − impegnati nei preventivi aperti (`in_approvazione` o `inviato` non scaduto), escluso il preventivo in modifica; le bozze non impegnano. Calcolo unico in `btnCaricaImpegni` (`colSponsorOccupati`); `btnAggiungiRiga` sottrae anche le righe già nel preventivo.
-- **Motivo:** due preventivi aperti non devono poter offrire la stessa sponsorizzazione unica (es. Main Stage).
-- **Chi:** Vittorio. **Stato:** Applicata.
+18 novembre 2026
 
-#### D-26 – Doppio controllo delle sponsorizzazioni all'invio
-- **Decisione:** `btnInvia` ricalcola la disponibilità con dati freschi prima di inviare, scritto direttamente nel pulsante.
-- **Motivo:** tra l'aggiunta della riga e l'invio un collega può aver inviato la stessa sponsorizzazione. Non si può riusare `btnCaricaImpegni` con `Select`, perché `Select` esegue l'azione solo dopo la fine della formula corrente: è un'eccezione voluta al principio «una sola logica».
-- **Chi:** Vittorio. **Stato:** Applicata.
 
-#### D-27 – Filtri sul database solo semplici
-- **Decisione:** nelle richieste al database si usano solo confronti semplici (es. `id_edizione = …`); condizioni su date, `Coalesce` e combinazioni complesse si applicano dopo, sulla collezione, con `RemoveIf`. Applicato in `btnCaricaImpegni` e `btnInvia`.
-- **Motivo:** il filtro `valido_fino >= Today()` mandato al database produceva «AppDataSourceError: problema durante l'elaborazione della risposta del server». Due `Filter` annidati non bastano: Power Apps li unisce e li manda insieme al database.
-- **Chi:** Vittorio. **Stato:** Applicata. Da estendere a `btnCalcolaStati` se dovesse dare lo stesso errore.
+D-19 – Pagamenti creati dal flusso «Crea pagamenti alla firma»
 
-#### D-28 – Preventivo aperto letto una volta in `gblPreventivo`
-- **Decisione:** `scrPreventivo.OnVisible` carica il preventivo in `gblPreventivo`, aggiornata dopo salvataggio, invio e perdita; le proprietà dei controlli (`DefaultSelectedItems`, `Visible`, `Default`, `DisplayMode`) leggono la variabile e non il database. Le collezioni si aggiornano con `RemoveIf` per id e non con `Remove` per record.
-- **Motivo:** i `LookUp` sul database nelle proprietà dei controlli girano all'avvio e possono fallire («record non trovato»); `Remove` dava errore quando il record della galleria non coincideva esattamente con quello in collezione.
-- **Chi:** Vittorio. **Stato:** Applicata.
+• Decisione: la versione del 18/11 del flusso è approvata e sostituisce il piano B. btnFirma chiama Crea_pagamenti_alla_firma.Run(idC; Text(Today(); "yyyy-mm-dd")); se esito <> "ok" genera un errore che fa annullare contratto e righe (niente contratti senza pagamenti).
+• Motivo: il flusso ora usa lo schema arcade, la regola della firma tardiva, l'arrotondamento al centesimo, le date yyyy-MM-dd, data_dedotta predefinito (false) e una risposta di errore che parte solo se l'inserimento fallisce. Le regole dei pagamenti stanno in un solo posto.
+• Chi: Matteo (flusso), Vittorio (integrazione). Stato: Applicata. Aperti: connessione «Invoker» (proposta: «Utenti solo esecuzione» con la connessione di Matteo) e quale chiave usa il connettore personalizzato.
 
-### Decisioni del cliente recepite nel back-office (11/11)
+D-20 – Flussi generici db_leggi, db_scrivi, db_aggiorna, db_eliminare non integrati
+
+• Decisione: il back-office continua a usare il connettore PostgreSQL diretto.
+• Motivo: restituiscono l'input invece del risultato; db_leggi e db_eliminare non puntano allo schema arcade; accettano qualsiasi tabella e filtro con la chiave del connettore (rischio per privacy e ruoli); un filtro vuoto potrebbe cancellare una tabella; romperebbero D-17. Unico uso possibile: leggere le viste, dopo correzioni e con un elenco fisso.
+• Chi: Vittorio. Stato: Applicata. Suggerito a Matteo di concentrarsi su 2.4 e 2.5.
+
+D-21 – Tutto il BAD nello stesso ambiente
+
+• Decisione (proposta): flussi e app nello stesso ambiente («Ars Digital – Laboratorio») e nella stessa soluzione; i flussi restano di Matteo, che aggiunge Vittorio come comproprietario.
+• Motivo: un'app chiama solo flussi del suo ambiente; due copie dello stesso flusso divergono; le regole del gruppo vogliono un solo proprietario per file binario.
+• Chi: gruppo BAD. Stato: Proposta.
+
+19 novembre 2026
+
+
+D-22 – Flussi portati nell'ambiente tramite soluzione
+
+• Decisione: il flusso di Matteo (ambiente predefinito ITS) si porta nell'ambiente del back-office con una soluzione esportata e importata, che deve contenere anche il connettore personalizzato «SUPABASE REST».
+• Motivo: l'import dei pacchetti legacy è disabilitato dall'amministratore («Crea in soluzioni Dataverse»); il riferimento di connessione da solo non basta; aggiungere il connettore alla soluzione è permesso solo al proprietario dell'API o all'amministratore dell'ambiente. In alternativa: ricreare connettore e flusso direttamente nell'ambiente del back-office.
+• Chi: Vittorio, Matteo. Stato: Applicata (in corso).
+
+D-23 – Approvare uno sconto equivale a inviare il preventivo
+
+• Decisione: in scrApprovazioni, «Approva» porta il preventivo da in_approvazione a inviato, con approvato_da, approvato_il, inviato_il e valido_fino = oggi + 30; «Rimanda in bozza» lo porta a bozza (confermato dal cliente) e libera lo stand.
+• Motivo: il commerciale aveva già inviato il preventivo, che attendeva solo il via libera; il flusso di invio e-mail (2.4) partirà dallo stesso passaggio.
+• Chi: Vittorio. Stato: Applicata (verificata: preventivo n. 3).
+
+D-24 – Utente corrente dalla tabella utente
+
+• Decisione: App.OnStart imposta gblUtente = LookUp('arcade.utente'; Lower(email) = Lower(User().Email)); serve per approvato_da e sarà la base dei permessi per ruolo (2.3). Le righe degli utenti si inseriscono dallo SQL Editor e non vanno nel repository.
+• Motivo: approvato_da è un riferimento alla tabella utente; l'app usa una sola connessione, quindi chi può fare cosa lo decide l'app.
+• Chi: Vittorio. Stato: Applicata.
+
+D-25 – Disponibilità delle sponsorizzazioni
+
+• Decisione: disponibili = quantita_disponibile − venduti nei contratti attivi − impegnati nei preventivi aperti (in_approvazione o inviato non scaduto), escluso il preventivo in modifica; le bozze non impegnano. Calcolo unico in btnCaricaImpegni (colSponsorOccupati); btnAggiungiRiga sottrae anche le righe già nel preventivo.
+• Motivo: due preventivi aperti non devono poter offrire la stessa sponsorizzazione unica (es. Main Stage).
+• Chi: Vittorio. Stato: Applicata.
+
+D-26 – Doppio controllo delle sponsorizzazioni all'invio
+
+• Decisione: btnInvia ricalcola la disponibilità con dati freschi prima di inviare, scritto direttamente nel pulsante.
+• Motivo: tra l'aggiunta della riga e l'invio un collega può aver inviato la stessa sponsorizzazione. Non si può riusare btnCaricaImpegni con Select, perché Select esegue l'azione solo dopo la fine della formula corrente: è un'eccezione voluta al principio «una sola logica».
+• Chi: Vittorio. Stato: Applicata.
+
+D-27 – Filtri sul database solo semplici
+
+• Decisione: nelle richieste al database si usano solo confronti semplici (es. id_edizione = …); condizioni su date, Coalesce e combinazioni complesse si applicano dopo, sulla collezione, con RemoveIf. Applicato in btnCaricaImpegni e btnInvia.
+• Motivo: il filtro valido_fino >= Today() mandato al database produceva «AppDataSourceError: problema durante l'elaborazione della risposta del server». Due Filter annidati non bastano: Power Apps li unisce e li manda insieme al database.
+• Chi: Vittorio. Stato: Applicata. Da estendere a btnCalcolaStati se dovesse dare lo stesso errore.
+
+D-28 – Preventivo aperto letto una volta in gblPreventivo
+
+• Decisione: scrPreventivo.OnVisible carica il preventivo in gblPreventivo, aggiornata dopo salvataggio, invio e perdita; le proprietà dei controlli (DefaultSelectedItems, Visible, Default, DisplayMode) leggono la variabile e non il database. Le collezioni si aggiornano con RemoveIf per id e non con Remove per record.
+• Motivo: i LookUp sul database nelle proprietà dei controlli girano all'avvio e possono fallire («record non trovato»); Remove dava errore quando il record della galleria non coincideva esattamente con quello in collezione.
+• Chi: Vittorio. Stato: Applicata.
+
+Decisioni del cliente recepite nel back-office (11/11)
 
 Direttore commerciale ruolo distinto; sconto fedeltà 5% anche cambiando stand (prelazione solo sullo stesso stand); preventivo non approvato torna in bozza; chiusura vendite 15 giorni prima dell'apertura come parametro dell'edizione; firma tardiva: acconto e saldo entrambi 15 giorni prima dell'apertura; chi firma dopo il 19/10 non cambia stand e chi firma dopo il 19/09 e disdice deve l'intero importo; Indie Showcase solo P3 dal 2026; promemoria e primo sollecito inviati dalla piattaforma solo per l'edizione in corso.
 Informativa provvisoria bozza-0.1 inserita il 25/11. Il testo definitivo lo approva il cliente e si inserisce come versione 2, senza modificare la 1, perché i contatti già raccolti richiamano la versione mostrata.»
 Issue #31: commento con lo stato vero: GET /informativa/corrente provata contro il database, 3 operazioni della scansione ancora in 501.
+
+Database e API
+
+
+25 novembre 2026
+
+
+B-01 – DELETE per u_powerapps fino al SAL (risolve D-15)
+
+• Decisione: u_powerapps può cancellare su preventivo, contratto e pagamento fino al SAL 2. Il back-office passa da postgres a u_powerapps entro il 2/12. Dopo il SAL si toglie il permesso (REVOKE DELETE) e gli annullamenti passano a operazioni atomiche dell'API (trasformaInContratto, registraPagamento).
+• Motivo: l'annullamento manuale di una firma fallita (D-11) richiede di cancellare ciò che è stato scritto; senza il permesso lascerebbe dati a metà. Il collegamento come postgres aggira ogni protezione (D-14). Rischio accettato: per il SAL u_powerapps può cancellare anche contratti storici; l'app usa il permesso solo per gli annullamenti.
+• Chi: Salim (modello dati), con Vittorio per l'app. Stato: Applicata, temporanea. Scadenza della sostituzione: entro la presentazione finale dell'11/12.
+
+B-02 – Biglietti family: nessun contatto proposto
+
+• Decisione (proposta): l'app non propone il contatto a chi ha un biglietto di tipo family (5.321 biglietti nei dati, il 6,8%).
+• Motivo: un biglietto family vale per adulti e bambini; senza rete l'app non sa chi si presenta allo stand, e i minori vanno tutelati. Costo: gli espositori perdono quei contatti.
+• Chi: Salim. Stato: Proposta; domanda inviata al cliente tramite Vittorio.
+
+B-03 – Il filtro per espositore sta nell'API
+
+• Decisione: nel database ogni tabella ha una sola regola per riga (p_arcade_utente, condizione true) per arcade_utente, che include arcade_api. L'isolamento tra espositori non è nel database: il portale filtra nel codice per id_espositore preso dal token, con un test che prova a leggere i dati di un altro. Dopo il SAL si valutano regole per riga su un ruolo dedicato.
+• Motivo: requisito del brief («gli espositori non vedono i dati dei concorrenti»).
+• Chi: Salim. Stato: Applicata, provvisoria.
