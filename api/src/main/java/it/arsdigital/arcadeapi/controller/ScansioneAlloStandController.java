@@ -7,6 +7,7 @@ import it.arsdigital.arcadeapi.model.InvioContatti;
 import it.arsdigital.arcadeapi.model.InvioScansioni;
 import it.arsdigital.arcadeapi.model.RisultatoContatti;
 import it.arsdigital.arcadeapi.model.RisultatoScansioni;
+import it.arsdigital.arcadeapi.repository.InformativaRepository;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -19,15 +20,18 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 public class ScansioneAlloStandController implements ScansioneAlloStandApi {
 
-    // Risposta di prova, senza database. Sara sostituita da una query.
+    private final InformativaRepository informativaRepository;
+
+    public ScansioneAlloStandController(InformativaRepository informativaRepository) {
+        this.informativaRepository = informativaRepository;
+    }
+
     @Override
     public ResponseEntity<Informativa> leggiInformativaCorrente() {
-        Informativa informativa = new Informativa();
-        informativa.setIdInformativa(1);
-        informativa.setVersione("prova-0");
-        informativa.setTesto("Testo di prova dell'informativa.");
-        informativa.setInVigoreDal(LocalDate.of(2026, 11, 21));
-        return ResponseEntity.ok(informativa);
+        return informativaRepository.leggiInVigore()
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Nessuna informativa in vigore"));
     }
 
     @Override
