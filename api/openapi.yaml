@@ -1391,7 +1391,7 @@ paths:
       operationId: leggiEsclusioniContatto
       summary: Elenco dei codici per cui non proporre il contatto
       description: 'Serve all’app per decidere senza rete. Contiene solo codici di biglietto, senza dati personali:
-        biglietti ridotti, gratuiti per bambini, con fascia d’età minorile o di tipo family, per cautela sui minori (nel 2025 circa il 36,9% dei biglietti senza i family, circa il 43,7% con i family).
+        biglietti ridotti, gratuiti per bambini o con fascia d’età minorile (nel 2025 circa il 36,9% dei biglietti). I biglietti family non si escludono, perché il cliente li tratta come gli altri.
         Il solo tipo di biglietto non basta, perché un minorenne può avere un biglietto intero. I biglietti venduti
         durante la fiera (nel 2025 il 24% dall’apertura in poi) non sono nell’elenco fino al file di fine giornata:
         per quei codici, e per quelli senza fascia d’età, vale la regola di POST /contatti. L’app lo scarica prima
