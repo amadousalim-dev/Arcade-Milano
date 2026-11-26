@@ -1,7 +1,6 @@
 package it.arsdigital.arcadeapi.repository;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,7 @@ public class JdbcEsclusioniContattoRepository implements EsclusioniContattoRepos
     }
 
     @Override
-    public List<String> codiciDaEscludere(int idEdizione, OffsetDateTime da, LocalDate giorno) {
+    public List<String> codiciDaEscludere(int idEdizione, LocalDate giorno) {
         // Le parti aggiunte al testo sono solo pezzi fissi scritti da noi:
         // i valori arrivano sempre come parametri.
         StringBuilder sql = new StringBuilder();
@@ -47,10 +46,6 @@ public class JdbcEsclusioniContattoRepository implements EsclusioniContattoRepos
         if (giorno != null) {
             sql.append(" AND (giorno_valido IS NULL OR giorno_valido = :giorno)");
             parametri.put("giorno", giorno);
-        }
-        if (da != null) {
-            sql.append(" AND data_acquisto >= :da");
-            parametri.put("da", da);
         }
         sql.append(" ORDER BY id_biglietto");
 

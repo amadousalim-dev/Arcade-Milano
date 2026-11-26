@@ -1391,11 +1391,11 @@ paths:
       operationId: leggiEsclusioniContatto
       summary: Elenco dei codici per cui non proporre il contatto
       description: 'Serve all’app per decidere senza rete. Contiene solo codici di biglietto, senza dati personali:
-        biglietti ridotti, gratuiti per bambini o con fascia d’età minorile (circa il 37% dei biglietti nel 2025).
+        biglietti ridotti, gratuiti per bambini, con fascia d’età minorile o di tipo family, per cautela sui minori (nel 2025 circa il 37,2% dei biglietti senza i family, circa il 43,9% con i family).
         Il solo tipo di biglietto non basta, perché un minorenne può avere un biglietto intero. I biglietti venduti
         durante la fiera (nel 2025 il 24% dall’apertura in poi) non sono nell’elenco fino al file di fine giornata:
         per quei codici, e per quelli senza fascia d’età, vale la regola di POST /contatti. L’app lo scarica prima
-        della fiera e lo aggiorna con il parametro «da» quando c’è rete. Il parametro «giorno» riduce i dati sul
+        della fiera e lo riscarica quando c’è rete: per ora l’elenco è sempre completo e il parametro «da» non è usato. Il parametro «giorno» riduce i dati sul
         telefono.'
       x-ruoli:
       - espositore
@@ -1404,7 +1404,7 @@ paths:
       - $ref: '#/components/parameters/IdEdizione'
       - name: da
         in: query
-        description: Solo le variazioni da questo momento.
+        description: Non ancora usato. Per ora l’elenco restituito è sempre completo.
         schema:
           type: string
           format: date-time

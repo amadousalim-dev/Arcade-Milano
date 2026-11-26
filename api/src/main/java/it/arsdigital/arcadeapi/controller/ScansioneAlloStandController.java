@@ -12,6 +12,7 @@ import it.arsdigital.arcadeapi.repository.InformativaRepository;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -47,8 +48,9 @@ public class ScansioneAlloStandController implements ScansioneAlloStandApi {
         }
         // Il momento si prende prima della query: un biglietto venduto mentre si legge
         // rientra nella chiamata successiva (con "da" uguale a questo valore).
-        OffsetDateTime aggiornatoIl = OffsetDateTime.now();
-        List<String> codici = esclusioniRepository.codiciDaEscludere(idEdizione, da, giorno);
+        OffsetDateTime aggiornatoIl = OffsetDateTime.now(ZoneId.of("Europe/Rome"));
+        // Per ora il parametro da non si usa: l'elenco viene sempre restituito completo (B-07).
+        List<String> codici = esclusioniRepository.codiciDaEscludere(idEdizione, giorno);
 
         EsclusioniContatto risposta = new EsclusioniContatto();
         risposta.setIdEdizione(idEdizione);

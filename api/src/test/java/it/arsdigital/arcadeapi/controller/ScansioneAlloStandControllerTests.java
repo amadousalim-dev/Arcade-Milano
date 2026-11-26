@@ -67,7 +67,7 @@ class ScansioneAlloStandControllerTests {
     @Test
     void esclusioniRestituisceICodici() throws Exception {
         when(esclusioniRepository.edizioneEsiste(2025)).thenReturn(true);
-        when(esclusioniRepository.codiciDaEscludere(eq(2025), isNull(), isNull()))
+        when(esclusioniRepository.codiciDaEscludere(eq(2025), isNull()))
                 .thenReturn(List.of("T1", "T2"));
 
         mockMvc.perform(get(prefisso + "/edizioni/2025/biglietti/esclusioni-contatto").contextPath(prefisso))
@@ -93,7 +93,7 @@ class ScansioneAlloStandControllerTests {
                         .contextPath(prefisso).param("giorno", "2025-12-20"))
                 .andExpect(status().isOk());
 
-        verify(esclusioniRepository).codiciDaEscludere(eq(2025), isNull(), eq(LocalDate.of(2025, 12, 20)));
+        verify(esclusioniRepository).codiciDaEscludere(eq(2025), eq(LocalDate.of(2025, 12, 20)));
     }
 
     @Test
