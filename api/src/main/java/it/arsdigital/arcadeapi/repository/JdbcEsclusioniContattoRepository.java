@@ -12,10 +12,10 @@ import org.springframework.stereotype.Repository;
 public class JdbcEsclusioniContattoRepository implements EsclusioniContattoRepository {
 
     // Regola del contratto: fasce minorili e tipi ridotto o gratuito per bambini.
-    // Scelta prudente B-02, da confermare con il cliente: anche i biglietti family.
+    // B-02: il cliente ha scelto che i biglietti family non si escludono.
     private static final String CONDIZIONE_ESCLUSIONE =
             "(fascia_eta IN ('0-7', '8-13', '14-17') "
-            + "OR tipo_biglietto IN ('ridotto', 'gratuito under 8', 'family'))";
+            + "OR tipo_biglietto IN ('ridotto', 'gratuito under 8'))";
 
     private final JdbcClient jdbc;
 
